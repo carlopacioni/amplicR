@@ -107,7 +107,6 @@ w.fasta <- function(i, lseqs, sample_names, dir.out, fasta_fold) {
 
 #----------------------------------------------------------------------------#
 if(is.null(dir.in)) {
-  message()
   dir.in <- choose.dir(caption="Please, select the directory where the fastq
                        files are located")
 }
@@ -215,7 +214,6 @@ if(chim == TRUE)  {
     dada_no_chim <- lapply(seq_along(derepReads), rm.chim, derepReads, bimReads)
   }
   names(dada_no_chim) <- names(bimReads)
-  nFinal <- sapply(dada_no_chim, ndada)
 
   #### Reporting ####
 
@@ -233,6 +231,10 @@ if(chim == TRUE)  {
 }
 
 lDNAstr <- lapply(luniseqsFinal, make.DNAString)
+
+nSeq <- sapply(lDNAstr, length)
+el <- el + 1
+lsummary[[el]] <- data.frame(Sample=names(nSeq), nSeq)
 summary <- plyr::join_all(lsummary, by="Sample", type="left")
 write.csv(summary, file=paste(dir.out, "Summary.csv", sep="/"), row.names=FALSE)
 
