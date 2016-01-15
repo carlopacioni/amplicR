@@ -3,8 +3,9 @@ An R package to process amplicon data
 
 This package has a number of functions to filter, dereplicate and error and 
 chimera check NGS reads stored in fastq files. This funcitonality is currently
-limted to single-read analysis. The retained reads (or your own reads if you
-have done this already in another way) can then be compared against reference
+limted to single-read analysis. The retained reads after the data processing 
+described above (or your own reads if you have done this already in another way) 
+can then be compared against reference
 sequences and the number of mismatch is reported. This may be useful when, for
 example, screening samples for particular taxa (e.g. a pathogen).
 
