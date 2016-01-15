@@ -58,8 +58,8 @@
 data.proc <- function(dir.in=NULL, dir.out=NULL, bp, qrep=FALSE,
                       dada=TRUE, chim=TRUE) {
 #----------------------------------------------------------------------------#
-library(dada2); packageVersion("dada2")
-library(ShortRead); packageVersion("ShortRead")
+library(dada2)
+library(ShortRead)
 #----------------------------------------------------------------------------#
 # Helper functions
 #----------------------------------------------------------------------------#
