@@ -5,9 +5,11 @@ Version: 0.1
 Date: 2016-01-13
 Author: as.person(
     "Carlo Pacioni <c.pacioni@murdoch.edu.au> [aut, cre]")
+Maintainer: Carlo Pacioni <c.pacioni@murdoch.edu.au>
 BugReports: https://github.com/carlopacioni/amplicR/issues
 Description: An R package to process amplicon data
 License: GPL-3
+Depends: R (>= 3.2.0)
 LazyData: TRUE
 RoxygenNote: 5.0.1
 Imports: 
