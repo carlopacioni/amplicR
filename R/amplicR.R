@@ -28,9 +28,9 @@
 #'   
 #'   A more detailed description of the package and functions can be opened 
 #'   with: 
-#'   \code{vignette(package="amplicR", topic="amplicR-package")}.
 #'   
-#'   \emph{This is pending... hang in there}
+#'   \code{vignette(package="amplicR", topic="amplicR-package")} 
+#'   \emph{ - This is pending... hang in there}
 #'      
 #' @section Citation: If you use \code{amplicR}, please cite: 
 #' 

@@ -47,8 +47,8 @@
 #'   completion of \code{data.proc}. The second element is a a list where each 
 #'   element is a summary of the number of reads that have been retained in each
 #'   step. This can be converted in a \code{data.frame} by running the following
-#'   \code{summary <- plyr::join_all(lsummary, 
-#'   by="Sample", type="left")}
+#'   
+#'   \code{summary <- plyr::join_all(lsummary, by="Sample", type="left")}
 #' @references Benjamin J Callahan, Paul J McMurdie, Michael J Rosen, Andrew W 
 #'   Han, Amy J Johnson, Susan P Holmes (2015). DADA2: High resolution sample 
 #'   inference from amplicon data.
