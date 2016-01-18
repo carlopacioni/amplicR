@@ -41,6 +41,7 @@ setup <- function() {
   for (pkg in pkgs) {
   pkgchk(pkg)
   }
+  
   if (require("dada2", character.only=TRUE) == T) {
     message(paste("Package ", "dada2", " is installed"))
   } else {
