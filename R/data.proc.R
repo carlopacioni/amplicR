@@ -55,6 +55,16 @@
 #' @import ggplot2
 #' @import data.table
 #' @export
+#' @examples 
+#' # Select the directory where the example data are stored
+#' example.data <- system.file("extdata", "HTJ", package="amplicR")
+#' # Select a temporary directory where to store the outputs
+#' out <- tempdir()
+#' 
+#' HTJ.test <- data.proc(example.data, out, bp=140)
+#' 
+#' # To clean up the temp directory
+#' unlink(out, recursive=TRUE)
 
 data.proc <- function(dir.in=NULL, dir.out=NULL, bp, qrep=FALSE,
                       dada=TRUE, chim=TRUE) {
