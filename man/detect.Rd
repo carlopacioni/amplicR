@@ -16,15 +16,16 @@ detect(data = NULL, dir.in = NULL, dir.out = NULL, ext = "fasta",
 \item{dir.out}{The directory where to save the results. If NULL (default) 
 then \code{dir.out <- dir.in}}
 
-\item{ext}{A character vector (of length=1) with the extension of the fasta
+\item{ext}{A character vector (of length=1) with the extension of the fasta 
 files. (Default "fasta")}
 
 \item{ref_seq}{A character vector with the reference sequence}
 }
 \value{
-A list where each element is an alignment of the sequences within 
-  each sample with the reference sequence. The alignments and the number of 
-  sequences found and mismatch is also written to file (see Details)
+A list two elements. The first is a list where each element is an
+  alignment of the sequences within each sample with the reference sequence.
+  The second element is the number of sequences found and the minimum
+  mismatch count. These results are also also written to file (see Details)
 }
 \description{
 \code{detect} takes in either the output of \code{data.proc}, or a list of 
@@ -33,16 +34,34 @@ reporting the number of mismatch using \code{srdistance} from the package
 \code{shortRead}.
 }
 \details{
-The output from \code{data.proc} can be passe with \code{data}. If no data is
-passed to \code{detect}, then it will read fasta files in the directory 
+The output from \code{data.proc} can be passed with \code{data}. If no data 
+is passed to \code{detect}, then it will read fasta files in the directory 
 passed with \code{dir.in}. If \code{dir.in=NULL}, then an interactive window 
 will open to select the location of the files. As for \code{data.proc}, 
 \code{detect} assumes that each file represents a sample.
 
-A summary of the number of sequences found and the number of mismatch is 
-returned as \code{data.frame} as well as being written to disk (Summary.csv) 
-together with the alignments of the sequences provided with the reference 
-sequence (in the folder "Final_alns"). The alignment is built using 
-\code{PairwiseAlignments} from the package \code{Biostrings}.
+A summary of the number of sequences found and the minimum number of mismatch
+within each sample is returned as \code{data.frame} as well as being written 
+to disk (Summary.csv) together with the alignments of the sequences provided 
+with the reference sequence (in the folder "Final_alns"). The alignment is 
+built using \code{PairwiseAlignments} from the package \code{Biostrings}.
+}
+\examples{
+# Select the directory where the example data are stored
+example.data <- system.file("extdata", "HTJ", package="amplicR")
+# Select a temporary directory where to store the outputs
+out <- tempdir()
+# Process raw data
+HTJ.test <- data.proc(example.data, out, bp=140)
+# Referece Mycobacteriumavium subspecies paratuberculosis sequence 
+HTJ <- "CTGCGCGCCGGCGATGACATCGCAGTCGAGCTGCGCATCCTGACCAGCCGACGTTCCGATCTGGTGGCTGATCGGACCCGGGCGATCGAACCGAATGCGCGCCCAGCTGCTGGAATACTTTCGGCGCTGGAACGCGCCTT"
+
+
+# Use 'Detect' to verify the presence of Mycobacteriumavium subspecies 
+# paratuberculosis
+
+det <- detect(HTJ.test, dir.out=out, ref_seq=HTJ)
+# To clean up the temp directory
+unlink(out, recursive=TRUE)
 }
 

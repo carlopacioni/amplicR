@@ -67,6 +67,17 @@ The sequence data handling is done by using functionalities from the packages
 \code{dada2} and \code{ShortRead}, so make sure to cite them (in addition to
 \code{amplicR} of course!) if you report your results in a paper or report.
 }
+\examples{
+# Select the directory where the example data are stored
+example.data <- system.file("extdata", "HTJ", package="amplicR")
+# Select a temporary directory where to store the outputs
+out <- tempdir()
+
+HTJ.test <- data.proc(example.data, out, bp=140)
+
+# To clean up the temp directory
+unlink(out, recursive=TRUE)
+}
 \references{
 Benjamin J Callahan, Paul J McMurdie, Michael J Rosen, Andrew W 
   Han, Amy J Johnson, Susan P Holmes (2015). DADA2: High resolution sample 
