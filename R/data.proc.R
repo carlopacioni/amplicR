@@ -132,17 +132,23 @@ fastqs <- fns[grepl(".fastq.{,3}$", fns)]
 filtRs <- paste(dir.out,
                  sapply(fastqs,
                         sub,
-                        pattern="\\.fastq$",
+                        pattern="\\.fastq.{,3}$",
                         replacement="_filt.fastq.gz"),
                 sep="/"
                  )
 
-sample_names <- sub(".fastq$", "", fastqs)
+sample_names <- sub(".fastq.{,3}$", "", fastqs)
 
 
 for(i in seq_along(fastqs)) {
-  suppressWarnings(fastqFilter(paste(dir.in, fastqs[i], sep="/"), filtRs[i], maxN=0, maxEE=3, 
-              truncQ=2, truncLen=bp, compress=TRUE, verbose=TRUE))
+  suppressWarnings(fastqFilter(paste(dir.in, fastqs[i], sep="/"), 
+                               filtRs[i], 
+                               maxN=0, 
+                               maxEE=3,
+                               truncQ=2, 
+                               truncLen=bp, 
+                               compress=TRUE, 
+                               verbose=TRUE))
 }
 
 filtered <- lapply(filtRs, readFastq)
