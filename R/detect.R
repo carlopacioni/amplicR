@@ -27,6 +27,23 @@
 #'   sequences found and mismatch is also written to file (see Details)
 #' @import data.table
 #' @export
+#' @examples 
+#' # Select the directory where the example data are stored
+#' example.data <- system.file("extdata", "HTJ", package="amplicR")
+#' # Select a temporary directory where to store the outputs
+#' out <- tempdir()
+#' # Process raw data
+#' HTJ.test <- data.proc(example.data, out, bp=140)
+#' # Referece Mycobacteriumavium subspecies paratuberculosis sequence 
+#' HTJ <- "CTGCGCGCCGGCGATGACATCGCAGTCGAGCTGCGCATCCTGACCAGCCGACGTTCCGATCTGGTGGCTGATCGGACCCGGGCGATCGAACCGAATGCGCGCCCAGCTGCTGGAATACTTTCGGCGCTGGAACGCGCCTT"
+#' 
+#' 
+#' # Use 'Detect' to verify the presence of Mycobacteriumavium subspecies 
+#' # paratuberculosis
+#' 
+#' det <- detect(HTJ.test, dir.out=out, ref_seq=HTJ)
+#' # To clean up the temp directory
+#' unlink(out, recursive=TRUE)
 
 detect <- function(data=NULL, dir.in=NULL, dir.out=NULL, ext="fasta", ref_seq) {
   #----------------------------------------------------------------------------#
