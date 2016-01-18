@@ -116,7 +116,7 @@ if(is.null(dir.out)) dir.out <- dir.in
 dir.create(dir.out, showWarnings=FALSE, recursive=TRUE)
 
 fns <- list.files(path=dir.in)
-fastqs <- fns[grepl(".fastq$", fns)]
+fastqs <- fns[grepl(".fastq.{,3}$", fns)]
 
 #### Filter ####
 filtRs <- paste(dir.out,
