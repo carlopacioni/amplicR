@@ -3,9 +3,9 @@
 #' \code{data.proc} is a function to process (quality checking, error and 
 #' chimeras filtering) data from a NGS run after these have been deconvoluted.
 #' 
-#' \code{data.proc} locates the .fastq files in the directory indicated in 
-#' \code{dir.in}. If the directory path is not provided, this will be selected 
-#' using an interactive window.
+#' \code{data.proc} locates the .fastq files (can be compressed) in the
+#' directory indicated in \code{dir.in}. If the directory path is not provided,
+#' this will be selected using an interactive window.
 #' 
 #' It is currently limited to single-reads and assumes that adapters, primers 
 #' and indexes have been already removed and that each file represents a sample.
@@ -28,7 +28,7 @@
 #' are also returned at the end of the function.
 #' 
 #' The sequence data handling is done by using functionalities from the packages
-#' \code{dada2} and \code{ShortRead}, so make sure to cite them (in addition to
+#' \code{dada2} and \code{ShortRead}, so make sure to cite them (in addition to 
 #' \code{amplicR} of course!) if you report your results in a paper or report.
 #' 
 #' @param dir.in The directory where the fastq files are located. If NULL 
