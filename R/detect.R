@@ -5,26 +5,27 @@
 #' reporting the number of mismatch using \code{srdistance} from the package 
 #' \code{shortRead}.
 #' 
-#' The output from \code{data.proc} can be passe with \code{data}. If no data is
-#' passed to \code{detect}, then it will read fasta files in the directory 
+#' The output from \code{data.proc} can be passed with \code{data}. If no data 
+#' is passed to \code{detect}, then it will read fasta files in the directory 
 #' passed with \code{dir.in}. If \code{dir.in=NULL}, then an interactive window 
 #' will open to select the location of the files. As for \code{data.proc}, 
 #' \code{detect} assumes that each file represents a sample.
 #' 
-#' A summary of the number of sequences found and the number of mismatch is 
-#' returned as \code{data.frame} as well as being written to disk (Summary.csv) 
-#' together with the alignments of the sequences provided with the reference 
-#' sequence (in the folder "Final_alns"). The alignment is built using 
-#' \code{PairwiseAlignments} from the package \code{Biostrings}.
+#' A summary of the number of sequences found and the minimum number of mismatch
+#' within each sample is returned as \code{data.frame} as well as being written 
+#' to disk (Summary.csv) together with the alignments of the sequences provided 
+#' with the reference sequence (in the folder "Final_alns"). The alignment is 
+#' built using \code{PairwiseAlignments} from the package \code{Biostrings}.
 #' 
 #' @param data The output from \code{data.proc}
-#' @param ext A character vector (of length=1) with the extension of the fasta
+#' @param ext A character vector (of length=1) with the extension of the fasta 
 #'   files. (Default "fasta")
-#' @param ref_seq A character vector with the reference sequence  
+#' @param ref_seq A character vector with the reference sequence
 #' @inheritParams data.proc
-#' @return A list where each element is an alignment of the sequences within 
-#'   each sample with the reference sequence. The alignments and the number of 
-#'   sequences found and mismatch is also written to file (see Details)
+#' @return A list two elements. The first is a list where each element is an
+#'   alignment of the sequences within each sample with the reference sequence.
+#'   The second element is the number of sequences found and the minimum
+#'   mismatch count. These results are also also written to file (see Details)
 #' @import data.table
 #' @export
 #' @examples 
@@ -123,5 +124,5 @@ detect <- function(data=NULL, dir.in=NULL, dir.out=NULL, ext="fasta", ref_seq) {
                recursive=TRUE)
     
     lapply(seq_along(alns), w.aln, alns, names(lDNAstr), dir.out, aln_fold)
-    return(summary)
+    return(list(Alns=alns, Summary=summary))
   }
