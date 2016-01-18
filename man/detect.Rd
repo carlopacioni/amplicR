@@ -22,9 +22,9 @@ files. (Default "fasta")}
 \item{ref_seq}{A character vector with the reference sequence}
 }
 \value{
-A list two elements. The first is a list where each element is an
-  alignment of the sequences within each sample with the reference sequence.
-  The second element is the number of sequences found and the minimum
+A list two elements. The first is a list where each element is an 
+  alignment of the sequences within each sample with the reference sequence. 
+  The second element is the number of sequences found and the minimum 
   mismatch count. These results are also also written to file (see Details)
 }
 \description{
@@ -39,6 +39,10 @@ is passed to \code{detect}, then it will read fasta files in the directory
 passed with \code{dir.in}. If \code{dir.in=NULL}, then an interactive window 
 will open to select the location of the files. As for \code{data.proc}, 
 \code{detect} assumes that each file represents a sample.
+
+If both \code{dir.out=NULL} and \code{dir.in=NULL}, then the path where to
+save the results will be asked with an interactive window, otherwise then
+\code{dir.out <- dir.in}
 
 A summary of the number of sequences found and the minimum number of mismatch
 within each sample is returned as \code{data.frame} as well as being written 

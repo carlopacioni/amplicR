@@ -11,6 +11,10 @@
 #' will open to select the location of the files. As for \code{data.proc}, 
 #' \code{detect} assumes that each file represents a sample.
 #' 
+#' If both \code{dir.out=NULL} and \code{dir.in=NULL}, then the path where to
+#' save the results will be asked with an interactive window, otherwise then
+#' \code{dir.out <- dir.in}
+#' 
 #' A summary of the number of sequences found and the minimum number of mismatch
 #' within each sample is returned as \code{data.frame} as well as being written 
 #' to disk (Summary.csv) together with the alignments of the sequences provided 
@@ -22,9 +26,9 @@
 #'   files. (Default "fasta")
 #' @param ref_seq A character vector with the reference sequence
 #' @inheritParams data.proc
-#' @return A list two elements. The first is a list where each element is an
-#'   alignment of the sequences within each sample with the reference sequence.
-#'   The second element is the number of sequences found and the minimum
+#' @return A list two elements. The first is a list where each element is an 
+#'   alignment of the sequences within each sample with the reference sequence. 
+#'   The second element is the number of sequences found and the minimum 
 #'   mismatch count. These results are also also written to file (see Details)
 #' @import data.table
 #' @export
@@ -81,20 +85,24 @@ detect <- function(data=NULL, dir.in=NULL, dir.out=NULL, ext="fasta", ref_seq) {
     if(is.null(dir.in)) {
       dir.in <- choose.dir(caption="Please, select the directory where the fasta
                          files are located")
-    } else {
-      fns <- list.files(path=dir.in, full.names=TRUE)
-      fasta_files <- fns[grepl(paste0(".", ext, "$"), fns)]
-      lDNAstr <- lapply(fasta_files, readFasta)
-      sample_names <- sub(paste0(".", ext, "$"), "", basename(fasta_files))
-      names(lDNAstr) <- sample_names
-      nSeq <- sapply(lDNAstr, length)
-      lsummary <- list(data.frame(Sample=names(lDNAstr), nSeq))
-      }
+    }
+  }
+  
+  if(is.null(data)) {
+    fns <- list.files(path=dir.in, full.names=TRUE)
+    fasta_files <- fns[grepl(paste0(".", ext, "$"), fns)]
+    lDNAstr <- lapply(fasta_files, readFasta)
+    sample_names <- sub(paste0(".", ext, "$"), "", basename(fasta_files))
+    names(lDNAstr) <- sample_names
+    nSeq <- sapply(lDNAstr, length)
+    lsummary <- list(data.frame(Sample=names(lDNAstr), nSeq))
   } else {
     lDNAstr <- data[[1]]
     lsummary <- data[[2]]
     }
-  
+
+    
+      
   if(is.null(dir.out)) {
     if(is.null(dir.in)) {
       dir.out <- choose.dir(caption="Please, select the directory where to save 
