@@ -5,7 +5,7 @@
 \title{Detect a reference sequence}
 \usage{
 detect(data = NULL, dir.in = NULL, dir.out = NULL, ext = "fasta",
-  ref_seq)
+  ref_seqs)
 }
 \arguments{
 \item{data}{The output from \code{data.proc}}
@@ -19,13 +19,12 @@ then \code{dir.out <- dir.in}}
 \item{ext}{A character vector (of length=1) with the extension of the fasta 
 files. (Default "fasta")}
 
-\item{ref_seq}{A character vector with the reference sequence}
+\item{ref_seqs}{A named character vector with the reference sequence(s)}
 }
 \value{
-A list two elements. The first is a list where each element is an 
-  alignment of the sequences within each sample with the reference sequence. 
-  The second element is the number of sequences found and the minimum 
-  mismatch count. These results are also also written to file (see Details)
+A \code{data.frame} with the number of sequences found in each samle
+  and the minimum mismatch count for each reference sequence. These results
+  are also also written to file (see Details)
 }
 \description{
 \code{detect} takes in either the output of \code{data.proc}, or a list of 
@@ -40,15 +39,17 @@ passed with \code{dir.in}. If \code{dir.in=NULL}, then an interactive window
 will open to select the location of the files. As for \code{data.proc}, 
 \code{detect} assumes that each file represents a sample.
 
-If both \code{dir.out=NULL} and \code{dir.in=NULL}, then the path where to
-save the results will be asked with an interactive window, otherwise then
+If both \code{dir.out=NULL} and \code{dir.in=NULL}, then the path where to 
+save the results will be asked with an interactive window, otherwise then 
 \code{dir.out <- dir.in}
 
 A summary of the number of sequences found and the minimum number of mismatch
-within each sample is returned as \code{data.frame} as well as being written 
-to disk (Summary.csv) together with the alignments of the sequences provided 
-with the reference sequence (in the folder "Final_alns"). The alignment is 
-built using \code{PairwiseAlignments} from the package \code{Biostrings}.
+within each sample is returned as \code{data.frame}. Each comlumn reporting 
+the number of mismatch is named with the named of the character vector passed
+with \code{ref_seqs}. These results are also written to disk (Summary.csv) 
+together with the alignments of the sequences provided with the reference 
+sequence (in the folder "Final_alns"). The alignment is built using 
+\code{PairwiseAlignments} from the package \code{Biostrings}.
 }
 \examples{
 # Select the directory where the example data are stored
@@ -59,12 +60,13 @@ out <- tempdir()
 HTJ.test <- data.proc(example.data, out, bp=140)
 # Referece Mycobacteriumavium subspecies paratuberculosis sequence 
 HTJ <- "CTGCGCGCCGGCGATGACATCGCAGTCGAGCTGCGCATCCTGACCAGCCGACGTTCCGATCTGGTGGCTGATCGGACCCGGGCGATCGAACCGAATGCGCGCCCAGCTGCTGGAATACTTTCGGCGCTGGAACGCGCCTT"
-
+# Naming the reference sequence
+names(HTJ) <- "HTJ" 
 
 # Use 'Detect' to verify the presence of Mycobacteriumavium subspecies 
 # paratuberculosis
 
-det <- detect(HTJ.test, dir.out=out, ref_seq=HTJ)
+det <- detect(HTJ.test, dir.out=out, ref_seqs=HTJ)
 # To clean up the temp directory
 unlink(out, recursive=TRUE)
 }
