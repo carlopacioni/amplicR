@@ -72,6 +72,9 @@ detect <- function(data=NULL, dir.in=NULL, dir.out=NULL, ext="fasta", ref_seq) {
       nSeq <- sapply(lDNAstr, length)
       lsummary <- list(data.frame(Sample=names(lDNAstr), nSeq))
       }
+  } else {
+    lDNAstr <- data[[1]]
+    lsummary <- data[[2]]
     }
   
   if(is.null(dir.out)) {
