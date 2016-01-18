@@ -31,6 +31,7 @@ Return a list with two elements and several files (see details). The
   completion of \code{data.proc}. The second element is a a list where each 
   element is a summary of the number of reads that have been retained in each
   step. This can be converted in a \code{data.frame} by running the following
+  
   \code{summary <- plyr::join_all(lsummary, by="Sample", type="left")}
 }
 \description{

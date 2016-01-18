@@ -31,9 +31,10 @@ the actual name of the package you are interested into.
   \code{amplicR} functions and their specific documentations.
   
   A more detailed description of the package and functions can be opened 
-  with: \code{vignette(package="amplicR", topic="amplicR-package")}.
+  with: 
   
-  \emph{This is pending... hang in there}
+  \code{vignette(package="amplicR", topic="amplicR-package")} 
+  \emph{ - This is pending... hang in there}
 }
 
 \section{Citation}{

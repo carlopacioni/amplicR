@@ -11,8 +11,13 @@ Install/update additional packages needed that are not installed the
 conventional way.
 }
 \details{
-\code{Bioconductor} recommends installing its packages using 
-\code{source("https://bioconductor.org/biocLite.R")} and \code{biocLite()}.
+\code{Bioconductor} recommends installing its packages using
+
+\code{source("https://bioconductor.org/biocLite.R")}
+
+and
+
+\code{biocLite()}.
 
 This is what I do, but this also implies that \code{amplicR}'s dependencies 
 are not installed when \code{amplicR} is installed. To circumvent this issue,
