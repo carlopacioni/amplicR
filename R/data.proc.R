@@ -197,13 +197,13 @@ These samples will be removed before dada analysis.")
   }
   dev.off()
 
-  nInference <- sapply(dadaReads, ndada)
+  nDenoised <- sapply(dadaReads, ndada)
   el <-el + 1
-  lsummary[[el]] <- data.frame(Sample=names(nInference), nInference)
+  lsummary[[el]] <- data.frame(Sample=names(nDenoised), nDenoised)
 
   message("Number of sequenced retained after sample inference with dada2
           (Callahan et al 2015):")
-  message(cat(nInference, "\n"))
+  message(cat(nDenoised, "\n"))
 
   lda <- lapply(dadaReads, getUniques)
   nms <- names(derepReads)[!retain]
