@@ -40,7 +40,7 @@ will open to select the location of the files. As for \code{data.proc},
 \code{detect} assumes that each file represents a sample.
 
 If both \code{dir.out=NULL} and \code{dir.in=NULL}, then the path where to 
-save the results will be asked with an interactive window, otherwise then 
+save the results will be asked with an interactive window, otherwise  
 \code{dir.out <- dir.in}
 
 A summary of the number of sequences found and the minimum number of mismatch
