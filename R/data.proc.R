@@ -191,21 +191,36 @@ These samples will be removed before dada analysis.")
                   errorEstimationFunction=loessErrfun,
                                    selfConsist = TRUE)
   pdf(file = paste(dir.out, "Plot_ErrorRates.pdf", sep="/"))
-  for (i in seq_along(dadaReads)) {
-    p <- plotErrors(dadaReads[[i]], nominalQ=TRUE)
-    print(p + ggtitle(names(dadaReads[i])))
+  if(length(derepReadsdada) > 1) {
+    for (i in seq_along(dadaReads)) {
+      p <- plotErrors(dadaReads[[i]], nominalQ=TRUE)
+      print(p + ggtitle(names(dadaReads[i])))
+    }
+  } else {
+      p <- plotErrors(dadaReads, nominalQ=TRUE)
+      print(p + ggtitle(names(derepReadsdada)))
   }
   dev.off()
-
-  nDenoised <- sapply(dadaReads, ndada)
+  
+  if(length(derepReadsdada) > 1) {
+    nDenoised <- sapply(dadaReads, ndada)
+  } else {
+    nDenoised <- length(getUniques(dadaReads))
+    names(nDenoised) <- names(derepReadsdada)
+  }
   el <-el + 1
   lsummary[[el]] <- data.frame(Sample=names(nDenoised), nDenoised)
 
   message("Number of sequenced retained after sample inference with dada2
           (Callahan et al 2015):")
   message(cat(nDenoised, "\n"))
-
-  lda <- lapply(dadaReads, getUniques)
+  
+  if(length(derepReadsdada) > 1) {
+    lda <- lapply(dadaReads, getUniques)
+  } else {
+    lda <- list(getUniques(dadaReads))
+    names(lda) <- names(derepReadsdada)
+  }
   nms <- names(derepReads)[!retain]
   ldp <- lapply(nms, dp_extract, derepReads)
   names(ldp) <- nms
@@ -214,29 +229,59 @@ These samples will be removed before dada analysis.")
 
 if(chim == TRUE)  {
   #### Bimera ####
-  if(dada == T) {
-    bimReads <- sapply(dadaReads, isBimeraDenovo, verbose=TRUE)
+  if(dada == TRUE) {
+    if(length(derepReadsdada) > 1) {
+      single <- FALSE
+      bimReads <- sapply(dadaReads, isBimeraDenovo, verbose=TRUE)
+    } else {
+      single <- TRUE
+      bimReads <- isBimeraDenovo(dadaReads, verbose=TRUE)
+    }
   } else {
+    if(length(derepReads) > 1) {
+      single <- FALSE
+    } else {
+      single <- TRUE
+    }
     bimReads <- sapply(derepReads, isBimeraDenovo, verbose=TRUE)
   }
 
   message("Proportion of bimeras found in each sample")
-  message(cat(round(sapply(bimReads, mean), digits=2), "\n"))
-
-  nChimeras <- sapply(bimReads, nChim)
+  if(single) {
+    message(cat(round(mean(bimReads), digits=2), "\n"))
+  } else {
+    message(cat(round(sapply(bimReads, mean), digits=2), "\n"))
+  }
+  
+  if(single) {
+    nChimeras <- sum(bimReads)
+    if(dada == TRUE) {
+      names(nChimeras) <- names(derepReadsdada)
+    } else {
+      names(nChimeras) <- colnames(bimReads)
+    }
+  } else {
+    nChimeras <- sapply(bimReads, nChim)
+  }
   message("Number of bimeras found in each sample:")
   message(cat(nChimeras, "\n"))
+  
   el <- el + 1
   lsummary[[el]] <- data.frame(Sample=names(nChimeras), nChimeras)
   if(dada == T) {
-    dada_no_chim <- lapply(seq_along(dadaReads), rm.chim, dadaReads, bimReads)
+    if(single) {
+      dada_no_chim <- list(getUniques(dadaReads)[!bimReads])
+      names(dada_no_chim) <- names(derepReadsdada)
+    } else {
+      dada_no_chim <- lapply(seq_along(dadaReads), rm.chim, dadaReads, bimReads)
+      names(dada_no_chim) <- names(bimReads)
+    }
   } else {
     dada_no_chim <- lapply(seq_along(derepReads), rm.chim, derepReads, bimReads)
+    names(dada_no_chim) <- names(bimReads)
   }
-  names(dada_no_chim) <- names(bimReads)
 
   #### Reporting ####
-
   lda <- lapply(dada_no_chim, getUniques)
   nms <- names(derepReads)[!retain]
   ldp <- lapply(nms, dp_extract, derepReads)
