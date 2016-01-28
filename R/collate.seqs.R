@@ -76,7 +76,7 @@ collate.seqs <- function(dirs, dir.out=NULL) {
   if(is.null(dir.out)) dir.out <- getwd()
   ffiles <- lapply(dirs, list.fasta)
   ffiles <- Reduce(intersect, ffiles)
-  collate.out <- paste(dir.out, "Merged_seqs", sep="/")
+  collate.out <- paste(dir.out, "Collated_seqs", sep="/")
   dir.create(collate.out, recursive=TRUE, showWarnings=FALSE)
   
   lapply(ffiles, collate, dirs, collate.out)
