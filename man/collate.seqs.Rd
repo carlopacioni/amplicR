@@ -52,11 +52,11 @@ out <- tempdir()
 
 # Run data.proc with bp=140 and save in a sub folder
 out140 <- paste(out, "out140", sep="/")
-HTJ.140 <- data.proc(example.data, dada=FALSE, chim=FALSE, out140, bp=140)
+HTJ.140 <- data.proc(example.data, out140, bp=140)
 
 # Run data.proc with bp=140 and save in a sub folder
 out141 <- paste(out, "out141", sep="/")
-HTJ.141 <- data.proc(example.data, dada=FALSE, chim=FALSE, out141, bp=141)
+HTJ.141 <- data.proc(example.data, out141, bp=141)
 
 # Collate seqs of matching file names across the two sub folders 
 # out140 & out141
