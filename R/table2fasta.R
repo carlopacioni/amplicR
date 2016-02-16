@@ -26,9 +26,9 @@
 #' 
 #' 
 #' 
-#' @param s_table The sequence table (output of \code{dada2::makeSequenceTable})
+#' @param stable The sequence table (output of \code{dada2::makeSequenceTable})
 #'   or \code{data.proc}
-#' @param seq_list The seq_list element from \code{data.proc}. Required if the 
+#' @param seq.list The seq_list element from \code{data.proc}. Required if the 
 #'   input table is the output from \code{data.proc}. If NULL (default), it is 
 #'   assumed that the input table is from \code{dada2::makeSequenceTable} and 
 #'   sequences are named with a seq# pattern, where # is a sequential number 
@@ -39,22 +39,22 @@
 #' @return A fasta file for each sample
 #' @export
 #' 
-table2fasta <- function(s_table, seq_list=NULL, dir.out=NULL) {
+table2fasta <- function(stable, seq.list=NULL, dir.out=NULL) {
   #----------------------------------------------------------------------------#
   library(dada2)
   library(ShortRead)
   #----------------------------------------------------------------------------#
   # Helper functions
   #----------------------------------------------------------------------------#
-  w.fasta <- function(i, s_table, seqs, seq_names) {
-    uniq_vect <- as.integer(s_table[i,])
+  w.fasta <- function(i, stable, seqs, seq_names) {
+    uniq_vect <- as.integer(stable[i,])
     retain <- as.logical(unname(uniq_vect))
     uniq_vect <- uniq_vect[retain]
     names(uniq_vect) <- seqs[retain]
     seq_names_sub <- paste0(seq_names[retain], ";size=", unname(uniq_vect), ";")
-    message(paste("Writing fasta file", paste0(row.names(s_table)[i], ".fasta")))
+    message(paste("Writing fasta file", paste0(row.names(stable)[i], ".fasta")))
     uniquesToFasta(uniq_vect, 
-                   paste(dir.out, paste0(row.names(s_table)[i], ".fasta"), sep="/"),
+                   paste(dir.out, paste0(row.names(stable)[i], ".fasta"), sep="/"),
                    ids=seq_names_sub)
   }
   
@@ -62,14 +62,14 @@ table2fasta <- function(s_table, seq_list=NULL, dir.out=NULL) {
   if(is.null(dir.out)) choose.dir(caption="Selec folder where to save fasta files")
   dir.create(dir.out, showWarnings=FALSE, recursive=TRUE)
   
-  if(is.null(seq_list)) {
-    seqs <- colnames(s_table)
-    seq_names <- paste0("seq", 1:dim(s_table)[2])
+  if(is.null(seq.list)) {
+    seqs <- colnames(stable)
+    seq_names <- paste0("seq", 1:dim(stable)[2])
   } else {
-    seqs <- seq_list$sequence
-    seq_names <- seq_list$seq_names
+    seqs <- seq.list$sequence
+    seq_names <- seq.list$seq_names
   }
-  lapply(1:dim(s_table)[1], w.fasta, s_table, seqs, seq_names)
+  lapply(1:dim(stable)[1], w.fasta, stable, seqs, seq_names)
 }
 
 
