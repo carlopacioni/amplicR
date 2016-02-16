@@ -57,9 +57,18 @@
 #'   step. This can be converted in a \code{data.frame} by running the following
 #'   
 #'   \code{summary <- plyr::join_all(lsummary, by="Sample", type="left")} 
-#'   \item $s_table: The sequence table 
+#'   \item $stable: The sequence table 
 #'   \item $seq_list: The sequences and matching
 #'   sequences IDs }
+#'   
+#'   Several files are also returned, these include:
+#'   \itemize{ 
+#'   \item Seq_table.csv Sequence table
+#'   \item Seq_list.csv List of sequences and their matching IDs
+#'   \item data.proc.summary.csv A summary of the number of reads that were 
+#'      retained in each step
+#'   \item data.proc.rda R data file containing the list returned by data.proc 
+#'      (see above)
 #'   
 #' @references Benjamin J Callahan, Paul J McMurdie, Michael J Rosen, Andrew W 
 #'   Han, Amy J Johnson, Susan P Holmes (2015). DADA2: High resolution sample 
@@ -284,14 +293,12 @@ if(chim == TRUE) {
   }
 }
 
-
-s_table <-makeSequenceTable(luniseqsFinal, orderBy="abundance")
-seqs <- colnames(s_table)
-seq_names <- paste0("seq", 1:dim(s_table)[2])
-colnames(s_table) <- seq_names
+stable <-makeSequenceTable(luniseqsFinal, orderBy="abundance")
+seqs <- colnames(stable)
+seq_names <- paste0("seq", 1:dim(stable)[2])
+colnames(stable) <- seq_names
 seq_list <- data.frame(seq_names, sequence=seqs)
-write.csv(s_table, file=paste(dir.out, "Seq_table.csv", sep="/"))
-save(s_table, file=paste(dir.out, "Seq_table.rda", sep="/"))
+write.csv(stable, file=paste(dir.out, "Seq_table.csv", sep="/"))
 write.csv(seq_list, file=paste(dir.out, "Seq_list.csv", sep="/"))
 
 nSeq <- sapply(luniseqsFinal, length)
@@ -299,12 +306,13 @@ nSeq <- sapply(luniseqsFinal, length)
 el <- el + 1
 lsummary[[el]] <- data.frame(Sample=names(nSeq), nSeq)
 summary <- plyr::join_all(lsummary, by="Sample", type="left")
-write.csv(summary, file=paste(dir.out, "Summary.csv", sep="/"), row.names=FALSE)
+write.csv(summary, file=paste(dir.out, "data.proc.summary.csv", sep="/"), row.names=FALSE)
 
 fasta_fold <- "Final_seqs"
 fasta_dir <- paste(dir.out, fasta_fold, sep="/")
-table2fasta(s_table, seq_list=seq_list, dir.out=fasta_dir)
+table2fasta(stable, seq_list=seq_list, dir.out=fasta_dir)
+save(luniseqsFinal, file=paste(dir.out, "data.proc.rda", sep="/"))
 
-return(list(luniseqsFinal, lsummary, s_table, seq_list))
+return(list(luniseqsFinal, lsummary, stable, seq.list=seq_list))
 
 }
