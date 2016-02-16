@@ -3,14 +3,14 @@
 #' \code{data.proc} is a function to process (quality checking, error and 
 #' chimeras filtering) data from a NGS run after these have been deconvoluted.
 #' 
-#' \code{data.proc} locates the .fastq files (can be compressed) in the
-#' directory indicated in \code{dir.in}. If the directory path is not provided,
+#' \code{data.proc} locates the .fastq files (can be compressed) in the 
+#' directory indicated in \code{dir.in}. If the directory path is not provided, 
 #' this will be selected using an interactive window.
 #' 
 #' It is currently limited to single-reads and assumes that adapters, primers 
 #' and indexes have been already removed and that each file represents a sample.
 #' 
-#' The  \code{data.proc} pipeline is as follows: fastq files are read in. A 
+#' The \code{data.proc} pipeline is as follows: fastq files are read in. A 
 #' filter is applied to truncate reads at the first instance of a quality score 
 #' less than 2, remove reads  that are of low quality (currently the threshold 
 #' is hard-coded and reads are discarded if the expected errors is higher than 3
@@ -40,20 +40,33 @@
 #'   \code{FALSE})
 #' @param dada Logical. Should the dada analysis be conducted? (default 
 #'   \code{TRUE})
+#' @param plot.err Logical. Whether error rates obtained from dada should be 
+#'   plotted
 #' @param chim Logical. Should the bimera search and removal be performed? 
 #'   (default \code{TRUE})
-#' @return Return a list with two elements and several files (see details). The 
-#'   first is a \code{DNAString} object with the sequences that were retained at
-#'   completion of \code{data.proc}. The second element is a a list where each 
-#'   element is a summary of the number of reads that have been retained in each
+#' @param orderBy Character vector specifying how the returned sequence table 
+#'   should be sorted. Default "abundance". See
+#'   \code{\link[dada2]{makeSequenceTable}} for details
+#' @return Return a list with several elements:
+#'   
+#'   \itemize{ 
+#'   \item $luniseqsFinal: A list with unique sequences (names) that were
+#'   retained at completion of \code{data.proc} and their abundance (values). 
+#'   \item $lsummary: A list where
+#'   each element is a summary of the number of reads that were retained in each
 #'   step. This can be converted in a \code{data.frame} by running the following
 #'   
-#'   \code{summary <- plyr::join_all(lsummary, by="Sample", type="left")}
+#'   \code{summary <- plyr::join_all(lsummary, by="Sample", type="left")} 
+#'   \item $s_table: The sequence table 
+#'   \item $seq_list: The sequences and matching
+#'   sequences IDs }
+#'   
 #' @references Benjamin J Callahan, Paul J McMurdie, Michael J Rosen, Andrew W 
 #'   Han, Amy J Johnson, Susan P Holmes (2015). DADA2: High resolution sample 
 #'   inference from amplicon data.
 #' @import ggplot2
 #' @import data.table
+#' @seealso \code{\link[dada2]{dada}}, \code{\link[dada2]{makeSequenceTable}}
 #' @export
 #' @examples 
 #' # Select the directory where the example data are stored
@@ -67,7 +80,7 @@
 #' unlink(out, recursive=TRUE)
 
 data.proc <- function(dir.in=NULL, dir.out=NULL, bp, qrep=FALSE,
-                      dada=TRUE, chim=TRUE) {
+                      dada=TRUE, plot.err=FALSE, chim=TRUE, orderBy="abundance") {
 #----------------------------------------------------------------------------#
 library(dada2)
 library(ShortRead)
@@ -103,17 +116,6 @@ nChim <- function(chim_el) {
 dp_extract <- function(nm, derep) {
   seqs <- getUniques(derep[[nm]])
   return(seqs)
-}
-
-make.DNAString <- function(luniseqs_el) {
-  DNAstr <- DNAStringSet(names(luniseqs_el))
-  return(DNAstr)
-}
-
-w.fasta <- function(i, lseqs, sample_names, dir.out, fasta_fold) {
-  writeFasta(lseqs[[i]], paste(dir.out, fasta_fold, 
-                               paste0(sample_names[[i]], ".fasta"), 
-                               sep="/"))
 }
 
 #----------------------------------------------------------------------------#
@@ -177,36 +179,29 @@ names(derepReads) <- sample_names[retain]
 unSeqs <- unlist(lapply(derepReads, getnUniques))
 lsummary[[2]] <- data.frame(Sample=sample_names[retain], nDerep=unSeqs)
 el <- 2
-retain <- unSeqs > 1
+
 #### dada ####
 if(dada == TRUE) {
-  if (1 %in% unSeqs) {
-    message("NOTE: Some samples had only one unique sequence.
-These samples will be removed before dada analysis.")
-    message("List of sample(s) with one unique sequence:")
-    message(cat(names(derepReads)[!retain], sep="\n"))
-  }
-  derepReadsdada <- derepReads[retain]
-  dadaReads <- dada(derepReadsdada , err=inflateErr(tperr1,3),
+  dadaReads <- dada(derepReads , err=inflateErr(tperr1,3),
                   errorEstimationFunction=loessErrfun,
                                    selfConsist = TRUE)
   pdf(file = paste(dir.out, "Plot_ErrorRates.pdf", sep="/"))
-  if(length(derepReadsdada) > 1) {
+  if(length(derepReads) > 1) {
     for (i in seq_along(dadaReads)) {
       p <- plotErrors(dadaReads[[i]], nominalQ=TRUE)
       print(p + ggtitle(names(dadaReads[i])))
     }
   } else {
       p <- plotErrors(dadaReads, nominalQ=TRUE)
-      print(p + ggtitle(names(derepReadsdada)))
+      print(p + ggtitle(names(derepReads)))
   }
   dev.off()
   
-  if(length(derepReadsdada) > 1) {
+  if(length(derepReads) > 1) {
     nDenoised <- sapply(dadaReads, ndada)
   } else {
     nDenoised <- length(getUniques(dadaReads))
-    names(nDenoised) <- names(derepReadsdada)
+    names(nDenoised) <- names(derepReads)
   }
   el <-el + 1
   lsummary[[el]] <- data.frame(Sample=names(nDenoised), nDenoised)
@@ -215,22 +210,18 @@ These samples will be removed before dada analysis.")
           (Callahan et al 2015):")
   message(cat(nDenoised, "\n"))
   
-  if(length(derepReadsdada) > 1) {
+  if(length(derepReads) > 1) {
     lda <- lapply(dadaReads, getUniques)
   } else {
     lda <- list(getUniques(dadaReads))
-    names(lda) <- names(derepReadsdada)
+    names(lda) <- names(derepReads)
   }
-  nms <- names(derepReads)[!retain]
-  ldp <- lapply(nms, dp_extract, derepReads)
-  names(ldp) <- nms
-  luniseqsFinal <- c(lda, ldp)
 }
 
+#### Bimera ####
 if(chim == TRUE)  {
-  #### Bimera ####
   if(dada == TRUE) {
-    if(length(derepReadsdada) > 1) {
+    if(length(derepReads) > 1) {
       single <- FALSE
       bimReads <- sapply(dadaReads, isBimeraDenovo, verbose=TRUE)
     } else {
@@ -256,7 +247,7 @@ if(chim == TRUE)  {
   if(single) {
     nChimeras <- sum(bimReads)
     if(dada == TRUE) {
-      names(nChimeras) <- names(derepReadsdada)
+      names(nChimeras) <- names(derepReads)
     } else {
       names(nChimeras) <- colnames(bimReads)
     }
@@ -270,43 +261,50 @@ if(chim == TRUE)  {
   lsummary[[el]] <- data.frame(Sample=names(nChimeras), nChimeras)
   if(dada == T) {
     if(single) {
-      dada_no_chim <- list(getUniques(dadaReads)[!bimReads])
-      names(dada_no_chim) <- names(derepReadsdada)
+      no_chim <- list(getUniques(dadaReads)[!bimReads])
+      names(no_chim) <- names(derepReads)
     } else {
-      dada_no_chim <- lapply(seq_along(dadaReads), rm.chim, dadaReads, bimReads)
-      names(dada_no_chim) <- names(bimReads)
+      no_chim <- lapply(seq_along(dadaReads), rm.chim, dadaReads, bimReads)
+      names(no_chim) <- names(bimReads)
     }
   } else {
-    dada_no_chim <- lapply(seq_along(derepReads), rm.chim, derepReads, bimReads)
-    names(dada_no_chim) <- names(bimReads)
-  }
-
-  #### Reporting ####
-  lda <- lapply(dada_no_chim, getUniques)
-  nms <- names(derepReads)[!retain]
-  ldp <- lapply(nms, dp_extract, derepReads)
-  names(ldp) <- nms
-  luniseqsFinal <- c(lda, ldp)
-} else {
-  if(dada == FALSE) {
-    nms <- names(derepReads)
-    luniseqsFinal <- lapply(nms, dp_extract, derepReads)
-    names(luniseqsFinal) <- nms
+    no_chim <- lapply(seq_along(derepReads), rm.chim, derepReads, bimReads)
+    names(no_chim) <- names(bimReads)
   }
 }
 
-lDNAstr <- lapply(luniseqsFinal, make.DNAString)
+  #### Reporting ####
+if(chim == TRUE) {
+  luniseqsFinal <- no_chim
+} else {
+  if(dada == TRUE) {
+    luniseqsFinal <- lda
+  } else {
+    luniseqsFinal <- derepReads
+  }
+}
 
-nSeq <- sapply(lDNAstr, length)
+
+s_table <-makeSequenceTable(luniseqsFinal, orderBy="abundance")
+seqs <- colnames(s_table)
+seq_names <- paste0("seq", 1:dim(s_table)[2])
+colnames(s_table) <- seq_names
+seq_list <- data.frame(seq_names, sequence=seqs)
+write.csv(s_table, file=paste(dir.out, "Seq_table.csv", sep="/"))
+save(s_table, file=paste(dir.out, "Seq_table.rda", sep="/"))
+write.csv(seq_list, file=paste(dir.out, "Seq_list.csv", sep="/"))
+
+nSeq <- sapply(luniseqsFinal, length)
+
 el <- el + 1
 lsummary[[el]] <- data.frame(Sample=names(nSeq), nSeq)
 summary <- plyr::join_all(lsummary, by="Sample", type="left")
 write.csv(summary, file=paste(dir.out, "Summary.csv", sep="/"), row.names=FALSE)
 
 fasta_fold <- "Final_seqs"
-dir.create(paste(dir.out, fasta_fold, sep="/"), showWarnings=FALSE, recursive=TRUE)
-lapply(seq_along(lDNAstr), w.fasta, lDNAstr, names(lDNAstr), dir.out, fasta_fold)
+fasta_dir <- paste(dir.out, fasta_fold, sep="/")
+table2fasta(s_table, seq_list=seq_list, dir.out=fasta_dir)
 
-return(list(lDNAstr, lsummary))
+return(list(luniseqsFinal, lsummary, s_table, seq_list))
 
 }
