@@ -5,7 +5,7 @@
 \title{Data processing}
 \usage{
 data.proc(dir.in = NULL, dir.out = NULL, bp, qrep = FALSE, dada = TRUE,
-  chim = TRUE)
+  plot.err = FALSE, chim = TRUE, orderBy = "abundance")
 }
 \arguments{
 \item{dir.in}{The directory where the fastq files are located. If NULL 
@@ -22,31 +22,44 @@ then \code{dir.out <- dir.in}}
 \item{dada}{Logical. Should the dada analysis be conducted? (default 
 \code{TRUE})}
 
+\item{plot.err}{Logical. Whether error rates obtained from dada should be 
+plotted}
+
 \item{chim}{Logical. Should the bimera search and removal be performed? 
 (default \code{TRUE})}
+
+\item{orderBy}{Character vector specifying how the returned sequence table 
+should be sorted. Default "abundance". See
+\code{\link[dada2]{makeSequenceTable}} for details}
 }
 \value{
-Return a list with two elements and several files (see details). The 
-  first is a \code{DNAString} object with the sequences that were retained at
-  completion of \code{data.proc}. The second element is a a list where each 
-  element is a summary of the number of reads that have been retained in each
+Return a list with several elements:
+  
+  \itemize{ 
+  \item $luniseqsFinal: A list with unique sequences (names) that were
+  retained at completion of \code{data.proc} and their abundance (values). 
+  \item $lsummary: A list where
+  each element is a summary of the number of reads that were retained in each
   step. This can be converted in a \code{data.frame} by running the following
   
-  \code{summary <- plyr::join_all(lsummary, by="Sample", type="left")}
+  \code{summary <- plyr::join_all(lsummary, by="Sample", type="left")} 
+  \item $s_table: The sequence table 
+  \item $seq_list: The sequences and matching
+  sequences IDs }
 }
 \description{
 \code{data.proc} is a function to process (quality checking, error and 
 chimeras filtering) data from a NGS run after these have been deconvoluted.
 }
 \details{
-\code{data.proc} locates the .fastq files (can be compressed) in the
-directory indicated in \code{dir.in}. If the directory path is not provided,
+\code{data.proc} locates the .fastq files (can be compressed) in the 
+directory indicated in \code{dir.in}. If the directory path is not provided, 
 this will be selected using an interactive window.
 
 It is currently limited to single-reads and assumes that adapters, primers 
 and indexes have been already removed and that each file represents a sample.
 
-The  \code{data.proc} pipeline is as follows: fastq files are read in. A 
+The \code{data.proc} pipeline is as follows: fastq files are read in. A 
 filter is applied to truncate reads at the first instance of a quality score 
 less than 2, remove reads  that are of low quality (currently the threshold 
 is hard-coded and reads are discarded if the expected errors is higher than 3
@@ -82,5 +95,8 @@ unlink(out, recursive=TRUE)
 Benjamin J Callahan, Paul J McMurdie, Michael J Rosen, Andrew W 
   Han, Amy J Johnson, Susan P Holmes (2015). DADA2: High resolution sample 
   inference from amplicon data.
+}
+\seealso{
+\code{\link[dada2]{dada}}, \code{\link[dada2]{makeSequenceTable}}
 }
 
