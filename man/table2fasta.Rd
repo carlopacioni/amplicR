@@ -5,13 +5,13 @@
 \title{Write unique sequences to a fasta file for each sample with names the input 
 matching sequence table}
 \usage{
-table2fasta(s_table, seq_list = NULL, dir.out = NULL)
+table2fasta(stable, seq.list = NULL, dir.out = NULL)
 }
 \arguments{
-\item{s_table}{The sequence table (output of \code{dada2::makeSequenceTable})
+\item{stable}{The sequence table (output of \code{dada2::makeSequenceTable})
 or \code{data.proc}}
 
-\item{seq_list}{The seq_list element from \code{data.proc}. Required if the 
+\item{seq.list}{The seq_list element from \code{data.proc}. Required if the 
 input table is the output from \code{data.proc}. If NULL (default), it is 
 assumed that the input table is from \code{dada2::makeSequenceTable} and 
 sequences are named with a seq# pattern, where # is a sequential number 
