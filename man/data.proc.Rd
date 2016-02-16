@@ -43,9 +43,19 @@ Return a list with several elements:
   step. This can be converted in a \code{data.frame} by running the following
   
   \code{summary <- plyr::join_all(lsummary, by="Sample", type="left")} 
-  \item $s_table: The sequence table 
+  \item $stable: The sequence table 
   \item $seq_list: The sequences and matching
   sequences IDs }
+  
+  Several files are also returned, these include:
+  \itemize{ 
+  \item Seq_table.csv Sequence table
+  \item Seq_list.csv List of sequences and their matching IDs
+  \item data.proc.summary.csv A summary of the number of reads that were 
+     retained in each step
+  \item data.proc.rda R data file containing the list returned by data.proc 
+     (see above)
+     }
 }
 \description{
 \code{data.proc} is a function to process (quality checking, error and 

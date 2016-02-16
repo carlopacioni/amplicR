@@ -69,6 +69,7 @@
 #'      retained in each step
 #'   \item data.proc.rda R data file containing the list returned by data.proc 
 #'      (see above)
+#'      }
 #'   
 #' @references Benjamin J Callahan, Paul J McMurdie, Michael J Rosen, Andrew W 
 #'   Han, Amy J Johnson, Susan P Holmes (2015). DADA2: High resolution sample 
