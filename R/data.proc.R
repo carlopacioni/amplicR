@@ -141,7 +141,7 @@ fns <- list.files(path=dir.in)
 fastqs <- fns[grepl(".fastq.{,3}$", fns)]
 
 #### Filter ####
-filt_fold <- "Filtered seqs"
+filt_fold <- "Filtered_seqs"
 dir.create(paste(dir.out, filt_fold, sep="/"), showWarnings=FALSE, recursive=TRUE)
 filtRs <- paste(dir.out,
                 filt_fold,
