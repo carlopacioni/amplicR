@@ -40,8 +40,8 @@
 #'   \code{FALSE})
 #' @param dada Logical. Should the dada analysis be conducted? (default 
 #'   \code{TRUE})
-#' @param plot.err Logical. Whether error rates obtained from dada should be 
-#'   plotted
+#' @param plot.err Logical. Whether error rates obtained from \code{dada} should  
+#'   be plotted
 #' @param chim Logical. Should the bimera search and removal be performed? 
 #'   (default \code{TRUE})
 #' @param orderBy Character vector specifying how the returned sequence table 
@@ -195,17 +195,19 @@ if(dada == TRUE) {
   dadaReads <- dada(derepReads , err=inflateErr(tperr1,3),
                   errorEstimationFunction=loessErrfun,
                                    selfConsist = TRUE)
-  pdf(file = paste(dir.out, "Plot_ErrorRates.pdf", sep="/"))
-  if(length(derepReads) > 1) {
-    for (i in seq_along(dadaReads)) {
-      p <- plotErrors(dadaReads[[i]], nominalQ=TRUE)
-      print(p + ggtitle(names(dadaReads[i])))
-    }
-  } else {
+  if(plot.err == TRUE) {
+    pdf(file = paste(dir.out, "Plot_ErrorRates.pdf", sep="/"))
+    if(length(derepReads) > 1) {
+      for (i in seq_along(dadaReads)) {
+        p <- plotErrors(dadaReads[[i]], nominalQ=TRUE)
+        print(p + ggtitle(names(dadaReads[i])))
+      }
+    } else {
       p <- plotErrors(dadaReads, nominalQ=TRUE)
       print(p + ggtitle(names(derepReads)))
+    }
+    dev.off()
   }
-  dev.off()
   
   if(length(derepReads) > 1) {
     nDenoised <- sapply(dadaReads, ndada)
