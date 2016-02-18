@@ -22,8 +22,8 @@ then \code{dir.out <- dir.in}}
 \item{dada}{Logical. Should the dada analysis be conducted? (default 
 \code{TRUE})}
 
-\item{plot.err}{Logical. Whether error rates obtained from dada should be 
-plotted}
+\item{plot.err}{Logical. Whether error rates obtained from \code{dada} should
+be plotted}
 
 \item{chim}{Logical. Should the bimera search and removal be performed? 
 (default \code{TRUE})}
