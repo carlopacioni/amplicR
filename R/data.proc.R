@@ -316,6 +316,9 @@ fasta_dir <- paste(dir.out, fasta_fold, sep="/")
 table2fasta(stable, seq.list=seq_list, dir.out=fasta_dir)
 save(luniseqsFinal, file=paste(dir.out, "data.proc.rda", sep="/"))
 
-dproc <- list(luniseqsFinal, lsummary, stable, seq_list=seq_list)
+dproc <- list(luniseqsFinal=luniseqsFinal, 
+              lsummary=lsummary, 
+              stable=stable, 
+              seq_list=seq_list)
 return(dproc)
 }
