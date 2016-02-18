@@ -11,12 +11,14 @@ test_that("test detect: object, read files", {
   sink(file="NUL")
   HTJ.test <- data.proc(test.data, out, bp)
   det1 <- detect(HTJ.test, dir.out=out, ref_seqs=HTJ)
-  det2 <- detect(dir.in=paste(out, "Final_seqs", sep="/"), 
+  det2 <- detect(rda.in=paste(out, "data.proc.rda", sep="/"), 
                  dir.out=out, 
                  ref_seqs=HTJ)
   sink()
   
-  expect_equal(det1[, "HTJ"], c(73, 2))
-  expect_equal(det2[, "HTJ"], c(73, 2))
+  expect_equal(unname(det1[[1]][["HTJ"]][1,]), c(NA, 75, 73, 74, 75, 74, 75, 74, 76))
+  expect_equal(unname(det1[[1]][["HTJ"]][2,]), c(2, NA, NA, NA, NA, NA, NA, NA, NA))
+  expect_equal(unname(det2[[1]][["HTJ"]][1,]), c(NA, 75, 73, 74, 75, 74, 75, 74, 76))
+  expect_equal(unname(det2[[1]][["HTJ"]][2,]), c(2, NA, NA, NA, NA, NA, NA, NA, NA))
   unlink(out)
 })
