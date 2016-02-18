@@ -313,7 +313,7 @@ write.csv(summary, file=paste(dir.out, "data.proc.summary.csv", sep="/"), row.na
 
 fasta_fold <- "Final_seqs"
 fasta_dir <- paste(dir.out, fasta_fold, sep="/")
-table2fasta(stable, seq_list=seq_list, dir.out=fasta_dir)
+table2fasta(stable, seq.list=seq_list, dir.out=fasta_dir)
 save(luniseqsFinal, file=paste(dir.out, "data.proc.rda", sep="/"))
 
 return(list(luniseqsFinal, lsummary, stable, seq.list=seq_list))
