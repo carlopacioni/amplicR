@@ -1,37 +1,49 @@
 #' Detect a reference sequence
 #' 
-#' \code{detect} takes in either the output of \code{data.proc}, or a list of 
-#' sequences from fasta files, and compare them with a reference sequence 
+#' \code{detect} takes in either the output of \code{data.proc}, or load it up 
+#' from a .rda file, and compare the sequences with a reference sequence 
 #' reporting the number of mismatch using \code{srdistance} from the package 
 #' \code{shortRead}.
 #' 
 #' The output from \code{data.proc} can be passed with \code{data}. If no data 
-#' is passed to \code{detect}, then it will read fasta files in the directory 
-#' passed with \code{dir.in}. If \code{dir.in=NULL}, then an interactive window 
-#' will open to select the location of the files. As for \code{data.proc}, 
-#' \code{detect} assumes that each file represents a sample.
+#' is passed to \code{detect}, then it will load the .rda file passed with 
+#' \code{rda.in}. If \code{rda.in=NULL}, then an interactive window will open to
+#' select the location of the file.
 #' 
-#' If both \code{dir.out=NULL} and \code{dir.in=NULL}, then the path where to 
-#' save the results will be asked with an interactive window, otherwise  
-#' \code{dir.out <- dir.in}
+#' If both \code{dir.out=NULL} and \code{rda.in=NULL}, then the path where to 
+#' save the results will be asked with an interactive window. If the .rda file 
+#' path is provided, then the folder where .rda is located will be selected as
+#' output folder.
 #' 
 #' A summary of the number of sequences found and the minimum number of mismatch
-#' within each sample is returned as \code{data.frame}. Each comlumn reporting 
-#' the number of mismatch is named with the named of the character vector passed
-#' with \code{ref_seqs}. These results are also written to disk (Summary.csv) 
-#' together with the alignments of the sequences provided with the reference 
-#' sequence (in the folder "Final_alns"). The alignment is built using 
+#' within each sample is returned as \code{matrix} with the same layour as the 
+#' sequence table. There will be as many tables asthe length of the character 
+#' vector passed with \code{ref_seqs}. These results are also written to disk as
+#' text files along with the alignments of the sequences provided with the 
+#' reference sequence (in the folder "Final_alns"). The alignment is built using
 #' \code{PairwiseAlignments} from the package \code{Biostrings}.
 #' 
 #' @param data The output from \code{data.proc}
-#' @param ext A character vector (of length=1) with the extension of the fasta 
-#'   files. (Default "fasta")
-#' @param ref_seqs A named character vector with the reference sequence(s)
-#' @inheritParams data.proc
-#' @return A \code{data.frame} with the number of sequences found in each samle
-#'   and the minimum mismatch count for each reference sequence. These results
-#'   are also also written to file (see Details)
-#' @import data.table
+#' @param rda.in The fully qualified (i.e. including the path) name of the .rda 
+#'   file where the output from \code{data.proc} is saved (it assumes the object
+#'   name was not changed from the default \code{dproc})
+#' @param ref_seqs A \strong{named} character vector with the reference 
+#'   sequence(s)
+#' @param dir.out The path where to save the results. If NULL and data is also 
+#'   NULL, the directory where the .rda file is located is used. If no file path
+#'   is provided, an interactive windows is used to select the folder
+#' @return A \code{list} with two elements:
+#'   \itemize{
+#'     \item $detect_results A list with a result table, for each reference 
+#'            sequence, with the minimum mismatch count
+#'     \item $alns A list with an alignment, for each reference sequence as 
+#'            elements, of the sequences in the sequence table with the 
+#'            reference sequence
+#'     }
+#' 
+#'   These results are also written to text files
+#' @seealso \code{\link{data.proc}}, \code{\link[shortRead]{srdistance}}, 
+#'   \code{\link[Biostrings]{PairwiseAlignments}}
 #' @export
 #' @examples 
 #' # Select the directory where the example data are stored
@@ -45,105 +57,68 @@
 #' # Naming the reference sequence
 #' names(HTJ) <- "HTJ" 
 #' 
-#' # Use 'Detect' to verify the presence of Mycobacteriumavium subspecies 
+#' # Use 'detect' to verify the presence of Mycobacteriumavium subspecies 
 #' # paratuberculosis
-#' 
 #' det <- detect(HTJ.test, dir.out=out, ref_seqs=HTJ)
-#' # To clean up the temp directory
+#' 
+#' # Clean up the temp directory
 #' unlink(out, recursive=TRUE)
 
-detect <- function(data=NULL, dir.in=NULL, dir.out=NULL, ext="fasta", ref_seqs) {
+detect <- function(data=NULL, rda.in=NULL, dir.out=NULL, ref_seqs) {
   #----------------------------------------------------------------------------#
   library(dada2)
   library(ShortRead)
+ 
   #----------------------------------------------------------------------------#
-  # Helper functions
-  #----------------------------------------------------------------------------#
-  
-  diseased <- function(i, lDNAstr, s_names, ref_seq) {
-    nDiff <- unlist(srdistance(lDNAstr[[i]], ref_seq))
-    Seq <- 1:length(nDiff)
-    Sample <- rep(s_names[[i]], length(nDiff))
-    dt <- data.table(Sample, Seq, nDiff)
-    setnames(dt, "nDiff", names(ref_seq))
-    return(dt)
-  }
-  
-  make.aln <- function(DNAstr, ref_seq) {
-    aln <- pairwiseAlignment(DNAstr, ref_seq)
-    return(aln)
-  }
-  
-  w.aln <- function(i, lalns, sample_names, dir.out, aln_fold) {
-    dir.create(paste(dir.out, aln_fold, sep="/"), 
-               showWarnings=FALSE, 
-               recursive=TRUE)
-    writePairwiseAlignments(lalns[[i]], paste(dir.out, aln_fold, 
-                                            paste0(sample_names[[i]], ".fasta"), 
-                                                  sep="/"), 
-                                            block.width=250)
-  }
-    
-    #----------------------------------------------------------------------------#
   if(is.null(data)) {
-    if(is.null(dir.in)) {
-      dir.in <- choose.dir(caption="Please, select the directory where the fasta
-                         files are located")
+    if(is.null(rda.in)) {
+      message("Please, select the directory where data.proc output is saved (.rda file)")
+      rda.in <- file.choose()
     }
   }
   
   if(is.null(data)) {
-    fns <- list.files(path=dir.in, full.names=TRUE)
-    fasta_files <- fns[grepl(paste0(".", ext, "$"), fns)]
-    lDNAstr <- lapply(fasta_files, readFasta)
-    sample_names <- sub(paste0(".", ext, "$"), "", basename(fasta_files))
-    names(lDNAstr) <- sample_names
-    nSeq <- sapply(lDNAstr, length)
-    lsummary <- list(data.frame(Sample=names(lDNAstr), nSeq))
+    load(rda.in)
+    DNAstr <- DNAStringSet(dproc[[4]][, "sequence"])
+    names(DNAstr) <- dproc[[4]][, "seq_names"]
+    stable <- dproc[[3]]
   } else {
-    lDNAstr <- data[[1]]
-    lsummary <- data[[2]]
+    DNAstr <- DNAStringSet(data[[4]][, "sequence"])
+    names(DNAstr) <- data[[4]][, "seq_names"]
+    stable <- data[[3]]
     }
 
-    
-      
-  if(is.null(dir.out)) {
-    if(is.null(dir.in)) {
+    if(is.null(dir.out)) {
+    if(is.null(rda.in)) {
       dir.out <- choose.dir(caption="Please, select the directory where to save 
                             results") 
     } else {
-      dir.out <- dir.in
+      dir.out <- basename(rda.in)
     }
   }
       
-    #### Detect ####
-  el <- length(lsummary)
+  #### Detect ####
   lres <- list()
-  nref_seqs <- seq_along(ref_seqs)
+  lalns <- list()
   aln.out <- paste(dir.out, "Final_alns", sep="/")
+  dir.create(aln.out, showWarnings=FALSE, recursive=TRUE)
   
-  for (r in nref_seqs) {
-    lm <- lapply(seq_along(lDNAstr), diseased, lDNAstr, names(lDNAstr), 
-                 ref_seq=ref_seqs[r])
-    lres[[r]] <- rbindlist(lm)
-    
-    alns <- lapply(lDNAstr, make.aln, ref_seqs[r])
-    lapply(seq_along(alns), w.aln, alns, names(lDNAstr), aln.out, names(ref_seqs[r]))
+  for (i in seq_along(ref_seqs)) {
+    nDiff <- unlist(srdistance(DNAstr, ref_seqs[i]))
+    MDiff <- matrix(nDiff, nrow=dim(stable)[1], ncol=length(nDiff), byrow=TRUE)
+    stable <- stable > 0
+    MDiff <- MDiff * stable
+    MDiff[MDiff == 0] <- NA
+    lres[[names(ref_seqs)[i]]] <- MDiff
+    write.csv(MDiff, 
+              file=paste(dir.out,  
+                         paste0("Results_detect_", names(ref_seqs)[i], ".csv"), 
+                         sep="/"))
+    aln <- pairwiseAlignment(DNAstr, ref_seqs[i])
+    writePairwiseAlignments(aln, 
+                            paste(aln.out, paste0("aln_", names(ref_seqs)[i], ".fasta"), sep="/"), 
+                            block.width=2000)
+    lalns[[names(ref_seqs)[i]]] <- aln
   }
-  
-  results <- plyr::join_all(lres, by=c('Sample', "Seq"), type="left")
-  write.csv(results, 
-            file=paste(dir.out, "Results.csv", sep="/"), 
-            row.names=FALSE)
-  
-  el <-el + 1
-  results <- data.table(results)
-  lsummary[[el]] <- results[, lapply(.SD, min), by="Sample", .SDcols=names(ref_seqs)]
-  
-  summary <- plyr::join_all(lsummary, by='Sample', type="left")
-  write.csv(summary, file=paste(dir.out, "Summary.csv", sep="/"), 
-            row.names=FALSE)
-  
-  
-  return(summary)
+  return(list(detect_results=lres, alns=lalns))
   }

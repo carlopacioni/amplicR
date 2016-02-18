@@ -4,51 +4,57 @@
 \alias{detect}
 \title{Detect a reference sequence}
 \usage{
-detect(data = NULL, dir.in = NULL, dir.out = NULL, ext = "fasta",
-  ref_seqs)
+detect(data = NULL, rda.in = NULL, dir.out = NULL, ref_seqs)
 }
 \arguments{
 \item{data}{The output from \code{data.proc}}
 
-\item{dir.in}{The directory where the fastq files are located. If NULL 
-(default) an interactive window is used to select a folder}
+\item{rda.in}{The fully qualified (i.e. including the path) name of the .rda 
+file where the output from \code{data.proc} is saved (it assumes the object
+name was not changed from the default \code{dproc})}
 
-\item{dir.out}{The directory where to save the results. If NULL (default) 
-then \code{dir.out <- dir.in}}
+\item{dir.out}{The path where to save the results. If NULL and data is also 
+NULL, the directory where the .rda file is located is used. If no file path
+is provided, an interactive windows is used to select the folder}
 
-\item{ext}{A character vector (of length=1) with the extension of the fasta 
-files. (Default "fasta")}
-
-\item{ref_seqs}{A named character vector with the reference sequence(s)}
+\item{ref_seqs}{A \strong{named} character vector with the reference 
+sequence(s)}
 }
 \value{
-A \code{data.frame} with the number of sequences found in each samle
-  and the minimum mismatch count for each reference sequence. These results
-  are also also written to file (see Details)
+A \code{list} with two elements:
+  \itemize{
+    \item $detect_results A list with a result table, for each reference 
+           sequence, with the minimum mismatch count
+    \item $alns A list with an alignment, for each reference sequence as 
+           elements, of the sequences in the sequence table with the 
+           reference sequence
+    }
+
+  These results are also written to text files
 }
 \description{
-\code{detect} takes in either the output of \code{data.proc}, or a list of 
-sequences from fasta files, and compare them with a reference sequence 
+\code{detect} takes in either the output of \code{data.proc}, or load it up 
+from a .rda file, and compare the sequences with a reference sequence 
 reporting the number of mismatch using \code{srdistance} from the package 
 \code{shortRead}.
 }
 \details{
 The output from \code{data.proc} can be passed with \code{data}. If no data 
-is passed to \code{detect}, then it will read fasta files in the directory 
-passed with \code{dir.in}. If \code{dir.in=NULL}, then an interactive window 
-will open to select the location of the files. As for \code{data.proc}, 
-\code{detect} assumes that each file represents a sample.
+is passed to \code{detect}, then it will load the .rda file passed with 
+\code{rda.in}. If \code{rda.in=NULL}, then an interactive window will open to
+select the location of the file.
 
-If both \code{dir.out=NULL} and \code{dir.in=NULL}, then the path where to 
-save the results will be asked with an interactive window, otherwise  
-\code{dir.out <- dir.in}
+If both \code{dir.out=NULL} and \code{rda.in=NULL}, then the path where to 
+save the results will be asked with an interactive window. If the .rda file 
+path is provided, then the folder where .rda is located will be selected as
+output folder.
 
 A summary of the number of sequences found and the minimum number of mismatch
-within each sample is returned as \code{data.frame}. Each comlumn reporting 
-the number of mismatch is named with the named of the character vector passed
-with \code{ref_seqs}. These results are also written to disk (Summary.csv) 
-together with the alignments of the sequences provided with the reference 
-sequence (in the folder "Final_alns"). The alignment is built using 
+within each sample is returned as \code{matrix} with the same layour as the 
+sequence table. There will be as many tables asthe length of the character 
+vector passed with \code{ref_seqs}. These results are also written to disk as
+text files along with the alignments of the sequences provided with the 
+reference sequence (in the folder "Final_alns"). The alignment is built using
 \code{PairwiseAlignments} from the package \code{Biostrings}.
 }
 \examples{
@@ -63,11 +69,15 @@ HTJ <- "CTGCGCGCCGGCGATGACATCGCAGTCGAGCTGCGCATCCTGACCAGCCGACGTTCCGATCTGGTGGCTGAT
 # Naming the reference sequence
 names(HTJ) <- "HTJ" 
 
-# Use 'Detect' to verify the presence of Mycobacteriumavium subspecies 
+# Use 'detect' to verify the presence of Mycobacteriumavium subspecies 
 # paratuberculosis
-
 det <- detect(HTJ.test, dir.out=out, ref_seqs=HTJ)
-# To clean up the temp directory
+
+# Clean up the temp directory
 unlink(out, recursive=TRUE)
+}
+\seealso{
+\code{\link{data.proc}}, \code{\link[shortRead]{srdistance}}, 
+  \code{\link[Biostrings]{PairwiseAlignments}}
 }
 
