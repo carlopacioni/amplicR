@@ -28,6 +28,9 @@ A \code{list} with two elements:
     \item $alns A list with an alignment, for each reference sequence as 
            elements, of the sequences in the sequence table with the 
            reference sequence
+    \item $detect_seq_list A list where elements (one for each reference 
+           sequence) are a \code{data.frame} with the sequence IDs and the 
+           minimum number of differences with the reference sequence       
     }
 
   These results are also written to text files
@@ -50,11 +53,12 @@ path is provided, then the folder where .rda is located will be selected as
 output folder.
 
 A summary of the number of sequences found and the minimum number of mismatch
-within each sample is returned as \code{matrix} with the same layour as the 
-sequence table. There will be as many tables asthe length of the character 
+within each sample is returned as \code{matrix} with the same layout as the 
+sequence table and a \code{data.frame} with the sequence IDs and the 
+number of mismatch. There will be as many tables as the length of the character 
 vector passed with \code{ref_seqs}. These results are also written to disk as
 text files along with the alignments of the sequences provided with the 
-reference sequence (in the folder "Final_alns"). The alignment is built using
+reference sequence (in the folder "Final_alns"). The alignments are built using
 \code{PairwiseAlignments} from the package \code{Biostrings}.
 }
 \examples{
