@@ -45,7 +45,7 @@ the actual name of the package you are interested into.
 
 \section{Get in touch}{
  Please, use 
-  \url{https://github.org/carlopacioni/amplicR/issues} to report any issues 
+  \url{https://github.com/carlopacioni/amplicR/issues} to report any issues 
   with \code{amplicR}. If unsure, or for feedback, contact me at: 
   carlo.pacioni 'at' gmail.com.
 }
