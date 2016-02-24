@@ -35,7 +35,7 @@ test_that("test detect: check sum of number of seqs", {
   sample_names <- sub(".fasta$", "", list.fasta)
   names(nCollated) <- sample_names
   
-  sum_nSeqs_single<-sapply(sample_names, nSingle, HTJ.140, HTJ.141)
+  sum_nSeqs_single <- sapply(sample_names, nSingle, HTJ.140, HTJ.141)
   sink()
   expect_equal(nCollated, sum_nSeqs_single)
   
