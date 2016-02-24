@@ -10,8 +10,7 @@ detect(data = NULL, rda.in = NULL, dir.out = NULL, ref_seqs)
 \item{data}{The output from \code{data.proc}}
 
 \item{rda.in}{The fully qualified (i.e. including the path) name of the .rda 
-file where the output from \code{data.proc} is saved (it assumes the object
-name was not changed from the default \code{dproc})}
+file where the output from \code{data.proc} is saved}
 
 \item{dir.out}{The path where to save the results. If NULL and data is also 
 NULL, the directory where the .rda file is located is used. If no file path

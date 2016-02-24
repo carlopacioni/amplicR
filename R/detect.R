@@ -26,8 +26,7 @@
 #' 
 #' @param data The output from \code{data.proc}
 #' @param rda.in The fully qualified (i.e. including the path) name of the .rda 
-#'   file where the output from \code{data.proc} is saved (it assumes the object
-#'   name was not changed from the default \code{dproc})
+#'   file where the output from \code{data.proc} is saved
 #' @param ref_seqs A \strong{named} character vector with the reference 
 #'   sequence(s)
 #' @param dir.out The path where to save the results. If NULL and data is also 
@@ -82,13 +81,13 @@ detect <- function(data=NULL, rda.in=NULL, dir.out=NULL, ref_seqs) {
   }
   
   if(is.null(data)) {
-    load(rda.in)
-    seq_list <- dproc[[4]]
-    stable <- dproc[[3]]
-  } else {
-    seq_list <- data[[4]]
-    stable <- data[[3]]
-  }
+    temp.space <- new.env()
+    data <- load(rda.in, temp.space)
+    data <- get(data, temp.space)
+    rm(temp.space)
+  } 
+  seq_list <- data[[4]]
+  stable <- data[[3]]
   DNAstr <- DNAStringSet(seq_list[, "sequence"])
   names(DNAstr) <- seq_list[, "seq_names"]
 
