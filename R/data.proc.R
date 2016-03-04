@@ -296,7 +296,7 @@ if(chim == TRUE) {
   }
 }
 
-stable <-makeSequenceTable(luniseqsFinal, orderBy="abundance")
+stable <-makeSequenceTable(luniseqsFinal, orderBy=orderBy)
 seqs <- colnames(stable)
 seq_names <- paste0("seq", 1:dim(stable)[2])
 colnames(stable) <- seq_names
