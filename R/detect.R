@@ -128,7 +128,8 @@ detect <- function(data=NULL, rda.in=NULL, dir.out=NULL, ref_seqs) {
     write.csv(detect.seq_list, 
               file=paste(dir.out,  
                          paste0("detect.seq_list_", names(ref_seqs)[i], ".csv"), 
-                         sep="/"))
+                         sep="/"),
+              row.names=FALSE)
   }
   return(list(detect_results=lres, alns=lalns, detect_seq_list=detect.seq_list))
   }
