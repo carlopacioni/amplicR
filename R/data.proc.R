@@ -295,11 +295,14 @@ if(chim == TRUE)  {
   #### Reporting ####
 if(chim == TRUE) {
   luniseqsFinal <- no_chim
+  nSeq <- sapply(luniseqsFinal, length)
 } else {
   if(dada == TRUE) {
     luniseqsFinal <- lda
+    nSeq <- sapply(luniseqsFinal, length)
   } else {
     luniseqsFinal <- derepReads
+    nSeq <- unSeqs
   }
 }
 
@@ -310,8 +313,6 @@ colnames(stable) <- seq_names
 seq_list <- data.frame(seq_names, sequence=seqs)
 write.csv(stable, file=paste(dir.out, "Seq_table.csv", sep="/"))
 write.csv(seq_list, file=paste(dir.out, "Seq_list.csv", sep="/"))
-
-nSeq <- sapply(luniseqsFinal, length)
 
 el <- el + 1
 lsummary[[el]] <- data.frame(Sample=names(nSeq), nSeq)
