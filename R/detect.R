@@ -39,7 +39,7 @@
 #'     \item $alns A list with an alignment, for each reference sequence as 
 #'            elements, of the sequences in the sequence table with the 
 #'            reference sequence
-#'     \item $detect_seq_list A list where elements (one for each reference 
+#'     \item $lseq_list A list where elements (one for each reference 
 #'            sequence) are a \code{data.frame} with the sequence IDs and the 
 #'            minimum number of differences with the reference sequence 
 #'     \item $call: The function call      
@@ -113,9 +113,9 @@ detect <- function(data=NULL, rda.in=NULL, dir.out=NULL, ref_seqs) {
   for (i in seq_along(ref_seqs)) {
     nDiff <- unlist(srdistance(DNAstr, ref_seqs[i]))
     MDiff <- matrix(nDiff, nrow=dim(stable)[1], ncol=length(nDiff), byrow=TRUE)
+    stable[stable == 0] <- NA
     stable <- stable > 0
     MDiff <- MDiff * stable
-    MDiff[MDiff == 0] <- NA
     lres[[names(ref_seqs)[i]]] <- MDiff
     write.csv(MDiff, 
               file=paste(dir.out,  
@@ -123,10 +123,12 @@ detect <- function(data=NULL, rda.in=NULL, dir.out=NULL, ref_seqs) {
                          sep="/"))
     aln <- pairwiseAlignment(DNAstr, ref_seqs[i])
     writePairwiseAlignments(aln, 
-                            paste(aln.out, paste0("aln_", names(ref_seqs)[i], ".fasta"), sep="/"), 
+                            paste(aln.out, 
+                            paste0("aln_", names(ref_seqs)[i], ".fasta"), sep="/"), 
                             block.width=2000)
     lalns[[names(ref_seqs)[i]]] <- aln
-    detect.seq_list <- data.frame(seq_names=seq_list[, "seq_names"], nDiff=unname(nDiff))
+    detect.seq_list <- data.frame(seq_names=seq_list[, "seq_names"], 
+                                  nDiff=unname(nDiff))
     lseq_list[[names(ref_seqs)[i]]] <- detect.seq_list
     write.csv(detect.seq_list, 
               file=paste(dir.out,  
@@ -136,6 +138,6 @@ detect <- function(data=NULL, rda.in=NULL, dir.out=NULL, ref_seqs) {
   }
   return(list(detect_results=lres, 
               alns=lalns, 
-              detect_seq_list=detect.seq_list, 
+              detect_seq_list=lseq_list, 
               call=call))
   }

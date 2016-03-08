@@ -27,7 +27,7 @@ A \code{list} with four elements:
     \item $alns A list with an alignment, for each reference sequence as 
            elements, of the sequences in the sequence table with the 
            reference sequence
-    \item $detect_seq_list A list where elements (one for each reference 
+    \item $lseq_list A list where elements (one for each reference 
            sequence) are a \code{data.frame} with the sequence IDs and the 
            minimum number of differences with the reference sequence 
     \item $call: The function call      
