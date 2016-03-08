@@ -61,7 +61,8 @@
 #'   \code{summary <- plyr::join_all(lsummary, by="Sample", type="left")} 
 #'   \item $stable: The sequence table 
 #'   \item $seq_list: The sequences and matching
-#'   sequences IDs }
+#'   sequences IDs 
+#'   \item $call: The function call}
 #'   
 #'   Several files are also returned, these include:
 #'   \itemize{ 
@@ -94,6 +95,7 @@
 data.proc <- function(dir.in=NULL, dir.out=NULL, bp, qrep=FALSE,
                       dada=TRUE, aggregate=FALSE, plot.err=FALSE, chim=TRUE, 
                       orderBy="abundance") {
+  
 #----------------------------------------------------------------------------#
 library(dada2)
 library(ShortRead)
@@ -132,6 +134,8 @@ dp_extract <- function(nm, derep) {
 }
 
 #----------------------------------------------------------------------------#
+call <- sys.call(1)
+
 if(is.null(dir.in)) {
   dir.in <- choose.dir(caption="Please, select the directory where the fastq
                        files are located")
@@ -320,7 +324,8 @@ table2fasta(stable, seq.list=seq_list, dir.out=fasta_dir)
 dproc <- list(luniseqsFinal=luniseqsFinal, 
               lsummary=lsummary, 
               stable=stable, 
-              seq_list=seq_list)
+              seq_list=seq_list,
+              call=call)
 save(dproc, file=paste(dir.out, "data.proc.rda", sep="/"))
 return(dproc)
 }
