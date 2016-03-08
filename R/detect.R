@@ -32,7 +32,7 @@
 #' @param dir.out The path where to save the results. If NULL and data is also 
 #'   NULL, the directory where the .rda file is located is used. If no file path
 #'   is provided, an interactive windows is used to select the folder
-#' @return A \code{list} with two elements:
+#' @return A \code{list} with four elements:
 #'   \itemize{
 #'     \item $detect_results A list with a result table, for each reference 
 #'            sequence, with the minimum mismatch count
@@ -41,7 +41,8 @@
 #'            reference sequence
 #'     \item $detect_seq_list A list where elements (one for each reference 
 #'            sequence) are a \code{data.frame} with the sequence IDs and the 
-#'            minimum number of differences with the reference sequence       
+#'            minimum number of differences with the reference sequence 
+#'     \item $call: The function call      
 #'     }
 #' 
 #'   These results are also written to text files
@@ -73,6 +74,8 @@ detect <- function(data=NULL, rda.in=NULL, dir.out=NULL, ref_seqs) {
   library(ShortRead)
  
   #----------------------------------------------------------------------------#
+  call <- sys.call(1)
+  
   if(is.null(data)) {
     if(is.null(rda.in)) {
       message("Please, select the directory where data.proc output is saved (.rda file)")
@@ -131,5 +134,8 @@ detect <- function(data=NULL, rda.in=NULL, dir.out=NULL, ref_seqs) {
                          sep="/"),
               row.names=FALSE)
   }
-  return(list(detect_results=lres, alns=lalns, detect_seq_list=detect.seq_list))
+  return(list(detect_results=lres, 
+              alns=lalns, 
+              detect_seq_list=detect.seq_list, 
+              call=call))
   }

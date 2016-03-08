@@ -20,7 +20,7 @@ is provided, an interactive windows is used to select the folder}
 sequence(s)}
 }
 \value{
-A \code{list} with two elements:
+A \code{list} with four elements:
   \itemize{
     \item $detect_results A list with a result table, for each reference 
            sequence, with the minimum mismatch count
@@ -29,7 +29,8 @@ A \code{list} with two elements:
            reference sequence
     \item $detect_seq_list A list where elements (one for each reference 
            sequence) are a \code{data.frame} with the sequence IDs and the 
-           minimum number of differences with the reference sequence       
+           minimum number of differences with the reference sequence 
+    \item $call: The function call      
     }
 
   These results are also written to text files
