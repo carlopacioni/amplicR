@@ -40,6 +40,8 @@
 #'   \code{FALSE})
 #' @param dada Logical. Should the dada analysis be conducted? (default 
 #'   \code{TRUE})
+#' @param aggregate Logical. Should samples be pooled together prior to sample 
+#'   inference? (default \code{FALSE}). See \code{\link[dada2]{dada}} for details   
 #' @param plot.err Logical. Whether error rates obtained from \code{dada} should  
 #'   be plotted
 #' @param chim Logical. Should the bimera search and removal be performed? 
@@ -90,7 +92,8 @@
 #' unlink(out, recursive=TRUE)
 
 data.proc <- function(dir.in=NULL, dir.out=NULL, bp, qrep=FALSE,
-                      dada=TRUE, plot.err=FALSE, chim=TRUE, orderBy="abundance") {
+                      dada=TRUE, aggregate=FALSE, plot.err=FALSE, chim=TRUE, 
+                      orderBy="abundance") {
 #----------------------------------------------------------------------------#
 library(dada2)
 library(ShortRead)
@@ -194,7 +197,7 @@ el <- 2
 if(dada == TRUE) {
   dadaReads <- dada(derepReads , err=inflateErr(tperr1,3),
                   errorEstimationFunction=loessErrfun,
-                                   selfConsist = TRUE)
+                                   selfConsist=TRUE, aggregate=FALSE)
   if(plot.err == TRUE) {
     pdf(file = paste(dir.out, "Plot_ErrorRates.pdf", sep="/"))
     if(length(derepReads) > 1) {

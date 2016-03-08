@@ -5,7 +5,8 @@
 \title{Data processing}
 \usage{
 data.proc(dir.in = NULL, dir.out = NULL, bp, qrep = FALSE, dada = TRUE,
-  plot.err = FALSE, chim = TRUE, orderBy = "abundance")
+  aggregate = FALSE, plot.err = FALSE, chim = TRUE,
+  orderBy = "abundance")
 }
 \arguments{
 \item{dir.in}{The directory where the fastq files are located. If NULL 
@@ -21,6 +22,9 @@ then \code{dir.out <- dir.in}}
 
 \item{dada}{Logical. Should the dada analysis be conducted? (default 
 \code{TRUE})}
+
+\item{aggregate}{Logical. Should samples be pooled together prior to sample 
+inference? (default \code{FALSE}). See \code{\link[dada2]{dada}} for details}
 
 \item{plot.err}{Logical. Whether error rates obtained from \code{dada} should
 be plotted}
