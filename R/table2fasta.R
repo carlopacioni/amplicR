@@ -1,5 +1,5 @@
-#' Write unique sequences to a fasta file for each sample with names the input 
-#' matching sequence table
+#' Write unique sequences to a fasta file for each sample where sequence names  
+#' match the sequence table and include abundance data
 #' 
 #' \code{table2fasta} takes the output from 
 #' \code{\link[dada2]{makeSequenceTable}} or the table element from 
