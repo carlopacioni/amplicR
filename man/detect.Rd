@@ -28,7 +28,8 @@ A \code{list} with four elements:
            elements, of the sequences in the sequence table with the 
            reference sequence
     \item $detect_table A \code{data.table} with the sequence IDs as rows and 
-           reference sequences as columns. Values are the minimum number of 
+           a column with total sequence abundance. All the other columns are 
+           reference sequences. Values are the minimum number of 
            differences with the reference sequence 
     \item $call: The function call      
     }
@@ -53,13 +54,17 @@ path is provided, then the folder where .rda is located will be selected as
 output folder.
 
 A summary of the number of sequences found and the minimum number of mismatch
-within each sample is returned as \code{matrix} with the same layout as the 
-sequence table and a \code{data.frame} with the sequence IDs and the 
-number of mismatch. There will be as many tables as the length of the character 
+within each sample is returned as \code{matrix}, for each reference sequence, 
+with the same layout as the 
+sequence table. There will be as many tables as the length of the character 
 vector passed with \code{ref_seqs}. These results are also written to disk as
 text files along with the alignments of the sequences provided with the 
 reference sequence (in the folder "Final_alns"). The alignments are built using
 \code{PairwiseAlignments} from the package \code{Biostrings}.
+
+Lastly a detect_table is returned (and written to disk) where each row is a 
+  sequence with the number of mismatch with each reference sequence (columns).
+  The first column ("nSeq_tot") is the total number of reads for each sequence.
 }
 \examples{
 # Select the directory where the example data are stored

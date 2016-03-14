@@ -26,6 +26,7 @@
 #' 
 #' Lastly a detect_table is returned (and written to disk) where each row is a 
 #'   sequence with the number of mismatch with each reference sequence (columns).
+#'   The first column ("nSeq_tot") is the total number of reads for each sequence.
 #'   
 #' 
 #' @param data The output from \code{data.proc}
@@ -44,7 +45,8 @@
 #'            elements, of the sequences in the sequence table with the 
 #'            reference sequence
 #'     \item $detect_table A \code{data.table} with the sequence IDs as rows and 
-#'            reference sequences as columns. Values are the minimum number of 
+#'            a column with total sequence abundance. All the other columns are 
+#'            reference sequences. Values are the minimum number of 
 #'            differences with the reference sequence 
 #'     \item $call: The function call      
 #'     }
@@ -110,7 +112,8 @@ detect <- function(data=NULL, rda.in=NULL, dir.out=NULL, ref_seqs) {
   #### Detect ####
   lres <- list()
   lalns <- list()
-  detect_table <- data.table(seq_names=seq_list[, "seq_names"])
+  nSeq_tot <- apply(stable, 2, sum)
+  detect_table <- data.table(seq_names=seq_list[, "seq_names"], nSeq_tot)
   aln.out <- paste(dir.out, "Final_alns", sep="/")
   dir.create(aln.out, showWarnings=FALSE, recursive=TRUE)
   
@@ -133,6 +136,7 @@ detect <- function(data=NULL, rda.in=NULL, dir.out=NULL, ref_seqs) {
     lalns[[names(ref_seqs)[i]]] <- aln
     detect_table[, (names(ref_seqs)[i]) := unname(nDiff)]
   }
+ 
   write.csv(detect_table, 
             file=paste(dir.out, "detect_table.csv", sep="/"), row.names=FALSE)
   return(list(detect_results=lres, 
