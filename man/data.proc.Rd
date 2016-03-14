@@ -4,8 +4,8 @@
 \alias{data.proc}
 \title{Data processing}
 \usage{
-data.proc(dir.in = NULL, dir.out = NULL, bp, qrep = FALSE, dada = TRUE,
-  aggregate = FALSE, plot.err = FALSE, chim = TRUE,
+data.proc(dir.in = NULL, dir.out = NULL, bp, truncQ = 2, qrep = FALSE,
+  dada = TRUE, aggregate = FALSE, plot.err = FALSE, chim = TRUE,
   orderBy = "abundance")
 }
 \arguments{
@@ -16,6 +16,10 @@ data.proc(dir.in = NULL, dir.out = NULL, bp, qrep = FALSE, dada = TRUE,
 then \code{dir.out <- dir.in}}
 
 \item{bp}{An integer indicating the expected length (base-pairs) of the reads}
+
+\item{truncQ}{Truncate reads at the first instance of a quality score less 
+than or equal to truncQ when conduction quality filtering. 
+See \code{\link[dada2]{fastqFilter}} for details}
 
 \item{qrep}{Logical. Should the quality report be generated? (default 
 \code{FALSE})}

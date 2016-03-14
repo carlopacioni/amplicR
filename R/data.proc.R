@@ -36,6 +36,9 @@
 #' @param dir.out The directory where to save the results. If NULL (default) 
 #'   then \code{dir.out <- dir.in}
 #' @param bp An integer indicating the expected length (base-pairs) of the reads
+#' @param truncQ Truncate reads at the first instance of a quality score less 
+#'   than or equal to truncQ when conduction quality filtering. 
+#'   See \code{\link[dada2]{fastqFilter}} for details 
 #' @param qrep Logical. Should the quality report be generated? (default 
 #'   \code{FALSE})
 #' @param dada Logical. Should the dada analysis be conducted? (default 
@@ -92,7 +95,7 @@
 #' # To clean up the temp directory
 #' unlink(out, recursive=TRUE)
 
-data.proc <- function(dir.in=NULL, dir.out=NULL, bp, qrep=FALSE,
+data.proc <- function(dir.in=NULL, dir.out=NULL, bp, truncQ=2, qrep=FALSE,
                       dada=TRUE, aggregate=FALSE, plot.err=FALSE, chim=TRUE, 
                       orderBy="abundance") {
   
@@ -167,7 +170,7 @@ for(i in seq_along(fastqs)) {
                                filtRs[i], 
                                maxN=0, 
                                maxEE=3,
-                               truncQ=2, 
+                               truncQ=truncQ, 
                                truncLen=bp, 
                                compress=TRUE, 
                                verbose=TRUE))
