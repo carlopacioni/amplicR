@@ -315,7 +315,7 @@ seq_names <- paste0("seq", 1:dim(stable)[2])
 colnames(stable) <- seq_names
 seq_list <- data.frame(seq_names, sequence=seqs)
 write.csv(stable, file=paste(dir.out, "Seq_table.csv", sep="/"))
-write.csv(seq_list, file=paste(dir.out, "Seq_list.csv", sep="/"))
+write.csv(seq_list, file=paste(dir.out, "Seq_list.csv", sep="/"), row.names=FALSE)
 
 el <- el + 1
 lsummary[[el]] <- data.frame(Sample=names(nSeq), nSeq)
