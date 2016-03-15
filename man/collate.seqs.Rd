@@ -4,45 +4,52 @@
 \alias{collate.seqs}
 \title{Collate sequences}
 \usage{
-collate.seqs(dirs, dir.out = NULL)
+collate.seqs(ldproc = NULL, rdas.in = NULL, dir.out = NULL)
 }
 \arguments{
-\item{dirs}{A character vector with the path to the folders where the fasta 
-files are contained (e.g. where the outputs from data.proc were saved. See 
-details)}
+\item{ldproc}{If the data are already in R memory, a list whose element are
+\code{data.proc} outputs.}
+
+\item{rdas.in}{If \code{ldproc=NULL}, a character vector with the path to the 
+rda files where the outputs from data.proc that have to be collated were 
+saved.}
 
 \item{dir.out}{The directory where to save the results. If NULL (default) 
 then it will be set to the working directory}
 }
 \value{
-Saves sequences to file in fasta format
+Return a list with several elements:
+  
+  \itemize{ 
+  \item $lbysamples: A list whose elements are vectors with the unique 
+        sequences (names) for each sample and their abundance (values). 
+  \item $stable: The sequence table 
+  \item $seq_list: The sequences and matching
+  sequences IDs 
+  \item $call: The function call}
+  
+  Several files are also saved to disk, these include:
+  \itemize{ 
+  \item Seq_table.csv Sequence table
+  \item Seq_list.csv List of sequences and their matching IDs
+  \item collated.rda R data file containing the list returned by collate.seqs 
+     (see above)
+     }
 }
 \description{
-\code{collate.seqs} can be used to collate together sequences contained in 
-different fasta files with the same name (where, most likely, the file name 
-is the sample name where these sequences are coming from).
+\code{collate.seqs} can be used to collate together outputs from 
+\code{data.proc}.
 }
 \details{
-This function was developed because, if \code{data.proc} is looped over a 
-number of different \code{bp} values for the same sample files, and the 
-results stored in several sub folders, you will end up with several fasta 
-files in each sub folder. Many of these files are generated from the same 
-samples. However, the sequences contained in each file will be different 
-because they have been processed using a different \code{bp} values. In such 
-cases you may want to collate together all the sequences from the same 
-sample. \code{collate.seqs} does exactly this. By passing the path to 
-\code{data.proc} outputs, \code{collate.seqs} will search for the sub folder 
-"Final_seqs", read the fasta files and collate together the ones that have 
-matching names.
+This function was developed because, if, for example, sequencing runs are 
+carried out for the same samples, different  \code{data.proc} outputs will 
+also exists and you may want to collate together all the sequences from the 
+same sample. \code{collate.seqs} does exactly this. By passing either the 
+path to, or a list of, \code{data.proc} outputs, \code{collate.seqs} collate 
+together the sequences.
 
-\code{collate.seqs} assumes that the fasta files have extension .fasta.
-
-\code{collate.seqs} assumes that the fasta files were generated with 
-\code{data.proc}, so it will look for a "Final_seqs" sub folders within the 
-\code{dirs} path. As long as the folder structure is respected (i.e. the 
-fasta files are in a sub folder "Final_seqs"), the files from the same 
-samples have matching names and .fasta is their extension, this function can
-still be used .
+\code{collate.seqs} will generate an output that it is very similar to
+\code{data.proc} but with the combined seqs for the same samples.
 }
 \examples{
 # Select the directory where the example data are stored
@@ -54,13 +61,17 @@ out <- tempdir()
 out140 <- paste(out, "out140", sep="/")
 HTJ.140 <- data.proc(example.data, out140, bp=140)
 
-# Run data.proc with bp=140 and save in a sub folder
+# Make up a some new sequence to collate by running data.proc with bp=141 and 
+# saving in a sub folder
 out141 <- paste(out, "out141", sep="/")
 HTJ.141 <- data.proc(example.data, out141, bp=141)
 
-# Collate seqs of matching file names across the two sub folders 
-# out140 & out141
-collate.seqs(dirs=c(out140, out141), out)
+# Collate seqs of the two objects HTJ.140 and HTJ.141 
+collate.seqs(ldproc=list(HTJ.140, HTJ.141), dir.out=out)
+
+# As above but using the .rda files
+rdas <- paste(out, c("out140", "out141"), sep="/")
+collate.seqs(rdas.in=rdas, dir.out=out)
 
 # Clean up the temp directory
 unlink(out, recursive=TRUE)
