@@ -2,8 +2,8 @@
 % Please edit documentation in R/table2fasta.R
 \name{table2fasta}
 \alias{table2fasta}
-\title{Write unique sequences to a fasta file for each sample with names the input 
-matching sequence table}
+\title{Write unique sequences to a fasta file for each sample where sequence names  
+match the sequence table and include abundance data}
 \usage{
 table2fasta(stable, seq.list = NULL, dir.out = NULL)
 }
