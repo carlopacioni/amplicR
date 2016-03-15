@@ -13,7 +13,7 @@ test_that("test data.proc: defaults, no dada, no chim", {
   HTJ.test3 <- data.proc(test.data, out, bp, chim=FALSE)
   sink()
   
-  expect_equal(HTJ.test , HTJ.ref)
+  expect_equal(HTJ.test[1:3] , HTJ.ref[1:3])
   expect_equal(HTJ.test2[[2]][[4]][, "nSeq"], c(122, 374))
   expect_equal(HTJ.test3[[2]][[4]][, "nSeq"], c(8, 1))
   unlink(out)
