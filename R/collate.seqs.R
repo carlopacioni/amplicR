@@ -52,8 +52,8 @@
 #' out140 <- paste(out, "out140", sep="/")
 #' HTJ.140 <- data.proc(example.data, out140, bp=140)
 #' 
-#' # Make up a some new sequence to collate by running data.proc with bp=141 and 
-#' # saving in a sub folder
+#' # Make up some new sequences to collate by running data.proc with bp=141 and 
+#' # saving it in a sub folder
 #' out141 <- paste(out, "out141", sep="/")
 #' HTJ.141 <- data.proc(example.data, out141, bp=141)
 #' 
@@ -61,7 +61,7 @@
 #' collate.seqs(ldproc=list(HTJ.140, HTJ.141), dir.out=out)
 #' 
 #' # As above but using the .rda files
-#' rdas <- paste(out, c("out140", "out141"), sep="/")
+#' rdas <- paste(out, c("out140", "out141"), "data.proc.rda", sep="/")
 #' collate.seqs(rdas.in=rdas, dir.out=out)
 #' 
 #' # Clean up the temp directory
