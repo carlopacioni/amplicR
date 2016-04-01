@@ -43,7 +43,7 @@
 #'   \code{FALSE})
 #' @param dada Logical. Should the dada analysis be conducted? (default 
 #'   \code{TRUE})
-#' @param aggregate Logical. Should samples be pooled together prior to sample 
+#' @param pool Logical. Should samples be pooled together prior to sample 
 #'   inference? (default \code{FALSE}). See \code{\link[dada2]{dada}} for details   
 #' @param plot.err Logical. Whether error rates obtained from \code{dada} should  
 #'   be plotted
@@ -96,7 +96,7 @@
 #' unlink(out, recursive=TRUE)
 
 data.proc <- function(dir.in=NULL, dir.out=NULL, bp, truncQ=2, qrep=FALSE,
-                      dada=TRUE, aggregate=FALSE, plot.err=FALSE, chim=TRUE, 
+                      dada=TRUE, pool=FALSE, plot.err=FALSE, chim=TRUE, 
                       orderBy="abundance") {
   
 #----------------------------------------------------------------------------#
@@ -204,7 +204,7 @@ el <- 2
 if(dada == TRUE) {
   dadaReads <- dada(derepReads , err=inflateErr(tperr1,3),
                   errorEstimationFunction=loessErrfun,
-                                   selfConsist=TRUE, aggregate=FALSE)
+                                   selfConsist=TRUE, pool=pool)
   if(plot.err == TRUE) {
     pdf(file = paste(dir.out, "Plot_ErrorRates.pdf", sep="/"))
     if(length(derepReads) > 1) {

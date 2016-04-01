@@ -5,7 +5,7 @@
 \title{Data processing}
 \usage{
 data.proc(dir.in = NULL, dir.out = NULL, bp, truncQ = 2, qrep = FALSE,
-  dada = TRUE, aggregate = FALSE, plot.err = FALSE, chim = TRUE,
+  dada = TRUE, pool = FALSE, plot.err = FALSE, chim = TRUE,
   orderBy = "abundance")
 }
 \arguments{
@@ -27,7 +27,7 @@ See \code{\link[dada2]{fastqFilter}} for details}
 \item{dada}{Logical. Should the dada analysis be conducted? (default 
 \code{TRUE})}
 
-\item{aggregate}{Logical. Should samples be pooled together prior to sample 
+\item{pool}{Logical. Should samples be pooled together prior to sample 
 inference? (default \code{FALSE}). See \code{\link[dada2]{dada}} for details}
 
 \item{plot.err}{Logical. Whether error rates obtained from \code{dada} should
