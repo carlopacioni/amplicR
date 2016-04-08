@@ -64,7 +64,7 @@
 #'   \code{summary <- plyr::join_all(lsummary, by="Sample", type="left")} 
 #'   \item $stable: The sequence table 
 #'   \item $seq_list: The sequences and matching
-#'   sequences IDs 
+#'   sequence IDs 
 #'   \item $call: The function call}
 #'   
 #'   Several files are also returned, these include:
