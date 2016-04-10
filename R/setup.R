@@ -36,7 +36,7 @@ setup <- function() {
   source("https://bioconductor.org/biocLite.R")
   biocLite()
 
-  pkgs<-c("ShortRead")
+  pkgs<-c("ShortRead", "phyloseq")
   
   for (pkg in pkgs) {
   pkgchk(pkg)
