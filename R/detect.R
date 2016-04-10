@@ -3,7 +3,7 @@
 #' \code{detect} takes in either the output of \code{data.proc}, or load it up 
 #' from a .rda file, and compare the sequences with a reference sequence 
 #' reporting the number of mismatch using \code{srdistance} from the package 
-#' \code{shortRead}.
+#' \code{\link[shortRead]{shortRead}}.
 #' 
 #' The output from \code{data.proc} can be passed with \code{data}. If no data 
 #' is passed to \code{detect}, then it will load the .rda file passed with 
