@@ -23,10 +23,10 @@
 #' @param phy.tree A phylogenetic tree (see
 #'   \code{\link[phyloseq]{phyloseq}} for details)
 #' @seealso \code{\link{data.proc}}, \code{\link[phyloseq]{phyloseq}}
-#' @import phyloseq
 #' @export
 make.phyloseq <- function(dproc, sample.table=NULL, tax.table=NULL, 
                           phy.tree=NULL ) {
+  library(phyloseq)
   stable<-dproc$stable
   colnames(stable) <- dproc$seq_list$sequence
   ps <- phyloseq(otu_table(stable, taxa_are_rows=FALSE), 
