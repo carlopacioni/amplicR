@@ -11,7 +11,7 @@ rmEndAdaptor(fn, nRead = 1e+08, EndAdaptor = "P7_last10",
 \item{fn}{Fully qualified name (i.e. the complete path) of the fastq file}
 
 \item{nRead}{The number of bytes or characters to be read at one time. See 
-\code{\link[shortRead]{FastqStreamer}} for details}
+\code{\link[ShortRead]{FastqStreamer}} for details}
 
 \item{EndAdaptor}{A character vector with the sequence of the end adaptor,
 "P7" or "P7_last10" (See details)}

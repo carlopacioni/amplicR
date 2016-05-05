@@ -9,6 +9,11 @@ deconv(fn, nRead = 1e+08, info.file, sample.IDs, Fprimer, Rprimer,
   dir.out = NULL)
 }
 \arguments{
+\item{fn}{Fully qualified name (i.e. the complete path) of the fastq file}
+
+\item{nRead}{The number of bytes or characters to be read at one time. See 
+\code{\link[ShortRead]{FastqStreamer}} for details}
+
 \item{info.file}{Fully qualified name (i.e. the complete path) of the CSV 
 file with the information needed on primers, indexes etc. (See details)}
 
@@ -20,7 +25,7 @@ info.file containing the forward and reverse primer sequence, respectively}
 
 \item{primer.mismatch}{The maximum number of primer mismatch}
 
-\item{Find, }{Rind A character vector with the name of the column in info.file
+\item{Find, Rind}{A character vector with the name of the column in info.file
 containing the forward and reverse index sequence respectively}
 
 \item{index.mismatch}{The maximum number of index mismatch}

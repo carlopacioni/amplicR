@@ -23,7 +23,7 @@
 #' 
 #' @param fn Fully qualified name (i.e. the complete path) of the fastq file
 #' @param nRead The number of bytes or characters to be read at one time. See 
-#'   \code{\link[shortRead]{FastqStreamer}} for details
+#'   \code{\link[ShortRead]{FastqStreamer}} for details
 #' @param EndAdaptor A character vector with the sequence of the end adaptor,
 #'   "P7" or "P7_last10" (See details)
 #' @param adaptor.mismatch The maximum number of allowed mismatch (See details)
@@ -153,13 +153,14 @@ rmEndAdaptor <- function(fn, nRead=1e8, EndAdaptor="P7_last10", adaptor.mismatch
 #' @param Fprimer,Rprimer A character vector with the name of the column in 
 #'   info.file containing the forward and reverse primer sequence, respectively
 #' @param primer.mismatch The maximum number of primer mismatch
-#' @param Find, Rind A character vector with the name of the column in info.file
+#' @param Find,Rind A character vector with the name of the column in info.file
 #'   containing the forward and reverse index sequence respectively
 #' @param index.mismatch The maximum number of index mismatch
 #' @param gene A character vector with the name of the column in info.file 
 #'   containing the name of the gene or other group idenifiers (see details)
 #' @param dir.out The directory where to save the results. If NULL (default) 
 #'   then it will be set the same location where the input data was located
+#' @inheritParams rmEndAdaptor
 #' @return  A fastq file with the reads that were retained after removing the 
 #'   indexes (with the suffix "_IndRm") and after removing the primers (with the
 #'   suffix "_Ind_primerRm", in a folder named "Final") were end adaptor was 
