@@ -13,16 +13,16 @@ rmEndAdaptor(fn, nRead = 1e+08, EndAdaptor = "P7_last10",
 \item{nRead}{The number of bytes or characters to be read at one time. See 
 \code{\link[shortRead]{FastqStreamer}} for details}
 
-\item{EndAdaptor}{A character vector with the sequence of the end adaptor. 
-See details.}
+\item{EndAdaptor}{A character vector with the sequence of the end adaptor,
+"P7" or "P7_last10" (See details)}
 
-\item{adaptor.mismatch}{The maximum number of allowed mismatch. See details.}
+\item{adaptor.mismatch}{The maximum number of allowed mismatch (See details)}
 }
 \value{
-A fasta file with the reads where the end adaptor was found (and 
-  removed) saved in the same location where the input data was located. The
-  file is named with the suffix "_EndAdRm". A list with the
-  total number of reads that were processed and retained is also returned.
+A fastq file with the reads where the end adaptor was found (and 
+  removed) saved in the same location where the input data was located. The 
+  file is named with the suffix "_EndAdRm". A list with the total number of
+  reads that were processed and retained is also returned.
 }
 \description{
 This function is used to remove end adaptors, starting from a fastq file.
@@ -32,11 +32,11 @@ As mentioned in the general description of this package, most functions are
 tailored to Illumina architecture. \code{rmEndAdaptor} was developed to 
 remove the P7 adaptor at the end of single-reads. However, it can be actually
 used to remove any 'tail'. Reads are trimmed at the first position of the 
-match with the passed. \code{EndAdaptor} pattern.  The sequence of the 
+match with the passed \code{EndAdaptor} pattern.  The sequence of the 
 \code{EndAdaptor} is passed (as character vector) in a 5' to 3' direction and
 it is internally reversed and complemented. Other than the sequence, it is 
 possible to pass the character vector "P7" or "P7_last10". With the first, 
-the sequence of the P7 adaptor is selected (CAAGCAGAAGACGGCATACGAGAT). With
+the sequence of the P7 adaptor is selected (CAAGCAGAAGACGGCATACGAGAT). With 
 the latter a partial match is searched for (the last 10 bp: CATACGAGAT).
 
 Matches are searched using \code{\link[Biostrings]{vmatchPattern}}, with 

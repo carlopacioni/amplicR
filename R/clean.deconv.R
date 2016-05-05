@@ -87,7 +87,7 @@ rmEndAdaptor <- function(fn, nRead=1e8, EndAdaptor="P7_last10", adaptor.mismatch
   }
   nInitial <- stream$status()["total"]
   message(paste("Processed", nInitial, "- retained", nRetained))
-  return(rmEndAd <- list(nInitialReads=nInitial, nRetained=nRetained))
+  return(rmEndAd <- list(Read=unname(nInitial), nRetained=nRetained))
 }
 
 #' Separate reads by genes and deconvolute them based on barcodes
