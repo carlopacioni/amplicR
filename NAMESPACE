@@ -2,6 +2,7 @@
 
 export(collate.seqs)
 export(data.proc)
+export(deconv)
 export(detect)
 export(make.phyloseq)
 export(rmEndAdaptor)
