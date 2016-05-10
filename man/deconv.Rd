@@ -4,8 +4,9 @@
 \alias{deconv}
 \title{Separate reads by genes and deconvolute them based on barcodes}
 \usage{
-deconv(fn, nRead = 1e+08, info.file, sample.IDs, Fprimer, Rprimer,
-  primer.mismatch = 0, Find, Rind, index.mismatch = 0, gene,
+deconv(fn, nRead = 1e+08, info.file, sample.IDs = "Sample_IDs",
+  Fprimer = "F_Primer", Rprimer = "R_Primer", primer.mismatch = 0,
+  Find = "F_ind", Rind = "R_ind", index.mismatch = 0, gene = "Gene",
   dir.out = NULL)
 }
 \arguments{
@@ -25,7 +26,7 @@ info.file containing the forward and reverse primer sequence, respectively}
 
 \item{primer.mismatch}{The maximum number of primer mismatch}
 
-\item{Find, Rind}{A character vector with the name of the column in info.file
+\item{Find, Rind}{A character vector with the name of the column in info.file 
 containing the forward and reverse index sequence respectively}
 
 \item{index.mismatch}{The maximum number of index mismatch}
@@ -48,11 +49,12 @@ A fastq file with the reads that were retained after removing the
 }
 \description{
 \code{deconv} takes a fastq file and will search for the forward primer and 
-use this to separate the reads. That is, amplicons from multiple genes will 
-be separated. Within each gene, reads are then separated based on forward 
-and/or reverse index.  The end products are several fastq files - one for 
-each samples, in as many folders as genes - where primers and indexes were 
-removed.
+use this to separate the reads. That is, different PCR products ('genes') 
+will be separated based on the forward primer. Within each gene, reads are 
+then separated based on forward and/or reverse index.  The end products are 
+several fastq files - one for each samples, in as many folders as how many 
+gene identifiers were provided with the \code{info.file} - where primers and 
+indexes were removed.
 }
 \details{
 This function applies only to reads with in-line indexes. That is, where the 
@@ -71,13 +73,17 @@ code, and vice versa". Note that indexes are searched with \code{fixed=TRUE}.
 Information about the reads are passed with a comma separated file (CSV), 
 whose path and name is passed with \code{info.file}. This must contain a 
 column for each: the foward index, the reverse index, the forward primer, the
-reverse primer, the sample IDs, and the gene (or an identifier of gene) being
-amplified. The column headings are passed with the function arguments. While 
-it is possible to include other columns where the users can record additional
-information, these are effectively ignored. It is not mandatory to have both,
-the forward and reverse indexes, but if one is not used, there is still the 
-need to include a blank column in  \code{info.file} and indicate the column 
-heading.
+reverse primer, the sample IDs, and an identifier of the PCR product being 
+amplified, typically the gene's name. The column headings where these 
+information are stored in \code{info.file} are passed with the function 
+arguments. While it is possible to include other columns where the users can 
+record additional information, these are effectively ignored. It is not 
+mandatory to have both, the forward and reverse indexes, but if one is not 
+used, there is still the need to include a blank column in \code{info.file} 
+and indicate the column heading. Note that, when importing \code{info.file}, 
+R will automatically convert illegal characters (e.g. sapces, paranthesis) in
+dots ('.'), so it is probably safer to only use alpha-numeric characters 
+and/or dots or underscores ('_') in the function's arguments.
 
 All sequences for indexes and primers are passed (as character vector) in 5' 
 to 3' direction and are internally reversed and complemented when necessary.
@@ -86,15 +92,15 @@ to 3' direction and are internally reversed and complemented when necessary.
 reads creating (if not existing already) a folder named as for the relevant 
 information provided in the column \code{gene}, which is typically an 
 identifier of the targeted genes. It is possible to use the column 
-\code{gene} to group genes in other logical way than genes, but all identical
-forward primer should have the same \code{gene} information. This is because 
-(for efficiency) \code{deconv} uses only the first line for each forward 
-primer to identify where the processed data should be saved and if multiple 
-codes are used for \code{gene} for the same forward primer, these are 
-actually ignored.
+\code{gene} to group PCR products in other logical way than genes, but all
+identical forward primer should have the same \code{gene} information. This
+is because (for efficiency) \code{deconv} uses only the first line for each
+forward primer to identify where the processed data should be saved and if
+multiple codes are used for \code{gene} for the same forward primer, these
+are actually ignored.
 
 When relevant, a warning is reported and a text file with the sequence IDs 
-that had multiple hits in the preliminary search for the forward primer is
+that had multiple hits in the preliminary search for the forward primer is 
 saved.
 
 After reads are separated based on the forward primer, indexes and primers 
