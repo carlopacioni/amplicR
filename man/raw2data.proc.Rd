@@ -37,10 +37,10 @@ info.file containing the forward and reverse primer sequence, respectively}
 
 \item{primer.mismatch}{The maximum number of primer mismatch}
 
-\item{Find}{A character vector with the name of the column in info.file
+\item{Find}{A character vector with the name of the column in info.file 
 containing the forward and reverse index sequence respectively}
 
-\item{Rind}{A character vector with the name of the column in info.file
+\item{Rind}{A character vector with the name of the column in info.file 
 containing the forward and reverse index sequence respectively}
 
 \item{index.mismatch}{The maximum number of index mismatch}
