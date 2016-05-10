@@ -7,10 +7,9 @@
 raw2data.proc(fn, nRead = 1e+08, EndAdaptor = "P7_last10",
   adaptor.mismatch = 0, info.file, sample.IDs = "Sample_IDs",
   Fprimer = "F_Primer", Rprimer = "R_Primer", primer.mismatch = 0,
-  Find = "F_ind", Rind = "F_ind", index.mismatch = 0, gene = "Gene",
-  dir.out = NULL, amplic.size = "Amplicon", truncQ = 2, qrep = FALSE,
-  dada = TRUE, pool = FALSE, plot.err = FALSE, chim = TRUE,
-  orderBy = "abundance")
+  Find = "F_ind", Rind = "R_ind", index.mismatch = 0, gene = "Gene",
+  amplic.size = "Amplicon", truncQ = 2, qrep = FALSE, dada = TRUE,
+  pool = FALSE, plot.err = FALSE, chim = TRUE, orderBy = "abundance")
 }
 \arguments{
 \item{fn}{Fully qualified name (i.e. the complete path) of the fastq file}
@@ -47,9 +46,6 @@ containing the forward and reverse index sequence respectively}
 
 \item{gene}{A character vector with the name of the column in info.file 
 containing the name of the gene or other group idenifiers (see details)}
-
-\item{dir.out}{The directory where to save the results. If NULL (default) 
-then it will be set the same location where the input data was located}
 
 \item{amplic.size}{A character vector with the name of the column in 
 info.file containing the amplicon size of the PCR product}
@@ -110,6 +106,8 @@ amplicon length to use \code{raw2data.proc}, otherwise the three functions
 \code{\link{data.proc}}) need to be called manually, rather than with 
 \code{raw2data.proc}. This is because \code{\link{data.proc}} needs a 
 gene-specific amplicon length to correctly process the data.
+
+By default, \code{dir.out} is set to the location where the input file is.
 
 Please, see documentations for each functions for more information.
 }

@@ -320,6 +320,8 @@ deconv <- function(fn, nRead=1e8, info.file, sample.IDs="Sample_IDs",
 #' \code{raw2data.proc}. This is because \code{\link{data.proc}} needs a 
 #' gene-specific amplicon length to correctly process the data.
 #' 
+#' By default, \code{dir.out} is set to the location where the input file is.
+#' 
 #' 
 #' Please, see documentations for each functions for more information.
 #' 
@@ -340,8 +342,8 @@ deconv <- function(fn, nRead=1e8, info.file, sample.IDs="Sample_IDs",
 raw2data.proc <- function(fn, nRead=1e8, EndAdaptor="P7_last10", 
                           adaptor.mismatch=0, info.file, sample.IDs="Sample_IDs", 
                           Fprimer="F_Primer", Rprimer="R_Primer", 
-                          primer.mismatch=0, Find="F_ind", Rind="F_ind", 
-                          index.mismatch=0, gene="Gene", dir.out=NULL, 
+                          primer.mismatch=0, Find="F_ind", Rind="R_ind", 
+                          index.mismatch=0, gene="Gene",  
                           amplic.size="Amplicon", truncQ=2, qrep=FALSE,
                        dada=TRUE, pool=FALSE, plot.err=FALSE, chim=TRUE,
                        orderBy="abundance") {
@@ -375,7 +377,7 @@ extract.sums <- function(ldproc, el)  {
   dec <- deconv(fn_Endrm, nRead, info.file, 
           sample.IDs, Fprimer, Rprimer, primer.mismatch,
           Find, Rind, index.mismatch,
-          gene, dir.out)
+          gene)
   
   path.results <- paste(dirname(fn), genes, "Final", sep="/")
   names(path.results) <- genes
