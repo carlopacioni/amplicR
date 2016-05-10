@@ -81,7 +81,7 @@ rmEndAdaptor <- function(fn, nRead=1e8, EndAdaptor="P7_last10", adaptor.mismatch
     fname <- paste0(substr(fn, start=1, stop=regexpr(".fastq", fn)[1] - 1), 
                     "_EndAdRm.fastq.gz")
     if(file.exists(fname)) message(cat(paste("Note: the file", fname, 
-                                             "already exists\nSequences were appended")))
+                                    "already exists\nSequences were appended")))
     writeFastq(trimmed, fname, mode="a")
     nRetained <- nRetained + length(trimmed)
   }
@@ -172,8 +172,8 @@ rmEndAdaptor <- function(fn, nRead=1e8, EndAdaptor="P7_last10", adaptor.mismatch
 #' @export
 deconv <- function(fn, nRead=1e8, info.file, 
                    sample.IDs, Fprimer, Rprimer, primer.mismatch=0,
-                   Find, Rind, index.mismatch=0,
-                   gene, dir.out=NULL) {
+                   Find="F_ind", Rind="R_ind", index.mismatch=0,
+                   gene="Gene", dir.out=NULL) {
   library(ShortRead)
   
   info_table <- read.csv(info.file)
@@ -290,3 +290,111 @@ deconv <- function(fn, nRead=1e8, info.file,
   message(paste(nPrimRet, "were retained after removing the primers."))
   return(list(Read=unname(nInitial), IndexRm=nIndRet, PrimerRm=nPrimRet))
 }
+
+#' From raw data to data.proc()
+#' 
+#' This function is a wrapper for \code{\link{rmEndAdaptor}}, 
+#' \code{\link{deconv}} and \code{\link{data.proc}}. It takes in a raw fastq 
+#' file, removes the end adaptor, separates the reads based on their forward 
+#' primers. Within each of the iodentified group, separates the reads based on 
+#' barcodes (indexes) and eventually calls \code{\link{data.proc}} to process 
+#' (quality checking, denoising and chimeras filtering) the retained data from 
+#' the NGS run.
+#' 
+#' Note that the amplicon size for \code{\link{data.proc}} is obtained from the 
+#' comma delimited file \code{info.file}, searching in the column with the 
+#' heading indicated in \code{amplic.size}. For each entry in the column 
+#' indicated with the argument \code{gene}, the function will use the first 
+#' entry found in \code{amplic.size} for the relevant \code{gene}. If the same 
+#' gene identifier is used for multiple forward primers (see documentation for 
+#' the \code{\link{deconv}} to see how multiple PCR product can be grouped 
+#' together using the \code{gene} column), then these have to have all the same 
+#' amplicon length to use \code{raw2data.proc}, otherwise the three functions 
+#' (\code{\link{rmEndAdaptor}}, \code{\link{deconv}} and 
+#' \code{\link{data.proc}}) need to be called manually, rather than with 
+#' \code{raw2data.proc}. This is because \code{\link{data.proc}} needs a 
+#' gene-specific amplicon length to correctly process the data.
+#' 
+#' 
+#' Please, see documentations for each functions for more information.
+#' 
+#' @inheritParams rmEndAdaptor
+#' @inheritParams deconv
+#' @inheritParams data.proc
+#' @param amplic.size A character vector with the name of the column in 
+#'   info.file containing the amplicon size of the PCR product
+#' @return A list that has for elements the output of \code{\link{data.proc}} 
+#'   for each PCR product
+#'   
+#'   Also, in addition to the output files described in the documentations for
+#'   \code{\link{rmEndAdaptor}}, \code{\link{deconv}} and
+#'   \code{\link{data.proc}}, a text file, named "summary_nReads.txt" is saved
+#'   in the same location where the raw data are, summarising the number of
+#'   reads retained in each step of the analysis
+#' @export
+raw2data.proc <- function(fn, nRead=1e8, EndAdaptor="P7_last10", 
+                          adaptor.mismatch=0, info.file, sample.IDs="Sample_IDs", 
+                          Fprimer="F_Primer", Rprimer="R_Primer", 
+                          primer.mismatch=0, Find="F_ind", Rind="F_ind", 
+                          index.mismatch=0, gene="Gene", dir.out=NULL, 
+                          amplic.size="Amplicon", truncQ=2, qrep=FALSE,
+                       dada=TRUE, pool=FALSE, plot.err=FALSE, chim=TRUE,
+                       orderBy="abundance") {
+  #----------------------------------------------------------------------------#
+  # Helper functions
+  #----------------------------------------------------------------------------#
+extract.sums <- function(ldproc, el)  {
+  l <- lapply(ldproc, extr <- function(dproc, el) {
+                                      if(el == "nFiltered") i <- 1
+                                      if(el == "nDerep") i <- 2
+                                      if(el == "nSeq") i <- length(dproc)
+                                      r <- sum(dproc$lsummary[[i]][el])
+                                      return(r)
+                                    },
+              el)
+  s <- sum(unlist(l))
+  return(s)
+}
+  #----------------------------------------------------------------------------#
+  info_table <- read.csv(info.file)
+  primers <- unique(info_table[, Fprimer])
+  genes <- unique(info_table[, gene])
+  if(length(primers) != length(genes)) 
+    stop(paste("Detected a different number of unique forward primers and",
+               gene))
+  
+  rme <- rmEndAdaptor(fn, nRead, EndAdaptor, adaptor.mismatch)
+  
+  fn_Endrm <- paste0(substr(fn, start=1, stop=regexpr(".fastq", fn)[1] - 1), 
+                        "_EndAdRm.fastq.gz")
+  dec <- deconv(fn_Endrm, nRead, info.file, 
+          sample.IDs, Fprimer, Rprimer, primer.mismatch,
+          Find, Rind, index.mismatch,
+          gene, dir.out)
+  
+  path.results <- paste(dirname(fn), genes, "Final", sep="/")
+  names(path.results) <- genes
+  ldproc <- list()
+  for(g in genes) {
+    sel <- info_table[, gene] == g
+    bp <- info_table[sel, amplic.size][1]
+    ldproc[[g]] <- data.proc(dir.in=path.results[g], bp=bp, truncQ=truncQ, 
+                            qrep=qrep, dada=dada, pool=pool, plot.err=plot.err, 
+                            chim=chim, orderBy=orderBy)
+  }
+  
+  writeLines(c(paste("The number of reads found in", fn, "was", rme[[1]]), 
+               paste("The end adaptor was found and removed in", rme[[2]], "reads"),
+               paste("The index(es) were found and removed in", dec[[2]]),
+               paste("Primers were found and removed in ", dec[[3]]),
+               paste("The number of reads retained after appling the quality filter was",
+                     extract.sums(ldproc, "nFiltered")),
+               paste("The number of unique reads retained across all samples was", 
+                     extract.sums(ldproc, "nDerep")),
+               paste("The number of unique reads retained across all samples at completion of data.proc() was",
+                     extract.sums(ldproc, "nSeq")),
+               "More details are in the files 'data.proc.summary.csv' in each folder"),
+             con=paste(dirname(fn), "summary_nReads.txt", sep="/"))
+  return(ldproc)
+}
+
