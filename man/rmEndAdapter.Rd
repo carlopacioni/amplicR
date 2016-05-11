@@ -4,7 +4,7 @@
 \alias{rmEndAdapter}
 \title{Remove end adapter}
 \usage{
-rmEndAdapter(fn, nRead = 1e+08, Endadapter = "P7_last10",
+rmEndAdapter(fn, nRead = 1e+08, EndAdapter = "P7_last10",
   adapter.mismatch = 0)
 }
 \arguments{
@@ -13,7 +13,7 @@ rmEndAdapter(fn, nRead = 1e+08, Endadapter = "P7_last10",
 \item{nRead}{The number of bytes or characters to be read at one time. See 
 \code{\link[ShortRead]{FastqStreamer}} for details}
 
-\item{Endadapter}{A character vector with the sequence of the end adapter,
+\item{EndAdapter}{A character vector with the sequence of the end adapter,
 "P7" or "P7_last10" (See details)}
 
 \item{adapter.mismatch}{The maximum number of allowed mismatch (See details)}
@@ -32,8 +32,8 @@ As mentioned in the general description of this package, most functions are
 tailored to Illumina architecture. \code{rmEndAdapter} was developed to 
 remove the P7 adapter at the end of single-reads. However, it can be actually
 used to remove any 'tail'. Reads are trimmed at the first position of the 
-match with the passed \code{Endadapter} pattern.  The sequence of the 
-\code{Endadapter} is passed (as character vector) in a 5' to 3' direction and
+match with the passed \code{EndAdapter} pattern.  The sequence of the 
+\code{EndAdapter} is passed (as character vector) in a 5' to 3' direction and
 it is internally reversed and complemented. Other than the sequence, it is 
 possible to pass the character vector "P7" or "P7_last10". With the first, 
 the sequence of the P7 adapter is selected (CAAGCAGAAGACGGCATACGAGAT). With 

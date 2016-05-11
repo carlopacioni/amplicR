@@ -4,7 +4,7 @@
 \alias{raw2data.proc}
 \title{From raw data to data.proc()}
 \usage{
-raw2data.proc(fn, nRead = 1e+08, Endadapter = "P7_last10",
+raw2data.proc(fn, nRead = 1e+08, EndAdapter = "P7_last10",
   adapter.mismatch = 0, info.file, sample.IDs = "Sample_IDs",
   Fprimer = "F_Primer", Rprimer = "R_Primer", primer.mismatch = 0,
   Find = "F_ind", Rind = "R_ind", index.mismatch = 0, gene = "Gene",
@@ -17,7 +17,7 @@ raw2data.proc(fn, nRead = 1e+08, Endadapter = "P7_last10",
 \item{nRead}{The number of bytes or characters to be read at one time. See 
 \code{\link[ShortRead]{FastqStreamer}} for details}
 
-\item{Endadapter}{A character vector with the sequence of the end adapter,
+\item{EndAdapter}{A character vector with the sequence of the end adapter,
 "P7" or "P7_last10" (See details)}
 
 \item{adapter.mismatch}{The maximum number of allowed mismatch (See details)}

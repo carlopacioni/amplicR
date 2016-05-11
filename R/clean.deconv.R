@@ -6,8 +6,8 @@
 #' tailored to Illumina architecture. \code{rmEndAdapter} was developed to 
 #' remove the P7 adapter at the end of single-reads. However, it can be actually
 #' used to remove any 'tail'. Reads are trimmed at the first position of the 
-#' match with the passed \code{Endadapter} pattern.  The sequence of the 
-#' \code{Endadapter} is passed (as character vector) in a 5' to 3' direction and
+#' match with the passed \code{EndAdapter} pattern.  The sequence of the 
+#' \code{EndAdapter} is passed (as character vector) in a 5' to 3' direction and
 #' it is internally reversed and complemented. Other than the sequence, it is 
 #' possible to pass the character vector "P7" or "P7_last10". With the first, 
 #' the sequence of the P7 adapter is selected (CAAGCAGAAGACGGCATACGAGAT). With 
@@ -24,7 +24,7 @@
 #' @param fn Fully qualified name (i.e. the complete path) of the fastq file
 #' @param nRead The number of bytes or characters to be read at one time. See 
 #'   \code{\link[ShortRead]{FastqStreamer}} for details
-#' @param Endadapter A character vector with the sequence of the end adapter,
+#' @param EndAdapter A character vector with the sequence of the end adapter,
 #'   "P7" or "P7_last10" (See details)
 #' @param adapter.mismatch The maximum number of allowed mismatch (See details)
 #' @export
@@ -33,7 +33,7 @@
 #'   file is named with the suffix "_EndAdRm". A list with the total number of
 #'   reads that were processed and retained is also returned.
 #'   
-rmEndAdapter <- function(fn, nRead=1e8, Endadapter="P7_last10", adapter.mismatch=0) {
+rmEndAdapter <- function(fn, nRead=1e8, EndAdapter="P7_last10", adapter.mismatch=0) {
   suppressPackageStartupMessages(library(ShortRead, quietly=TRUE))
   #----------------------------------------------------------------------------#
   # Helper functions
@@ -45,8 +45,8 @@ rmEndAdapter <- function(fn, nRead=1e8, Endadapter="P7_last10", adapter.mismatch
   }
   #----------------------------------------------------------------------------#
   
-  if(Endadapter == "P7") Endadapter <- "CAAGCAGAAGACGGCATACGAGAT"
-  if(Endadapter == "P7_last10") Endadapter <- "CATACGAGAT"  
+  if(EndAdapter == "P7") EndAdapter <- "CAAGCAGAAGACGGCATACGAGAT"
+  if(EndAdapter == "P7_last10") EndAdapter <- "CATACGAGAT"  
   
   stream <- FastqStreamer(fn, nRead)
   on.exit(close(stream))
@@ -56,7 +56,7 @@ rmEndAdapter <- function(fn, nRead=1e8, Endadapter="P7_last10", adapter.mismatch
     seqs <- sread(fq)
     qual <- quality(fq)
     qual <- quality(qual)
-    P7_hits <- vmatchPattern(pattern=reverseComplement(DNAString(Endadapter)), 
+    P7_hits <- vmatchPattern(pattern=reverseComplement(DNAString(EndAdapter)), 
                              subject=seqs,
                              max.mismatch=adapter.mismatch, 
                              min.mismatch=0,
@@ -65,7 +65,7 @@ rmEndAdapter <- function(fn, nRead=1e8, Endadapter="P7_last10", adapter.mismatch
     
     if(sum(elementLengths(P7_hits) > 1) > 0) {
       message(cat(paste("Note: some reads in", fn, "have more than one match with:", 
-                        Endadapter, "The first match from the left is used",
+                        EndAdapter, "The first match from the left is used",
                         sep="\n")))
     }
     ends <- startIndex(P7_hits)
@@ -340,7 +340,7 @@ deconv <- function(fn, nRead=1e8, info.file, sample.IDs="Sample_IDs",
 #'   in the same location where the raw data are, summarising the number of
 #'   reads retained in each step of the analysis
 #' @export
-raw2data.proc <- function(fn, nRead=1e8, Endadapter="P7_last10", 
+raw2data.proc <- function(fn, nRead=1e8, EndAdapter="P7_last10", 
                           adapter.mismatch=0, info.file, sample.IDs="Sample_IDs", 
                           Fprimer="F_Primer", Rprimer="R_Primer", 
                           primer.mismatch=0, Find="F_ind", Rind="R_ind", 
@@ -371,7 +371,7 @@ extract.sums <- function(ldproc, el)  {
     stop(paste("Detected a different number of unique forward primers and",
                gene))
   
-  rme <- rmEndAdapter(fn, nRead, Endadapter, adapter.mismatch)
+  rme <- rmEndAdapter(fn, nRead, EndAdapter, adapter.mismatch)
   
   fn_Endrm <- paste0(substr(fn, start=1, stop=regexpr(".fastq", fn)[1] - 1), 
                         "_EndAdRm.fastq.gz")
