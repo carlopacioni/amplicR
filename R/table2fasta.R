@@ -41,8 +41,8 @@
 #' 
 table2fasta <- function(stable, seq.list=NULL, dir.out=NULL) {
   #----------------------------------------------------------------------------#
-  library(dada2)
-  library(ShortRead)
+  library(dada2, quietly=TRUE)
+  library(ShortRead, quietly=TRUE)
   #----------------------------------------------------------------------------#
   # Helper functions
   #----------------------------------------------------------------------------#

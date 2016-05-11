@@ -34,7 +34,7 @@
 #'   reads that were processed and retained is also returned.
 #'   
 rmEndAdaptor <- function(fn, nRead=1e8, EndAdaptor="P7_last10", adaptor.mismatch=0) {
-  library(ShortRead)
+  library(ShortRead, quietly=TRUE)
   #----------------------------------------------------------------------------#
   # Helper functions
   #----------------------------------------------------------------------------#
@@ -179,7 +179,7 @@ deconv <- function(fn, nRead=1e8, info.file, sample.IDs="Sample_IDs",
                    Fprimer="F_Primer", Rprimer="R_Primer", primer.mismatch=0,
                    Find="F_ind", Rind="R_ind", index.mismatch=0,
                    gene="Gene", dir.out=NULL) {
-  library(ShortRead)
+  library(ShortRead, quietly=TRUE)
   
   info_table <- read.csv(info.file)
   primers <- unique(info_table[, Fprimer])

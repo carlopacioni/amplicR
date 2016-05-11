@@ -76,8 +76,8 @@
 
 detect <- function(data=NULL, rda.in=NULL, dir.out=NULL, ref_seqs) {
   #----------------------------------------------------------------------------#
-  library(dada2)
-  library(ShortRead)
+  library(dada2, quietly=TRUE)
+  library(ShortRead, quietly=TRUE)
  
   #----------------------------------------------------------------------------#
   call <- sys.call(1)
