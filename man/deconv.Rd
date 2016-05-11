@@ -40,7 +40,7 @@ then it will be set the same location where the input data was located}
 \value{
 A fastq file with the reads that were retained after removing the 
   indexes (with the suffix "_IndRm") and after removing the primers (with the
-  suffix "_Ind_primerRm", in a folder named "Final") were end adaptor was 
+  suffix "_Ind_primerRm", in a folder named "Final") were end adapter was 
   found (and removed) saved. A list with the total number of reads that were 
   processed and retained is also returned.
   
@@ -62,7 +62,7 @@ architecture of the reads is as follows:
 
 F_index---F_primer---Target_sequence---R_primer---R_index
 
-Note that the P7 adapter can be removed with \code{\link{rmEndAdaptor}}.
+Note that the P7 adapter can be removed with \code{\link{rmEndAdapter}}.
 
 It is possible to control the number of mismatch, and IUPAC ambiguities codes
 can be used in primers (i.e.the search for the primers is conducted with 

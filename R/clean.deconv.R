@@ -1,20 +1,20 @@
-#' Remove end adaptor
+#' Remove end adapter
 #' 
-#' This function is used to remove end adaptors, starting from a fastq file.
+#' This function is used to remove end adapters, starting from a fastq file.
 #' 
 #' As mentioned in the general description of this package, most functions are 
-#' tailored to Illumina architecture. \code{rmEndAdaptor} was developed to 
-#' remove the P7 adaptor at the end of single-reads. However, it can be actually
+#' tailored to Illumina architecture. \code{rmEndAdapter} was developed to 
+#' remove the P7 adapter at the end of single-reads. However, it can be actually
 #' used to remove any 'tail'. Reads are trimmed at the first position of the 
-#' match with the passed \code{EndAdaptor} pattern.  The sequence of the 
-#' \code{EndAdaptor} is passed (as character vector) in a 5' to 3' direction and
+#' match with the passed \code{Endadapter} pattern.  The sequence of the 
+#' \code{Endadapter} is passed (as character vector) in a 5' to 3' direction and
 #' it is internally reversed and complemented. Other than the sequence, it is 
 #' possible to pass the character vector "P7" or "P7_last10". With the first, 
-#' the sequence of the P7 adaptor is selected (CAAGCAGAAGACGGCATACGAGAT). With 
+#' the sequence of the P7 adapter is selected (CAAGCAGAAGACGGCATACGAGAT). With 
 #' the latter a partial match is searched for (the last 10 bp: CATACGAGAT).
 #' 
 #' Matches are searched using \code{\link[Biostrings]{vmatchPattern}}, with 
-#' \code{adaptor.mismatch} used for max.mismatch (min.mismatch is fixed to 
+#' \code{adapter.mismatch} used for max.mismatch (min.mismatch is fixed to 
 #' zero).
 #' 
 #' The search is conducted with \code{fixed=TRUE}, which means (from Biostring):
@@ -24,16 +24,16 @@
 #' @param fn Fully qualified name (i.e. the complete path) of the fastq file
 #' @param nRead The number of bytes or characters to be read at one time. See 
 #'   \code{\link[ShortRead]{FastqStreamer}} for details
-#' @param EndAdaptor A character vector with the sequence of the end adaptor,
+#' @param Endadapter A character vector with the sequence of the end adapter,
 #'   "P7" or "P7_last10" (See details)
-#' @param adaptor.mismatch The maximum number of allowed mismatch (See details)
+#' @param adapter.mismatch The maximum number of allowed mismatch (See details)
 #' @export
-#' @return A fastq file with the reads where the end adaptor was found (and 
+#' @return A fastq file with the reads where the end adapter was found (and 
 #'   removed) saved in the same location where the input data was located. The 
 #'   file is named with the suffix "_EndAdRm". A list with the total number of
 #'   reads that were processed and retained is also returned.
 #'   
-rmEndAdaptor <- function(fn, nRead=1e8, EndAdaptor="P7_last10", adaptor.mismatch=0) {
+rmEndAdapter <- function(fn, nRead=1e8, Endadapter="P7_last10", adapter.mismatch=0) {
   suppressPackageStartupMessages(library(ShortRead, quietly=TRUE))
   #----------------------------------------------------------------------------#
   # Helper functions
@@ -45,8 +45,8 @@ rmEndAdaptor <- function(fn, nRead=1e8, EndAdaptor="P7_last10", adaptor.mismatch
   }
   #----------------------------------------------------------------------------#
   
-  if(EndAdaptor == "P7") EndAdaptor <- "CAAGCAGAAGACGGCATACGAGAT"
-  if(EndAdaptor == "P7_last10") EndAdaptor <- "CATACGAGAT"  
+  if(Endadapter == "P7") Endadapter <- "CAAGCAGAAGACGGCATACGAGAT"
+  if(Endadapter == "P7_last10") Endadapter <- "CATACGAGAT"  
   
   stream <- FastqStreamer(fn, nRead)
   on.exit(close(stream))
@@ -56,16 +56,16 @@ rmEndAdaptor <- function(fn, nRead=1e8, EndAdaptor="P7_last10", adaptor.mismatch
     seqs <- sread(fq)
     qual <- quality(fq)
     qual <- quality(qual)
-    P7_hits <- vmatchPattern(pattern=reverseComplement(DNAString(EndAdaptor)), 
+    P7_hits <- vmatchPattern(pattern=reverseComplement(DNAString(Endadapter)), 
                              subject=seqs,
-                             max.mismatch=adaptor.mismatch, 
+                             max.mismatch=adapter.mismatch, 
                              min.mismatch=0,
                              with.indels=FALSE, fixed=TRUE,
                              algorithm="auto")
     
     if(sum(elementLengths(P7_hits) > 1) > 0) {
       message(cat(paste("Note: some reads in", fn, "have more than one match with:", 
-                        EndAdaptor, "The first match from the left is used",
+                        Endadapter, "The first match from the left is used",
                         sep="\n")))
     }
     ends <- startIndex(P7_hits)
@@ -105,7 +105,7 @@ rmEndAdaptor <- function(fn, nRead=1e8, EndAdaptor="P7_last10", adaptor.mismatch
 #' 
 #' F_index---F_primer---Target_sequence---R_primer---R_index
 #' 
-#' Note that the P7 adapter can be removed with \code{\link{rmEndAdaptor}}.
+#' Note that the P7 adapter can be removed with \code{\link{rmEndAdapter}}.
 #' 
 #' It is possible to control the number of mismatch, and IUPAC ambiguities codes
 #' can be used in primers (i.e.the search for the primers is conducted with 
@@ -165,10 +165,10 @@ rmEndAdaptor <- function(fn, nRead=1e8, EndAdaptor="P7_last10", adaptor.mismatch
 #'   containing the name of the gene or other group idenifiers (see details)
 #' @param dir.out The directory where to save the results. If NULL (default) 
 #'   then it will be set the same location where the input data was located
-#' @inheritParams rmEndAdaptor
+#' @inheritParams rmEndAdapter
 #' @return  A fastq file with the reads that were retained after removing the 
 #'   indexes (with the suffix "_IndRm") and after removing the primers (with the
-#'   suffix "_Ind_primerRm", in a folder named "Final") were end adaptor was 
+#'   suffix "_Ind_primerRm", in a folder named "Final") were end adapter was 
 #'   found (and removed) saved. A list with the total number of reads that were 
 #'   processed and retained is also returned.
 #'   
@@ -298,9 +298,9 @@ deconv <- function(fn, nRead=1e8, info.file, sample.IDs="Sample_IDs",
 
 #' From raw data to data.proc()
 #' 
-#' This function is a wrapper for \code{\link{rmEndAdaptor}}, 
+#' This function is a wrapper for \code{\link{rmEndAdapter}}, 
 #' \code{\link{deconv}} and \code{\link{data.proc}}. It takes in a raw fastq 
-#' file, removes the end adaptor, separates the reads based on their forward 
+#' file, removes the end adapter, separates the reads based on their forward 
 #' primers. Within each of the iodentified group, separates the reads based on 
 #' barcodes (indexes) and eventually calls \code{\link{data.proc}} to process 
 #' (quality checking, denoising and chimeras filtering) the retained data from 
@@ -315,7 +315,7 @@ deconv <- function(fn, nRead=1e8, info.file, sample.IDs="Sample_IDs",
 #' the \code{\link{deconv}} to see how multiple PCR product can be grouped 
 #' together using the \code{gene} column), then these have to have all the same 
 #' amplicon length to use \code{raw2data.proc}, otherwise the three functions 
-#' (\code{\link{rmEndAdaptor}}, \code{\link{deconv}} and 
+#' (\code{\link{rmEndAdapter}}, \code{\link{deconv}} and 
 #' \code{\link{data.proc}}) need to be called manually, rather than with 
 #' \code{raw2data.proc}. This is because \code{\link{data.proc}} needs a 
 #' gene-specific amplicon length to correctly process the data.
@@ -326,7 +326,7 @@ deconv <- function(fn, nRead=1e8, info.file, sample.IDs="Sample_IDs",
 #' 
 #' Please, see documentations for each functions for more information.
 #' 
-#' @inheritParams rmEndAdaptor
+#' @inheritParams rmEndAdapter
 #' @inheritParams deconv
 #' @inheritParams data.proc
 #' @param amplic.size A character vector with the name of the column in 
@@ -335,13 +335,13 @@ deconv <- function(fn, nRead=1e8, info.file, sample.IDs="Sample_IDs",
 #'   for each PCR product
 #'   
 #'   Also, in addition to the output files described in the documentations for
-#'   \code{\link{rmEndAdaptor}}, \code{\link{deconv}} and
+#'   \code{\link{rmEndAdapter}}, \code{\link{deconv}} and
 #'   \code{\link{data.proc}}, a text file, named "summary_nReads.txt" is saved
 #'   in the same location where the raw data are, summarising the number of
 #'   reads retained in each step of the analysis
 #' @export
-raw2data.proc <- function(fn, nRead=1e8, EndAdaptor="P7_last10", 
-                          adaptor.mismatch=0, info.file, sample.IDs="Sample_IDs", 
+raw2data.proc <- function(fn, nRead=1e8, Endadapter="P7_last10", 
+                          adapter.mismatch=0, info.file, sample.IDs="Sample_IDs", 
                           Fprimer="F_Primer", Rprimer="R_Primer", 
                           primer.mismatch=0, Find="F_ind", Rind="R_ind", 
                           index.mismatch=0, gene="Gene",  
@@ -371,7 +371,7 @@ extract.sums <- function(ldproc, el)  {
     stop(paste("Detected a different number of unique forward primers and",
                gene))
   
-  rme <- rmEndAdaptor(fn, nRead, EndAdaptor, adaptor.mismatch)
+  rme <- rmEndAdapter(fn, nRead, Endadapter, adapter.mismatch)
   
   fn_Endrm <- paste0(substr(fn, start=1, stop=regexpr(".fastq", fn)[1] - 1), 
                         "_EndAdRm.fastq.gz")
@@ -386,19 +386,19 @@ extract.sums <- function(ldproc, el)  {
   for(g in genes) {
     sel <- info_table[, gene] == g
     bp <- info_table[sel, amplic.size][1]
-    sink("NIL")
-    ldproc[[g]] <- data.proc(dir.in=path.results[g], bp=bp, truncQ=truncQ, 
+  
+      txt <- capture.output(
+      ldproc[[g]] <- data.proc(dir.in=path.results[g], bp=bp, truncQ=truncQ, 
                             qrep=qrep, dada=dada, pool=pool, plot.err=plot.err, 
                             chim=chim, orderBy=orderBy, verbose=FALSE)
+    )
   }
-  sink()
-  unlink("NIL")
   
   writeLines(c(paste("The number of reads found in", fn, "was", rme[[1]]), 
-               paste("The end adaptor was found and removed in", rme[[2]], "reads"),
+               paste("The end adapter was found and removed in", rme[[2]], "reads"),
                paste("The index(es) were found and removed in", dec[[2]]),
                paste("Primers were found and removed in ", dec[[3]]),
-               paste("The number of reads retained after appling the quality filter was",
+               paste("The number of reads retained after applying the quality filter was",
                      extract.sums(ldproc, "nFiltered")),
                paste("The number of unique reads retained across all samples was", 
                      extract.sums(ldproc, "nDerep")),

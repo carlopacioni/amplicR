@@ -4,8 +4,8 @@
 \alias{raw2data.proc}
 \title{From raw data to data.proc()}
 \usage{
-raw2data.proc(fn, nRead = 1e+08, EndAdaptor = "P7_last10",
-  adaptor.mismatch = 0, info.file, sample.IDs = "Sample_IDs",
+raw2data.proc(fn, nRead = 1e+08, Endadapter = "P7_last10",
+  adapter.mismatch = 0, info.file, sample.IDs = "Sample_IDs",
   Fprimer = "F_Primer", Rprimer = "R_Primer", primer.mismatch = 0,
   Find = "F_ind", Rind = "R_ind", index.mismatch = 0, gene = "Gene",
   amplic.size = "Amplicon", truncQ = 2, qrep = FALSE, dada = TRUE,
@@ -17,10 +17,10 @@ raw2data.proc(fn, nRead = 1e+08, EndAdaptor = "P7_last10",
 \item{nRead}{The number of bytes or characters to be read at one time. See 
 \code{\link[ShortRead]{FastqStreamer}} for details}
 
-\item{EndAdaptor}{A character vector with the sequence of the end adaptor,
+\item{Endadapter}{A character vector with the sequence of the end adapter,
 "P7" or "P7_last10" (See details)}
 
-\item{adaptor.mismatch}{The maximum number of allowed mismatch (See details)}
+\item{adapter.mismatch}{The maximum number of allowed mismatch (See details)}
 
 \item{info.file}{Fully qualified name (i.e. the complete path) of the CSV 
 file with the information needed on primers, indexes etc. (See details)}
@@ -78,15 +78,15 @@ A list that has for elements the output of \code{\link{data.proc}}
   for each PCR product
   
   Also, in addition to the output files described in the documentations for
-  \code{\link{rmEndAdaptor}}, \code{\link{deconv}} and
+  \code{\link{rmEndAdapter}}, \code{\link{deconv}} and
   \code{\link{data.proc}}, a text file, named "summary_nReads.txt" is saved
   in the same location where the raw data are, summarising the number of
   reads retained in each step of the analysis
 }
 \description{
-This function is a wrapper for \code{\link{rmEndAdaptor}}, 
+This function is a wrapper for \code{\link{rmEndAdapter}}, 
 \code{\link{deconv}} and \code{\link{data.proc}}. It takes in a raw fastq 
-file, removes the end adaptor, separates the reads based on their forward 
+file, removes the end adapter, separates the reads based on their forward 
 primers. Within each of the iodentified group, separates the reads based on 
 barcodes (indexes) and eventually calls \code{\link{data.proc}} to process 
 (quality checking, denoising and chimeras filtering) the retained data from 
@@ -102,7 +102,7 @@ gene identifier is used for multiple forward primers (see documentation for
 the \code{\link{deconv}} to see how multiple PCR product can be grouped 
 together using the \code{gene} column), then these have to have all the same 
 amplicon length to use \code{raw2data.proc}, otherwise the three functions 
-(\code{\link{rmEndAdaptor}}, \code{\link{deconv}} and 
+(\code{\link{rmEndAdapter}}, \code{\link{deconv}} and 
 \code{\link{data.proc}}) need to be called manually, rather than with 
 \code{raw2data.proc}. This is because \code{\link{data.proc}} needs a 
 gene-specific amplicon length to correctly process the data.

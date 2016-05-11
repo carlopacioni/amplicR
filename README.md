@@ -43,7 +43,7 @@ setup()
 
 ## Disclamer 
 All reasonable care has been taken to ensure that `amplicR` functions report the 
-correct results. However there is no garantee that the package is bug-free. Also, 
+correct results. However there is no guarantee that the package is bug-free. Also, 
 `amplicR` was developed on a machine running windows 7 and no testing on other OS 
 has been conducted so far. I can't see any reason why it would not work on linux 
 or mac, but if in doubt, you may want to replicate the results on a windows 
