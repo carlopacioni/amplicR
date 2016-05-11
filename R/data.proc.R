@@ -52,6 +52,8 @@
 #' @param orderBy Character vector specifying how the returned sequence table 
 #'   should be sorted. Default "abundance". See
 #'   \code{\link[dada2]{makeSequenceTable}} for details
+#' @param verbose Logical. Whether information on progress should be outputted 
+#'        (default: TRUE)
 #' @return Return a list with several elements:
 #'   
 #'   \itemize{ 
@@ -97,7 +99,7 @@
 
 data.proc <- function(dir.in=NULL, dir.out=NULL, bp, truncQ=2, qrep=FALSE,
                       dada=TRUE, pool=FALSE, plot.err=FALSE, chim=TRUE, 
-                      orderBy="abundance") {
+                      orderBy="abundance", verbose=TRUE) {
   
 #----------------------------------------------------------------------------#
   suppressWarnings(library(dada2, quietly=TRUE))
@@ -180,11 +182,13 @@ filtered <- lapply(filtRs, readFastq)
 fnSeqs <- unlist(lapply(filtered, length))
 retain <- fnSeqs > 0
 if (0 %in% fnSeqs) {
-  message("NOTE: no reads were retained for one or more samples.
+  if(verbose) {
+    message("NOTE: no reads were retained for one or more samples.
 Samples with no reads will be removed from the the filtered set.")
-  message("List of sample(s) with zero reads:")
-  message(cat(sample_names[!retain], sep="\n"))
-}
+    message("List of sample(s) with zero reads:")
+    message(cat(sample_names[!retain], sep="\n"))
+  }
+  }
 
 lsummary <- list()
 lsummary[[1]] <- data.frame(Sample= sample_names, nFiltered=fnSeqs)
@@ -227,10 +231,11 @@ if(dada == TRUE) {
   }
   el <-el + 1
   lsummary[[el]] <- data.frame(Sample=names(nDenoised), nDenoised)
-
-  message("Number of sequenced retained after sample inference with dada2
+  if(verbose) {
+    message("Number of sequenced retained after sample inference with dada2
           (Callahan et al 2015):")
-  message(cat(nDenoised, "\n"))
+    message(cat(nDenoised, "\n"))
+  }
   
   if(length(derepReads) > 1) {
     lda <- lapply(dadaReads, getUniques)
@@ -258,12 +263,14 @@ if(chim == TRUE)  {
     }
     bimReads <- sapply(derepReads, isBimeraDenovo, verbose=FALSE)
   }
-
-  message("Proportion of bimeras found in each sample")
-  if(single) {
-    message(cat(round(mean(bimReads), digits=2), "\n"))
-  } else {
-    message(cat(round(sapply(bimReads, mean), digits=2), "\n"))
+  
+  if(verbose) {
+    message("Proportion of bimeras found in each sample")
+    if(single) {
+      message(cat(round(mean(bimReads), digits=2), "\n"))
+    } else {
+      message(cat(round(sapply(bimReads, mean), digits=2), "\n"))
+    }
   }
   
   if(single) {
@@ -276,8 +283,10 @@ if(chim == TRUE)  {
   } else {
     nChimeras <- sapply(bimReads, nChim)
   }
-  message("Number of bimeras found in each sample:")
-  message(cat(nChimeras, "\n"))
+  if(verbose) {
+    message("Number of bimeras found in each sample:")
+    message(cat(nChimeras, "\n"))
+  }
   
   el <- el + 1
   lsummary[[el]] <- data.frame(Sample=names(nChimeras), nChimeras)
@@ -324,7 +333,7 @@ write.csv(summary, file=paste(dir.out, "data.proc.summary.csv", sep="/"), row.na
 
 fasta_fold <- "Final_seqs"
 fasta_dir <- paste(dir.out, fasta_fold, sep="/")
-table2fasta(stable, seq.list=seq_list, dir.out=fasta_dir)
+table2fasta(stable, seq.list=seq_list, dir.out=fasta_dir, verbose)
 dproc <- list(luniseqsFinal=luniseqsFinal, 
               lsummary=lsummary, 
               stable=stable, 

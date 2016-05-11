@@ -6,7 +6,7 @@
 \usage{
 data.proc(dir.in = NULL, dir.out = NULL, bp, truncQ = 2, qrep = FALSE,
   dada = TRUE, pool = FALSE, plot.err = FALSE, chim = TRUE,
-  orderBy = "abundance")
+  orderBy = "abundance", verbose = TRUE)
 }
 \arguments{
 \item{dir.in}{The directory where the fastq files are located. If NULL 
@@ -39,6 +39,9 @@ be plotted}
 \item{orderBy}{Character vector specifying how the returned sequence table 
 should be sorted. Default "abundance". See
 \code{\link[dada2]{makeSequenceTable}} for details}
+
+\item{verbose}{Logical. Whether information on progress should be outputted 
+(default: TRUE)}
 }
 \value{
 Return a list with several elements:

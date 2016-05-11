@@ -5,7 +5,7 @@
 \title{Write unique sequences to a fasta file for each sample where sequence names  
 match the sequence table and include abundance data}
 \usage{
-table2fasta(stable, seq.list = NULL, dir.out = NULL)
+table2fasta(stable, seq.list = NULL, dir.out = NULL, verbose = TRUE)
 }
 \arguments{
 \item{stable}{The sequence table (output of \code{dada2::makeSequenceTable})
@@ -18,6 +18,9 @@ sequences are named with a seq# pattern, where # is a sequential number
 respect to the sequence in the table.}
 
 \item{dir.out}{The directory where to save fasta files}
+
+\item{verbose}{Logical. Whether information on progress should be outputted 
+(default: TRUE)}
 }
 \value{
 A fasta file for each sample

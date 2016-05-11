@@ -107,7 +107,8 @@ amplicon length to use \code{raw2data.proc}, otherwise the three functions
 \code{raw2data.proc}. This is because \code{\link{data.proc}} needs a 
 gene-specific amplicon length to correctly process the data.
 
-By default, \code{dir.out} is set to the location where the input file is.
+By default, \code{dir.out} is set to the location where the input file is and 
+  \code{verbose=FALSE} for \code{\link{data.proc}}.
 
 Please, see documentations for each functions for more information.
 }
