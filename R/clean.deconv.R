@@ -320,7 +320,8 @@ deconv <- function(fn, nRead=1e8, info.file, sample.IDs="Sample_IDs",
 #' \code{raw2data.proc}. This is because \code{\link{data.proc}} needs a 
 #' gene-specific amplicon length to correctly process the data.
 #' 
-#' By default, \code{dir.out} is set to the location where the input file is.
+#' By default, \code{dir.out} is set to the location where the input file is and 
+#'   \code{verbose=FALSE} for \code{\link{data.proc}}.
 #' 
 #' 
 #' Please, see documentations for each functions for more information.
@@ -385,13 +386,13 @@ extract.sums <- function(ldproc, el)  {
   for(g in genes) {
     sel <- info_table[, gene] == g
     bp <- info_table[sel, amplic.size][1]
-    sink(file = "NIL")
+    sink("NIL")
     ldproc[[g]] <- data.proc(dir.in=path.results[g], bp=bp, truncQ=truncQ, 
                             qrep=qrep, dada=dada, pool=pool, plot.err=plot.err, 
-                            chim=chim, orderBy=orderBy)
-    sink()
-    unlink("NIL")
+                            chim=chim, orderBy=orderBy, verbose=FALSE)
   }
+  sink()
+  unlink("NIL")
   
   writeLines(c(paste("The number of reads found in", fn, "was", rme[[1]]), 
                paste("The end adaptor was found and removed in", rme[[2]], "reads"),
