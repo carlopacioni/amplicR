@@ -173,7 +173,7 @@ for(i in seq_along(fastqs)) {
                                truncQ=truncQ, 
                                truncLen=bp, 
                                compress=TRUE, 
-                               verbose=TRUE))
+                               verbose=FALSE))
 }
 
 filtered <- lapply(filtRs, readFastq)
@@ -193,7 +193,7 @@ filtRs <- filtRs[retain]
 if(qrep == TRUE) browseURL(report(qa(filtRs)))
 
 #### Dereplicate ####
-derepReads <- lapply(filtRs, derepFastq, verbose=TRUE)
+derepReads <- lapply(filtRs, derepFastq, verbose=FALSE)
 names(derepReads) <- sample_names[retain]
 
 unSeqs <- unlist(lapply(derepReads, getnUniques))
@@ -245,10 +245,10 @@ if(chim == TRUE)  {
   if(dada == TRUE) {
     if(length(derepReads) > 1) {
       single <- FALSE
-      bimReads <- sapply(dadaReads, isBimeraDenovo, verbose=TRUE)
+      bimReads <- sapply(dadaReads, isBimeraDenovo, verbose=FALSE)
     } else {
       single <- TRUE
-      bimReads <- isBimeraDenovo(dadaReads, verbose=TRUE)
+      bimReads <- isBimeraDenovo(dadaReads, verbose=FALSE)
     }
   } else {
     if(length(derepReads) > 1) {
@@ -256,7 +256,7 @@ if(chim == TRUE)  {
     } else {
       single <- TRUE
     }
-    bimReads <- sapply(derepReads, isBimeraDenovo, verbose=TRUE)
+    bimReads <- sapply(derepReads, isBimeraDenovo, verbose=FALSE)
   }
 
   message("Proportion of bimeras found in each sample")
