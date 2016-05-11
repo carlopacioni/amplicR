@@ -77,7 +77,7 @@
 detect <- function(data=NULL, rda.in=NULL, dir.out=NULL, ref_seqs) {
   #----------------------------------------------------------------------------#
   library(dada2, quietly=TRUE)
-  library(ShortRead, quietly=TRUE)
+  suppressPackageStartupMessages(library(ShortRead, quietly=TRUE))
  
   #----------------------------------------------------------------------------#
   call <- sys.call(1)

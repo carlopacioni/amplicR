@@ -42,7 +42,7 @@
 table2fasta <- function(stable, seq.list=NULL, dir.out=NULL) {
   #----------------------------------------------------------------------------#
   library(dada2, quietly=TRUE)
-  library(ShortRead, quietly=TRUE)
+  suppressPackageStartupMessages(library(ShortRead, quietly=TRUE))
   #----------------------------------------------------------------------------#
   # Helper functions
   #----------------------------------------------------------------------------#

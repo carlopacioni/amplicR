@@ -26,7 +26,7 @@
 #' @export
 make.phyloseq <- function(dproc, sample.table=NULL, tax.table=NULL, 
                           phy.tree=NULL ) {
-  library(phyloseq, quietly=TRUE)
+  suppressWarnings(library(phyloseq, quietly=TRUE, warn.conflicts=FALSE))
   stable <- dproc$stable
   colnames(stable) <- dproc$seq_list$sequence
   ps <- phyloseq(otu_table(stable, taxa_are_rows=FALSE), 

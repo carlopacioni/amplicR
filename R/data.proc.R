@@ -100,8 +100,8 @@ data.proc <- function(dir.in=NULL, dir.out=NULL, bp, truncQ=2, qrep=FALSE,
                       orderBy="abundance") {
   
 #----------------------------------------------------------------------------#
-library(dada2, quietly=TRUE)
-library(ShortRead, quietly=TRUE)
+  suppressWarnings(library(dada2, quietly=TRUE))
+  suppressPackageStartupMessages(library(ShortRead, quietly=TRUE))
 #----------------------------------------------------------------------------#
 # Helper functions
 #----------------------------------------------------------------------------#
