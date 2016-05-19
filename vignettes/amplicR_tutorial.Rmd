@@ -45,7 +45,7 @@ Alternatively, for projects with more demanding and complex analytical requireme
 `amplicR` is currently available from a github repository
 and can be installed with the following command:
   
-  ``` 
+``` 
 library(devtools) 
 install_github("carlopacioni/amplicR") 
 ``` 
@@ -58,7 +58,7 @@ Rtools executable file from CRAN webpage and run it.
 
 Note that the Bioconductor packages, which are required dependencies for `amplicR`, are not currently installed along with the package. This may change in the future, but for now these can be installed (if not installed already) running the following:
   
-  ```
+```
 library(amplicR)
 setup()
 ```
@@ -82,21 +82,21 @@ We will use real single-read data generated on a Illumina MySeq for this brief t
 The zip file also includes a .csv file (FTP63.csv) with the information needed to identify the different PCR products and indexes needed to separate the reads by samples. We will be referring to this file, for now on, as `info.file`. An example of selected lines of the relevant columns we need for this tutorial are printed below.
 
 ```{r, echo=FALSE}
-info.file <- "C:/Users/cpacioni/Documents/JD-trial/TestRawData/FTP63.csv"
+info.file <- "~/JD-trial/TestRawData/FTP63.csv"
 info_table <- read.csv(info.file)
-#knitr::kable(info_table[c(1:2, 29:30, 43:44, 58:59), c(5:6,8,10:12,14)])
+knitr::kable(info_table[c(1:2, 29:30, 43:44, 58:59), c(5:6,8,10:12,14)])
 ```
 
 
 `amplicR` has three functions to cater (from the list in the **Introduction**) the step 1 (`rmEndAdapter()`), 2 to 5 (`deconv()`) and 6 to 11 (`data.proc()`). However, there is also a wrapper for these three functions ('raw2data.proc()'), so that it is possible to process the data from step 1 to 11 simply passing the CSV file where all the relevant information are stored. We just have to inform `amplicR` of the column names (headings) where to find the information needed (e.g. the amplicon size, the sequences of the primers, indexes etc.) and of a few other settings. We achieve this by using the function arguments as below:
   
-```{r}
+```{r, cache=TRUE}
 # Load amplicR
 library(amplicR)
 # The path and name of the data file
-fn <- "C:/Users/cpacioni/Documents/JD-trial/TestRawData/MSRun94_S1_L001_R1_001.fastq.gz"
+fn <- "~/JD-trial/TestRawData/MSRun94_S1_L001_R1_001.fastq.gz"
 # The path and name of the info.file
-info.file <- "C:/Users/cpacioni/Documents/JD-trial/TestRawData/FTP63.csv"
+info.file <- "~/JD-trial/TestRawData/FTP63.csv"
 
 {r2dpr <- raw2data.proc(fn, nRead = 1e8, EndAdapter = "P7_last10",
                         adapter.mismatch = 0, info.file, sample.IDs = "Sample_IDs",
@@ -138,7 +138,7 @@ knitr::include_graphics("end_folder.tif")
 
 The file "*MSRun94_S1_L001_R1_001_EndAdRm.fastq.gz*" is where the function has saved the reads after removing the end adapter. The file "*summary_nReads.txt*" is a brief summary of the number of reads that have been retained in each step. It will look like something the text below:
 
-The number of reads found in *C:/Users/cpacioni/Documents/JD-trial/TestRawData/MSRun94_S1_L001_R1_001.fastq.gz* was 538996  
+The number of reads found in *~/JD-trial/TestRawData/MSRun94_S1_L001_R1_001.fastq.gz* was 538996  
 The end adapter was found and removed in 405490 reads  
 The index(es) were found and removed in 366162  
 Primers were found and removed in  347952  
@@ -177,7 +177,7 @@ knitr::include_graphics("Error_rates.tif")
 Let's now have a better look to what the end product that we obtained is. `raw2data.proc` returns a list that has for elements the processed data for each gene (i.e. the output from `data.proc`). For simplicity, we only pick one gene, say the IS1311, and inspect the results.  The basic result returned by `data.proc` (the final function called within `raw2data.proc`) is a sequence table. This is a table that shows the samples as rows and the sequences as columns (as it is showed below).  
 
 ```{r, echo=FALSE}
-#knitr::kable(r2dpr$IS1311$stable)
+knitr::kable(r2dpr$IS1311$stable)
 ```
   
   If you have used `dada2`, you may see some similarity. Indeed, this table is generated using `dada2`, but it is then slightly modified to make it more readable (a unique ID is assigned to the sequences and used for the headings). The sequence IDs can be matched with actual sequences using the table save to disk as "*Seq_list*". However, note that if you wish to continue with your analysis within R, you don't need to read back in these files as the same data is also returned as R object. In fact, these are stored in the element `seq_list` and you can simply pass the `data.proc`'s output to downstream analysis as I'll demonstrate later.
@@ -186,9 +186,9 @@ Let's now have a better look to what the end product that we obtained is. `raw2d
 r2dpr$IS1311$seq_list
 ```
   
-  You may have noticed that the sequence table reports the abundance of each unique sequences, so that this information can be used for further analysis.  Now, the gene IS1311 is commonly used to identify the strain of MAP athough, as mentioned before, it may also amplify _Mycobacterium avium_. Indeed in our case, these data were generated to identify the strain of the MAP positive samples.  
+  You may have noticed that the sequence table reports the abundance of each unique sequences, so that this information can be used for further analysis.  Now, the gene IS1311 is commonly used to identify the strain of MAP although, as mentioned before, it may also amplify _Mycobacterium avium_. Indeed in our case, these data were generated to identify the strain of the MAP positive samples.  
 
-`amplicR` has a function (`detect`) that it is inteded for exactly this scope: compare the data with a reference sequence reporting the number of mismatch using. we run it with the IS1311 data. We first create an object that contains three named character vector with the reference sequences for the sheep, US bison and Indian bison strains, respectively.  
+`amplicR` has a function (`detect`) that it is intended for exactly this scope: compare the data with a reference sequence reporting the number of mismatch using. we run it with the IS1311 data. We first create an object that contains three named character vector with the reference sequences for the sheep, US bison and Indian bison strains, respectively.  
 
 ```{r}
 sheep <- "ACGACCAAGGATCACTACCGAGAGGAACATCGCGATGGCCCTGGACCAGTCTGCCTTGCTGGAGGTGCTGGACGCATTACGCAATGCCGATGCCGCTGATCGGATCAAGCAGGCCGCCGAGACGATTTATCAGGCACTCATCGATGCGGAGCTGACGGCGGTGATCGGCGCCGGTCCGCATGAACGGAGCGCATCACGAACCAACCAGCGCAACGGGTCTCGGCCG"
@@ -206,7 +206,7 @@ ref_seqs <- c(sheep, US_bison, Ind_bison)
 Then we call `detect` and redirect the output in the folder where the results for IS1311 are:  
 ```{r}
 # Path to the output directory 
-out <- "C:/Users/cpacioni/Documents/JD-trial/TestRawData/IS1311/Final"
+out <- "~/JD-trial/TestRawData/IS1311/Final"
 det <- detect(r2dpr$IS1311, dir.out=out, ref_seqs=ref_seqs)
 ```
 
@@ -215,7 +215,7 @@ det <- detect(r2dpr$IS1311, dir.out=out, ref_seqs=ref_seqs)
 det$detect_table
 ```
 
-Each row of this table is a sequence and the number of mismatches with each reference sequence are reported in the columns. The first column ("nSeq\_tot") is the total number of reads for each sequence across all samples. In our example, it is clear that seq1 is the sheep strain, seq2 is the US_bison strain (i.e. both have zero mismatched witht the reference sequence). Sequence 3 & 4 are a very close match with 1 or 2 nucleotide difference.  
+Each row of this table is a sequence and the number of mismatches with each reference sequence are reported in the columns. The first column ("nSeq\_tot") is the total number of reads for each sequence across all samples. In our example, it is clear that seq1 is the sheep strain, seq2 is the US_bison strain (i.e. both have zero mismatched with the reference sequence). Sequence 3 & 4 are a very close match with 1 or 2 nucleotide difference.  
 
 An alternative way to look at these results is looking at the "detect_result", which will provide a per-sample view for each strain we searched. For example, if we want to see what samples where positive for the sheep strain, we can call:  
 ```{r}
@@ -229,7 +229,7 @@ We could use a similar approach (i.e. use `detect` to verify the presence of MAP
 
 ```{r}
 # Change the out directory
-out <- "C:/Users/cpacioni/Documents/JD-trial/TestRawData/Bact16S/Final"
+out <- "~/JD-trial/TestRawData/Bact16S/Final"
 MAP16S <- "TACGTAGGGTGCGAGCGTTGTCCGGAATTACTGGGCGTAAAGAGCTCGTAGGTGGTTTGTCGCGTTGTTCGTGAAATCTCACGGCTTAACTGTGAGCGTGCGGGCGATACGGGCAGACTAGAGTACTGCAGGGGAGACTGGAATTCCTGGTGTAGCGGTGGAATGCGCAGATATCAGGAGGAACACCGGTGGCGAAGGCGGGTCTCTGGGCAGTAACTGACGCTGAGGAGCGAAAGCGTGGGGAGCGAACAG"
 names(MAP16S) <- "MAP"
 det <- detect(r2dpr$Bact16S, dir.out=out, ref_seqs=MAP16S)
@@ -242,7 +242,7 @@ det$detect_table
  min(det$detect_table$MAP)
 ```
   
-  The minimum number of mismatched is 130, which basically means that, despite having known positive for MAP (I'll leave up to you to check also the other two genes, HTJ and MAPIS900 to veify this statement), we didn't detect any MAP with 16S. This result is not completely unexpected as the 16S primers are generic for any bacteria, while the HTJ, IS1311 and MAPIS900 are specific for MAP and have much higher sensitivity.
+  The minimum number of mismatched is 130, which basically means that, despite having known positive for MAP (I'll leave up to you to check also the other two genes, HTJ and MAPIS900 to verify this statement), we didn't detect any MAP with 16S. This result is not completely unexpected as the 16S primers are generic for any bacteria, while the HTJ, IS1311 and MAPIS900 are specific for MAP and have much higher sensitivity.
   
   
 With the 16S data, can also have another approach, we can use dada2 to assign taxon labels to the retained sequences using, for example, GreenGenes. You can achieve this in four steps:  
@@ -251,34 +251,35 @@ With the 16S data, can also have another approach, we can use dada2 to assign ta
   3.  Extract your sequence from the list
   4.  Call dada2::assignTaxonomy
   
-These steps are what the code below does, assuming that your reference database is in ~/R packages/Dada2 (note that I also re-name the columns of the output with the taxonomic level).
+These steps are what the code below does, assuming that your reference database is in ~/R packages/Dada2 (note that I also re-name the columns of the output with the taxonomic level). I also do one more thing: I reverse-complement the sequences. This is because the lab that generated the data obtained better results inverting the forward and reverse primers. You don't have to do the same with your data.  
 
-```{r}
+```{r, cache=TRUE}
 library(dada2)
-gg <- "C:/Users/cpacioni/Documents/R packages/Dada2/gg_13_8_train_set_97.fa.gz"
+r2dpr$Bact16S$seq_list$sequence <-
+  as.character(reverseComplement(DNAStringSet(r2dpr$Bact16S$seq_list$sequence)))
+gg <- "~/R packages/Dada2/gg_13_8_train_set_97.fa.gz"
 seqsList <- as.character(r2dpr$Bact16S$seq_list$sequence)
 tax_gg <- assignTaxonomy(seqs=seqsList, refFasta=gg, minBoot=80, verbose=TRUE)
 colnames(tax_gg) <- c("Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species")
 
 ```
   
-  The next code chunnk demonstrates how it is possible to hand over these data to phyloseq to progress with the analysis. Generally there are metadata that we want to carry over (for example to group samples based on some criteria), so we need to create a sample table with this information. Here we wish to group the samples in nasal swabs, feces and controls. Then we just pass the taxonomy table, the metadata and the the `data.proc` output to `make.phyloseq` and `amplicR` takes care of the rest. Note that sample names (which are stored as row names) have to match exactly between elements. To make sure this is the case, I copy the row names from the sequence table
+  The next code chunk demonstrates how it is possible to hand over these data to phyloseq to progress with the analysis. Generally there are metadata that we want to carry over (for example to group samples based on some criteria), so we need to create a sample table with this information. Here we wish to group the samples in nasal swabs, feces and controls. Then we just pass the taxonomy table, the metadata and the the `data.proc` output to `make.phyloseq` and `amplicR` takes care of the rest. Note that sample names (which are stored as row names) have to match exactly between elements. To make sure this is the case, I copy the row names from the sequence table
   
 ```{r}
-sampleTable <- data.frame(Result=c("Unknown", "Unknown","Unknown","Unknown",
-                                  "Unknown","Unknown","Unknown","Unknown", 
-                                  "Unknown", "Neg", "Neg", "Pos", 
+sampleTable <- data.frame(Result=c( "Neg", "Neg", "Pos", 
                                   "Neg", "Neg", "Neg", "Neg", "Pos",
                                   "Pos", "Neg", "Neg", "Neg", "Pos", 
                                   "Pos", "Pos",  
-                                  "Control", "Control", "Control"),
-                         Type=c("NasSwab", "NasSwab","NasSwab","NasSwab",
-                                  "NasSwab","NasSwab","NasSwab","NasSwab", 
-                                  "NasSwab", 
-                                  "Feces", "Feces", "Feces", "Feces", "Feces", 
+                                  "Control", "Unknown", "Unknown","Unknown","Unknown",
+                                  "Unknown","Unknown","Unknown","Unknown", 
+                                  "Unknown","Control", "Control"),
+                         Type=c("Feces", "Feces", "Feces", "Feces", "Feces", 
                                   "Feces", "Feces", "Feces", "Feces", "Feces", 
                                   "Feces", "Feces", "Feces", "Feces", "Feces",  
-                                  "Control", "Control", "Control"))
+                                  "Control", "NasSwab", "NasSwab","NasSwab","NasSwab",
+                                  "NasSwab","NasSwab","NasSwab","NasSwab", 
+                                  "NasSwab", "Control", "Control"))
 row.names(sampleTable) <- row.names(r2dpr$Bact16S$stable)
 ps <- make.phyloseq(dproc = r2dpr$Bact16S, 
                     sample.table = sampleTable, 
@@ -289,7 +290,6 @@ Now we can verify whether Mycobacteriaceae were found:
 ```{r, results='markup'}
 #### Subset for Mycobacteriaceae ####
 fam <- get_taxa_unique(physeq = ps, taxonomic.rank = "Family")
-sort(gsub("f__", "", fam))
 "Mycobacteriaceae" %in% sort(gsub("f__", "", fam))
 ```
    
@@ -309,7 +309,7 @@ ord.nmds.bray <- ordinate(ps.NoControls, method="NMDS", distance="bray")
 plot_ordination(ps.NoControls, ord.nmds.bray, color="Type", title="Bray NMDS")
 ```
 
-Nasal swab samples are well separated from faeces samples. No immediate difference is apparent among feces samples.  
+Nasal swab samples are well separated from feces samples. No immediate difference is apparent among feces samples.  
 
 As you can see once the data are in phyloseq, you can then easily continue with your analysis. See [phyloseq tutorials](https://www.bioconductor.org/packages/release/bioc/html/phyloseq.html) for further examples.
 
