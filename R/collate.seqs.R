@@ -69,7 +69,7 @@
 
 
 collate.seqs <- function(ldproc=NULL, rdas.in=NULL, dir.out=NULL) {
-  library(ShortRead)
+  suppressPackageStartupMessages(library(ShortRead, quietly=TRUE))
   #----------------------------------------------------------------------------#
   # Helper functions
   #----------------------------------------------------------------------------#

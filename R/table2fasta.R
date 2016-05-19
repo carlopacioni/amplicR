@@ -34,25 +34,27 @@
 #'   sequences are named with a seq# pattern, where # is a sequential number 
 #'   respect to the sequence in the table.
 #' @param dir.out The directory where to save fasta files
+#' @inheritParams data.proc
 #' @seealso \code{\link{data.proc}},
 #'   \code{\link[dada2]{uniquesToFasta}}, \code{\link[dada2]{makeSequenceTable}}
 #' @return A fasta file for each sample
 #' @export
 #' 
-table2fasta <- function(stable, seq.list=NULL, dir.out=NULL) {
+table2fasta <- function(stable, seq.list=NULL, dir.out=NULL, verbose=TRUE) {
   #----------------------------------------------------------------------------#
-  library(dada2)
-  library(ShortRead)
+  library(dada2, quietly=TRUE)
+  suppressPackageStartupMessages(library(ShortRead, quietly=TRUE))
   #----------------------------------------------------------------------------#
   # Helper functions
   #----------------------------------------------------------------------------#
-  w.fasta <- function(i, stable, seqs, seq_names) {
+  w.fasta <- function(i, stable, seqs, seq_names, verbose) {
     uniq_vect <- as.integer(stable[i,])
     retain <- as.logical(unname(uniq_vect))
     uniq_vect <- uniq_vect[retain]
     names(uniq_vect) <- seqs[retain]
     seq_names_sub <- paste0(seq_names[retain], ";size=", unname(uniq_vect), ";")
-    message(paste("Writing fasta file", paste0(row.names(stable)[i], ".fasta")))
+    if(verbose) 
+      message(paste("Writing fasta file", paste0(row.names(stable)[i], ".fasta")))
     uniquesToFasta(uniq_vect, 
                    paste(dir.out, paste0(row.names(stable)[i], ".fasta"), sep="/"),
                    ids=seq_names_sub)
@@ -69,7 +71,7 @@ table2fasta <- function(stable, seq.list=NULL, dir.out=NULL) {
     seqs <- seq.list$sequence
     seq_names <- seq.list$seq_names
   }
-  lapply(1:dim(stable)[1], w.fasta, stable, seqs, seq_names)
+  lapply(1:dim(stable)[1], w.fasta, stable, seqs, seq_names, verbose)
 }
 
 

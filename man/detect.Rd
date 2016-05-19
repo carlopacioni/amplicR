@@ -40,7 +40,7 @@ A \code{list} with four elements:
 \code{detect} takes in either the output of \code{data.proc}, or load it up 
 from a .rda file, and compare the sequences with a reference sequence 
 reporting the number of mismatch using \code{srdistance} from the package 
-\code{\link[shortRead]{shortRead}}.
+\code{\link[ShortRead]{ShortRead}}.
 }
 \details{
 The output from \code{data.proc} can be passed with \code{data}. If no data 
@@ -86,7 +86,7 @@ det <- detect(HTJ.test, dir.out=out, ref_seqs=HTJ)
 unlink(out, recursive=TRUE)
 }
 \seealso{
-\code{\link{data.proc}}, \code{\link[shortRead]{srdistance}}, 
+\code{\link{data.proc}}, \code{\link[ShortRead]{srdistance}}, 
   \code{\link[Biostrings]{PairwiseAlignments}}
 }
 

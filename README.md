@@ -28,11 +28,22 @@ If you have not used `devtools` before, then you have to install it with
 install.packages("devtools") 
 ```
 If you are on Windows, before loading `devtools`, shut down R, download the 
-Rtools executable file from CRAN webpage and run it. 
+Rtools executable file from CRAN webpage and run it.  
+
+Note that the Bioconductor packages, which are required dependencies for 
+`amplicR`, are not currently installed along with the package. This may change 
+in the future, but for now these can be installed (if not installed already) 
+running the following:
+
+```
+library(amplicR)
+setup()
+```
+
 
 ## Disclamer 
 All reasonable care has been taken to ensure that `amplicR` functions report the 
-correct results. However there is no garantee that the package is bug-free. Also, 
+correct results. However there is no guarantee that the package is bug-free. Also, 
 `amplicR` was developed on a machine running windows 7 and no testing on other OS 
 has been conducted so far. I can't see any reason why it would not work on linux 
 or mac, but if in doubt, you may want to replicate the results on a windows 

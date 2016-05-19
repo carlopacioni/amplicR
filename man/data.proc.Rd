@@ -6,7 +6,7 @@
 \usage{
 data.proc(dir.in = NULL, dir.out = NULL, bp, truncQ = 2, qrep = FALSE,
   dada = TRUE, pool = FALSE, plot.err = FALSE, chim = TRUE,
-  orderBy = "abundance")
+  orderBy = "abundance", verbose = TRUE)
 }
 \arguments{
 \item{dir.in}{The directory where the fastq files are located. If NULL 
@@ -39,6 +39,9 @@ be plotted}
 \item{orderBy}{Character vector specifying how the returned sequence table 
 should be sorted. Default "abundance". See
 \code{\link[dada2]{makeSequenceTable}} for details}
+
+\item{verbose}{Logical. Whether information on progress should be outputted 
+(default: TRUE)}
 }
 \value{
 Return a list with several elements:
@@ -86,7 +89,7 @@ is hard-coded and reads are discarded if the expected errors is higher than 3
 calculated from the nominal definition of the quality score: EE = 
 sum(10^(-Q/10)) - and remove reads that (after truncation) do not match the 
 target length. A quality report can be (optionally) generated with R package 
-\code{shortReads} the to verify the quality of the reads retained after this 
+\code{ShortReads} the to verify the quality of the reads retained after this 
 step. Reads are then dereplicated. Optionally, the dada (Callahan et al 2015)
 algoritm is applied and bimeras are searched and removed with default 
 settings of the relative functions in the package \code{dada2}. The sequences

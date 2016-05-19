@@ -36,17 +36,10 @@ setup <- function() {
   source("https://bioconductor.org/biocLite.R")
   biocLite()
 
-  pkgs<-c("ShortRead", "phyloseq")
+  pkgs<-c("ShortRead", "phyloseq", "dada2")
   
   for (pkg in pkgs) {
   pkgchk(pkg)
   }
   
-  if (require("dada2", character.only=TRUE) == T) {
-    message(paste("Package ", "dada2", " is installed"))
-  } else {
-    message(paste("Package ", "dada2", " is not installed", sep=""))
-    message(paste("Installing", "dada2"), sep=" ")
-    devtools::install_github("benjjneb/dada2")
-  }
 }

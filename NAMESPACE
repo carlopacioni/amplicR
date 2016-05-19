@@ -2,8 +2,11 @@
 
 export(collate.seqs)
 export(data.proc)
+export(deconv)
 export(detect)
 export(make.phyloseq)
+export(raw2data.proc)
+export(rmEndAdapter)
 export(setup)
 export(table2fasta)
 import(data.table)

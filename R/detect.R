@@ -3,7 +3,7 @@
 #' \code{detect} takes in either the output of \code{data.proc}, or load it up 
 #' from a .rda file, and compare the sequences with a reference sequence 
 #' reporting the number of mismatch using \code{srdistance} from the package 
-#' \code{\link[shortRead]{shortRead}}.
+#' \code{\link[ShortRead]{ShortRead}}.
 #' 
 #' The output from \code{data.proc} can be passed with \code{data}. If no data 
 #' is passed to \code{detect}, then it will load the .rda file passed with 
@@ -52,7 +52,7 @@
 #'     }
 #' 
 #'   These results are also written to text files
-#' @seealso \code{\link{data.proc}}, \code{\link[shortRead]{srdistance}}, 
+#' @seealso \code{\link{data.proc}}, \code{\link[ShortRead]{srdistance}}, 
 #'   \code{\link[Biostrings]{PairwiseAlignments}}
 #' @export
 #' @examples 
@@ -76,8 +76,8 @@
 
 detect <- function(data=NULL, rda.in=NULL, dir.out=NULL, ref_seqs) {
   #----------------------------------------------------------------------------#
-  library(dada2)
-  library(ShortRead)
+  library(dada2, quietly=TRUE)
+  suppressPackageStartupMessages(library(ShortRead, quietly=TRUE))
  
   #----------------------------------------------------------------------------#
   call <- sys.call(1)
