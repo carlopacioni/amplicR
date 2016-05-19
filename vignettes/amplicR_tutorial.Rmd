@@ -1,0 +1,316 @@
+---
+title: "amplicR tutorial"
+author: "Carlo Pacioni"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+# Introduction
+`amplicR` is an R package that aims to assist in the data processing and analysis
+of single-read amplicon data generated with Next Generation Sequencing (NGS) technology. 
+It has been developed for data generated with Illumina platforms, and while some functions
+can be used for data obtained with other platforms, inevitably some functionalities are lost if data do not meet amplicR expected input format.  
+
+This package was created to simplify the bioinformatic component of NGS data handling and analysis in order to facilitate, automate and increase repeatibility. To this end, other than data handling and formatting, amplicR do not implement any new analytical tools,  but it links together functionalities of several cutting edge R packages that are part of Bioconductor project (**REF?**), including `Biostring` (**REF**), `ShortReads`(**REF**), `dada2`(**REF**) and `Phyloseq`(**REF**) in order to automate, speed up and optimize laboratory activities. This  is particularly relevant, for example, in laboratories carrying out clinical and diagnostic work where, once laboratory protocols are consolidated, it is important to provide a consistent approach, but data processing becomes  quite standardised with no much variability. This comes with a prize, which is that possibly, some power and flexibility is lost in comparisons to the native use of Bioconductor packages. This is inevitable, as `amplicR` covers a few analytical pipelines, sometimes fixing parameters to default values that are commonly adequate, but these may not be (clearly) accurate for all possible analyses. On the other hand, though, this offers the advantage of ease the learning curve. Moreover, `amplicR` is task orientated, meaning that each function is intended to complete a specific action (e.g. remove primers and separate reads based on barcodes), while Bioconductor packages  generally provides highly specialised functions that deal with specific, generally step-wise, tasks, rather than providing a start-to-end function.   
+
+`amplicR` is not unique in its nature. Other software exist that provide similar functionalities (e.g. Qiime **REF**), and possibly are way more powerful. However, most of these are platform specific, and often limited to a unix environment. `amplicR`, being implemented in R, can be virtually used in any operating systems. Again, while this may not be a limiting factor for some (research) laboratories, it may be problematic for government agencies or private labs where several policies or legal requirements prevent the use of several operating systems. `amplicR` can, instead, be used across different operating systems, unifying the analytical pipeline of several labs.   
+
+After completion of a NGS run, a fastq file is generated, which contains probably several thousands reads, possibly of different PCR products. Depending on the set up, the data may or may not include the primers and indexes (these may have been removed by Illumina software at completion of the run if you used commercial kits such as Nextera XT DNA Library Preparation Kit). Assuming that the data do contain 'in-line' indexes (that is, that indexes to identify samples of origin of the read are part of the sequence), the first few steps in the analytical pipeline will typically involve (although some steps are optional):  
+  
+1.   Searching and removing the end adapter P7
+2.   Separate different PCR products
+3.   Separate reads based on barcodes (indexes)
+4.   Search and remove the indexes
+5.   Search and remove the primers
+
+Once this is done, or if your data had been already pre-processed before using `amplicR`, most likely the following steps will apply:   
+  
+6.   Remove PCR reads of non target length
+7.   Apply a quality filter to retain only high quality reads
+8.   Dereplicate the data (i.e. remove identical reads, while keeping track of their abundance)
+9.   Apply a denoise algorithm to remove spurious reads
+10.  Identify and remove chimera sequences
+11.  Save the data to disk for further analysis
+
+At this stage, diagnostic labs are usually interested in comparing the obtained reads with reference sequences (e.g. specific pathogens) in order to identify positive samples for specific diseases. Another example where this may be a useful approach is for labs processing environmental DNA samples to detect presence or absence of a species, for instance when investigating the distribution of a wildlife species or for a monitoring program of invasive species. All these types of projects have in common a highly repetitive nature of their data processing needs, for which `amplicR` can be used to stream line their analytical component.  
+
+Alternatively, for projects with more demanding and complex analytical requirements, `amplicR` offers the option of converting the processed data that are ready to be analysed (i.e. from step 11.) into a `phyloseq` object, which provides access to almost unlimited uni- and multi- variate statistical tools. 
+
+
+# Installation
+`amplicR` is currently available from a github repository
+and can be installed with the following command:
+  
+  ``` 
+library(devtools) 
+install_github("carlopacioni/amplicR") 
+``` 
+If you have not used `devtools` before, then you have to install it with  
+```
+install.packages("devtools") 
+```
+If you are on Windows, before loading `devtools`, shut down R, download the 
+Rtools executable file from CRAN webpage and run it. 
+
+Note that the Bioconductor packages, which are required dependencies for `amplicR`, are not currently installed along with the package. This may change in the future, but for now these can be installed (if not installed already) running the following:
+  
+  ```
+library(amplicR)
+setup()
+```
+
+
+# Disclamer 
+All reasonable care has been taken to ensure that `amplicR` functions report the 
+correct results. However, there is no guarantee that the package is bug-free. 
+
+# Documentation 
+Use `help(amplicR)` `?amplicR` or `??amplicR` to see a broad 
+description of the package. Use `help(package = "amplicR")` to see the 
+documentations available. Use *`?function_name`* or *`??_function_name_`* (where *function_names* is the function you are looking information for) to access function help files. Alternatively, a package manual can be downloaded **here _pending_**.
+
+# Citation 
+If you use `amplicR`, please cite: _Pending???_
+
+# A brief worked example
+We will use real single-read data generated on a Illumina MySeq for this brief tutorial. A zip file with the data can be downloaded from **_pending_**. The data include >500,000 sequences (~127MB) from a mixture of PCR products. In fact, there are partial 16S sequences along with sequences of the gene IS900 (MAPIS900 and HTJ), which are amplified with primers that are specific for _Mycobacterium avium paratuberculosis_  (MAP) and IS1311, which would amplify also _Mycobacterium avium_. More information, including relevant references for the molecular essays used to generate these data are in (**_our_paper_**)
+
+The zip file also includes a .csv file (FTP63.csv) with the information needed to identify the different PCR products and indexes needed to separate the reads by samples. We will be referring to this file, for now on, as `info.file`. An example of selected lines of the relevant columns we need for this tutorial are printed below.
+
+```{r, echo=FALSE}
+info.file <- "C:/Users/cpacioni/Documents/JD-trial/TestRawData/FTP63.csv"
+info_table <- read.csv(info.file)
+#knitr::kable(info_table[c(1:2, 29:30, 43:44, 58:59), c(5:6,8,10:12,14)])
+```
+
+
+`amplicR` has three functions to cater (from the list in the **Introduction**) the step 1 (`rmEndAdapter()`), 2 to 5 (`deconv()`) and 6 to 11 (`data.proc()`). However, there is also a wrapper for these three functions ('raw2data.proc()'), so that it is possible to process the data from step 1 to 11 simply passing the CSV file where all the relevant information are stored. We just have to inform `amplicR` of the column names (headings) where to find the information needed (e.g. the amplicon size, the sequences of the primers, indexes etc.) and of a few other settings. We achieve this by using the function arguments as below:
+  
+```{r}
+# Load amplicR
+library(amplicR)
+# The path and name of the data file
+fn <- "C:/Users/cpacioni/Documents/JD-trial/TestRawData/MSRun94_S1_L001_R1_001.fastq.gz"
+# The path and name of the info.file
+info.file <- "C:/Users/cpacioni/Documents/JD-trial/TestRawData/FTP63.csv"
+
+{r2dpr <- raw2data.proc(fn, nRead = 1e8, EndAdapter = "P7_last10",
+                        adapter.mismatch = 0, info.file, sample.IDs = "Sample_IDs",
+                        Fprimer = "F_Primer", Rprimer = "R_Primer", primer.mismatch = 0,
+                        Find = "F_ind", Rind = "R_ind", index.mismatch = 0, gene = "Gene",
+                        amplic.size = "Amplicon", truncQ = 2, qrep = FALSE,
+                        dada = TRUE, pool = FALSE, plot.err = FALSE, chim = TRUE,
+                        orderBy = "abundance")}
+
+```
+
+`raw2data.proc` will report whether there are some reads that have more than one match with the end adapter (CATACGAGAT), whether some reads have more than one hits for the forward primers, and the number of reads retained when removing the end adapter, the primers and indexes.  
+
+The arguments' values in the function call above are actually their default values, so if you take the habit to name the headings in your `info.file` as per defaults, you don't need to type them in (it should be quite self explanatory which are the arguments used to indicate the names of the columns of the `info.file`).  
+
+If you run out of memory, you can reduce the value of the `nRead` argument, which controls the number of reads that are read in at once (if there are more reads than the value in `nRead`, the input files is read in chunks). If you don't have this type of problem, you can drop this argument too. Similarly, all the `x.mismatch` arguments control the maximum number of mismatch that are allowed for the end adapter, the primers and the indexes. If you are using a relatively strict approach allowing zero mismatch (as for the defaults) you can drop these too. 
+
+The `EndAdapter` is (surprisingly) the end adapter you want to remove. `amplicR` has in-built the sequence of the P7 or a reduced version of it, the last 10 nucleotides. If you are happy to simply search for the last 10 nucleotides (which are, once it is reversed and complemented, the first 10 from the 5' end), and remove anything after that match (which is the default setting), you can drop this argument too. otherwise, you can type "P7", if you want to search  for the whole P adapter or, if you are actually looking for something else, just type the sequence (5' to 3') of the tail you are searching.   
+
+If all the above is true, the function call reduces to: 
+  
+  
+```{r, eval=FALSE}
+r2dpr <- raw2data.proc(fn, info.file, truncQ = 2, qrep = FALSE,
+                       dada = TRUE, pool = FALSE, plot.err = FALSE, chim = TRUE,
+                       orderBy = "abundance")
+
+```
+
+The time to process this file will, of course, depend on the machine where this code is run, but as a term of comparison, on a machine equipped with Intel i5 processors (3.2 GHz) and 8 GB of RAM, it takes about 3 mins to complete. 
+
+Let's have a quick look at what happened before having a closer look at what these arguments mean. Once the function is done, you should have a folder structure as below.  
+  
+  
+```{r, echo=FALSE, out.width=670, fig.cap="__Figure 1.__ Subfolder structure  and output files from _raw2data.proc_."}
+knitr::include_graphics("end_folder.tif")
+```
+
+
+The file "*MSRun94_S1_L001_R1_001_EndAdRm.fastq.gz*" is where the function has saved the reads after removing the end adapter. The file "*summary_nReads.txt*" is a brief summary of the number of reads that have been retained in each step. It will look like something the text below:
+
+The number of reads found in *C:/Users/cpacioni/Documents/JD-trial/TestRawData/MSRun94_S1_L001_R1_001.fastq.gz* was 538996  
+The end adapter was found and removed in 405490 reads  
+The index(es) were found and removed in 366162  
+Primers were found and removed in  347952  
+The number of reads retained after applying the quality filter was 222631  
+The number of unique reads retained across all samples was 42667  
+The number of unique reads retained across all samples at completion of data.proc() was 820  
+More details are in the files 'data.proc.summary.csv' in each folder  
+
+You may recognise that the the four new folders that were created are named as for the PCR product identifiers in the table above (look at the column "Gene"). In there, there are the reads saved (as fastq.gz) at every steps:
+the files with the suffix "*IndRm*" are the ones where the indexes were removed. In the subfolder "*Final*", there are the sequences retained after removal of primer (suffix "*Ind_primerRm*"), after applying the filter (in the subfolder "*Filtered_seqs"*) and the final product after the denoising and chimera removing algorithms were apply (if requested, subfolder "*Final_seqs*"). In other words, the basic idea is that if for some reason you want to go back to an intermediate step, you have everything on the disk, but with one line code, you started with your raw data, and end up with a ready-to-go set of sequences. Within the folder "*Final*" there are also a few other .csv and .rda that are outputs from `data.proc`. We will get to those in a minute.   
+
+Before moving on, we see how you can use the arguments to control your output. Most of the arguments that are left listed above are relevant for `data.proc` and detailed information can be accessed with `?data.proc`. I only report here a short description and examples for a couple of them.  
+
+*  `fn` and `info.file` are the path and name of the data  and info.file, respectively.
+*  `truncQ` applies a per basis quality filter (see `?dada2::fastqFilter` for details).  
+*  `qrep`, when set to TRUE, generates a quality report (using the package ShortRead) 
+*  `dada` applies the denoise algorithm from the dada2 package (**REF**). In other words, it switches on or off the step 9
+*  `pool` controls whether samples should be pooled together prior to apply the denoise algorithm from the dada2 package
+*  `plot.err`, when TRUE, plots the error rates
+*  `chim`, when TRUE, search and remove bimeras. It switches on or off the step 10
+*  `orderBy` controls how to sort the sequence table
+
+You may be interested in inspecting the quality of your reads, and their error rates. As an example, the following two figures show a section of the quality report, which is open in a browser, and the error rate plots for the partial 16S data contained in the sample file. 
+
+```{r, echo=FALSE, out.width=670, fig.cap="__Figure 2.__ A section of the quality report generated using ShortRead. From ShortRead documentation: Per-cycle quality score The reddish lines are quartiles (solid: median, dotted: 25, 75), the green line is the mean. Shading is proporitional to number of reads."}
+knitr::include_graphics("qcplot.tif")
+```
+  
+  
+
+```{r, echo=FALSE, out.width=670, fig.cap="__Figure 3.__ Plots of expected error rates (black lines) and observed error rates (red lines) as a function of quality scores generated internally with the R package dada2 (see ?dada2::plotErrors for more details)."}
+knitr::include_graphics("Error_rates.tif")
+```
+  
+  
+Let's now have a better look to what the end product that we obtained is. `raw2data.proc` returns a list that has for elements the processed data for each gene (i.e. the output from `data.proc`). For simplicity, we only pick one gene, say the IS1311, and inspect the results.  The basic result returned by `data.proc` (the final function called within `raw2data.proc`) is a sequence table. This is a table that shows the samples as rows and the sequences as columns (as it is showed below).  
+
+```{r, echo=FALSE}
+#knitr::kable(r2dpr$IS1311$stable)
+```
+  
+  If you have used `dada2`, you may see some similarity. Indeed, this table is generated using `dada2`, but it is then slightly modified to make it more readable (a unique ID is assigned to the sequences and used for the headings). The sequence IDs can be matched with actual sequences using the table save to disk as "*Seq_list*". However, note that if you wish to continue with your analysis within R, you don't need to read back in these files as the same data is also returned as R object. In fact, these are stored in the element `seq_list` and you can simply pass the `data.proc`'s output to downstream analysis as I'll demonstrate later.
+  
+```{r, echo=FALSE}
+r2dpr$IS1311$seq_list
+```
+  
+  You may have noticed that the sequence table reports the abundance of each unique sequences, so that this information can be used for further analysis.  Now, the gene IS1311 is commonly used to identify the strain of MAP athough, as mentioned before, it may also amplify _Mycobacterium avium_. Indeed in our case, these data were generated to identify the strain of the MAP positive samples.  
+
+`amplicR` has a function (`detect`) that it is inteded for exactly this scope: compare the data with a reference sequence reporting the number of mismatch using. we run it with the IS1311 data. We first create an object that contains three named character vector with the reference sequences for the sheep, US bison and Indian bison strains, respectively.  
+
+```{r}
+sheep <- "ACGACCAAGGATCACTACCGAGAGGAACATCGCGATGGCCCTGGACCAGTCTGCCTTGCTGGAGGTGCTGGACGCATTACGCAATGCCGATGCCGCTGATCGGATCAAGCAGGCCGCCGAGACGATTTATCAGGCACTCATCGATGCGGAGCTGACGGCGGTGATCGGCGCCGGTCCGCATGAACGGAGCGCATCACGAACCAACCAGCGCAACGGGTCTCGGCCG"
+names(sheep) <- "sheep"
+
+US_bison <- "ACGACCAAGGATCACTACCGAGAGGAACATCGCGATGGCCCTGGACCAGTCTGCCTTGCTGGAGGTGCTGGACGCATTACGCAATGCCGATGCCGCTGATCGGATCAAGCAGGCCGCCGAGACGATTTATCAGGCACTCATCGATGCGGAGCTGACGGCGGTGATCGGCGCCGGTCCGCATGAACGGAGCGCATCACGAATCAACCAGCGCAACGGGTCTCGGCCG"
+names(US_bison) <- "US_bison"
+
+Ind_bison <- "ACGACCAAGGATCACTACCGAGAGGAACATCGCGATGGCCCGACCAGTCTGCCTTGCTGGAGGTGCTGGACGCATTACGCAATGCCGATGCCGCTGATCGGATCAAGCAGGCCGCCGAGACGATTTATCAGGCACTCATCGATGCGGAGCTGACGGCGGTGATCGGCGCCGGTCCGCATGAACGGAGCGCATCACGAATCAACCAGCGCAACGGGTCTCGGCCGCG"
+names(Ind_bison) <- "Ind_bison"
+
+ref_seqs <- c(sheep, US_bison, Ind_bison)
+```
+
+Then we call `detect` and redirect the output in the folder where the results for IS1311 are:  
+```{r}
+# Path to the output directory 
+out <- "C:/Users/cpacioni/Documents/JD-trial/TestRawData/IS1311/Final"
+det <- detect(r2dpr$IS1311, dir.out=out, ref_seqs=ref_seqs)
+```
+
+`detect` returns a "detect_table":
+```{r}
+det$detect_table
+```
+
+Each row of this table is a sequence and the number of mismatches with each reference sequence are reported in the columns. The first column ("nSeq\_tot") is the total number of reads for each sequence across all samples. In our example, it is clear that seq1 is the sheep strain, seq2 is the US_bison strain (i.e. both have zero mismatched witht the reference sequence). Sequence 3 & 4 are a very close match with 1 or 2 nucleotide difference.  
+
+An alternative way to look at these results is looking at the "detect_result", which will provide a per-sample view for each strain we searched. For example, if we want to see what samples where positive for the sheep strain, we can call:  
+```{r}
+det$detect_results$sheep
+```
+and see that samples 7, 8, 9, and 11 had a sequence with zero mismatch with the sheep strain.  
+
+All these results are also saved to disk, along with the alignment of the data with the reference sequences.
+
+We could use a similar approach (i.e. use `detect` to verify the presence of MAP:
+
+```{r}
+# Change the out directory
+out <- "C:/Users/cpacioni/Documents/JD-trial/TestRawData/Bact16S/Final"
+MAP16S <- "TACGTAGGGTGCGAGCGTTGTCCGGAATTACTGGGCGTAAAGAGCTCGTAGGTGGTTTGTCGCGTTGTTCGTGAAATCTCACGGCTTAACTGTGAGCGTGCGGGCGATACGGGCAGACTAGAGTACTGCAGGGGAGACTGGAATTCCTGGTGTAGCGGTGGAATGCGCAGATATCAGGAGGAACACCGGTGGCGAAGGCGGGTCTCTGGGCAGTAACTGACGCTGAGGAGCGAAAGCGTGGGGAGCGAACAG"
+names(MAP16S) <- "MAP"
+det <- detect(r2dpr$Bact16S, dir.out=out, ref_seqs=MAP16S)
+det$detect_table
+```
+  
+  However, because there are many more sequences (>400) it is quite difficult to simply look at the table, but we can search for the minimum number of mismatches to see if we had a hit:
+  
+```{r}
+ min(det$detect_table$MAP)
+```
+  
+  The minimum number of mismatched is 130, which basically means that, despite having known positive for MAP (I'll leave up to you to check also the other two genes, HTJ and MAPIS900 to veify this statement), we didn't detect any MAP with 16S. This result is not completely unexpected as the 16S primers are generic for any bacteria, while the HTJ, IS1311 and MAPIS900 are specific for MAP and have much higher sensitivity.
+  
+  
+With the 16S data, can also have another approach, we can use dada2 to assign taxon labels to the retained sequences using, for example, GreenGenes. You can achieve this in four steps:  
+  1. Obtain the [reference database](https://www.dropbox.com/sh/mfcivbudmc21cqt/AAB1l-AUM5uKvjrR33ct-cTXa?dl=0)  
+  2.  Tell R where it is stored
+  3.  Extract your sequence from the list
+  4.  Call dada2::assignTaxonomy
+  
+These steps are what the code below does, assuming that your reference database is in ~/R packages/Dada2 (note that I also re-name the columns of the output with the taxonomic level).
+
+```{r}
+library(dada2)
+gg <- "C:/Users/cpacioni/Documents/R packages/Dada2/gg_13_8_train_set_97.fa.gz"
+seqsList <- as.character(r2dpr$Bact16S$seq_list$sequence)
+tax_gg <- assignTaxonomy(seqs=seqsList, refFasta=gg, minBoot=80, verbose=TRUE)
+colnames(tax_gg) <- c("Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species")
+
+```
+  
+  The next code chunnk demonstrates how it is possible to hand over these data to phyloseq to progress with the analysis. Generally there are metadata that we want to carry over (for example to group samples based on some criteria), so we need to create a sample table with this information. Here we wish to group the samples in nasal swabs, feces and controls. Then we just pass the taxonomy table, the metadata and the the `data.proc` output to `make.phyloseq` and `amplicR` takes care of the rest. Note that sample names (which are stored as row names) have to match exactly between elements. To make sure this is the case, I copy the row names from the sequence table
+  
+```{r}
+sampleTable <- data.frame(Result=c("Unknown", "Unknown","Unknown","Unknown",
+                                  "Unknown","Unknown","Unknown","Unknown", 
+                                  "Unknown", "Neg", "Neg", "Pos", 
+                                  "Neg", "Neg", "Neg", "Neg", "Pos",
+                                  "Pos", "Neg", "Neg", "Neg", "Pos", 
+                                  "Pos", "Pos",  
+                                  "Control", "Control", "Control"),
+                         Type=c("NasSwab", "NasSwab","NasSwab","NasSwab",
+                                  "NasSwab","NasSwab","NasSwab","NasSwab", 
+                                  "NasSwab", 
+                                  "Feces", "Feces", "Feces", "Feces", "Feces", 
+                                  "Feces", "Feces", "Feces", "Feces", "Feces", 
+                                  "Feces", "Feces", "Feces", "Feces", "Feces",  
+                                  "Control", "Control", "Control"))
+row.names(sampleTable) <- row.names(r2dpr$Bact16S$stable)
+ps <- make.phyloseq(dproc = r2dpr$Bact16S, 
+                    sample.table = sampleTable, 
+                    tax.table = tax_gg)
+```
+
+Now we can verify whether Mycobacteriaceae were found:
+```{r, results='markup'}
+#### Subset for Mycobacteriaceae ####
+fam <- get_taxa_unique(physeq = ps, taxonomic.rank = "Family")
+sort(gsub("f__", "", fam))
+"Mycobacteriaceae" %in% sort(gsub("f__", "", fam))
+```
+   
+For example, we can compare bacteria biodiversity between sample types 
+```{r, fig.cap="__Plot of bacteria diversity within samples__"} 
+  plot_richness(ps, x="Type", measures=c("Shannon", "Simpson"), color="Type") 
+```
+
+As expected, the controls have the lowest biodiversity, the feces the highest and the nasal swabs somewhere in between.  
+
+We can generate a Non-metric Multidimensional Scaling plot:
+
+```{r, fig.cap="NMDS plot based on Bray-Curtis distance calculated on raw  abundance data after having removed the controls"}
+
+ps.NoControls <- subset_samples(ps, Result != "Control")
+ord.nmds.bray <- ordinate(ps.NoControls, method="NMDS", distance="bray")
+plot_ordination(ps.NoControls, ord.nmds.bray, color="Type", title="Bray NMDS")
+```
+
+Nasal swab samples are well separated from faeces samples. No immediate difference is apparent among feces samples.  
+
+As you can see once the data are in phyloseq, you can then easily continue with your analysis. See [phyloseq tutorials](https://www.bioconductor.org/packages/release/bioc/html/phyloseq.html) for further examples.
+
+
