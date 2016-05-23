@@ -54,6 +54,9 @@
 #'   \code{\link[dada2]{makeSequenceTable}} for details
 #' @param verbose Logical. Whether information on progress should be outputted 
 #'        (default: TRUE)
+#' @param multithread Whether use parallel computation for dada algorithm. 
+#'        Possible options include \code{TRUE}, \code{FALSE} or an integer 
+#'        indicating the number of processes.
 #' @return Return a list with several elements:
 #'   
 #'   \itemize{ 
@@ -99,7 +102,7 @@
 
 data.proc <- function(dir.in=NULL, dir.out=NULL, bp, truncQ=2, qrep=FALSE,
                       dada=TRUE, pool=FALSE, plot.err=FALSE, chim=TRUE, 
-                      orderBy="abundance", verbose=TRUE) {
+                      orderBy="abundance", verbose=TRUE, multithread=TRUE) {
   
 #----------------------------------------------------------------------------#
   suppressWarnings(library(dada2, quietly=TRUE))
@@ -206,9 +209,10 @@ el <- 2
 
 #### dada ####
 if(dada == TRUE) {
-  dadaReads <- dada(derepReads , err=inflateErr(tperr1,3),
-                  errorEstimationFunction=loessErrfun,
-                                   selfConsist=TRUE, pool=pool)
+  dadaReads <- dada(derepReads, err=inflateErr(tperr1,3),
+                    errorEstimationFunction=loessErrfun,
+                    selfConsist=TRUE, pool=pool,
+                    multithread=multithread)
   if(plot.err == TRUE) {
     pdf(file = paste(dir.out, "Plot_ErrorRates.pdf", sep="/"))
     if(length(derepReads) > 1) {

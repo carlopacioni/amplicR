@@ -6,7 +6,7 @@
 \usage{
 data.proc(dir.in = NULL, dir.out = NULL, bp, truncQ = 2, qrep = FALSE,
   dada = TRUE, pool = FALSE, plot.err = FALSE, chim = TRUE,
-  orderBy = "abundance", verbose = TRUE)
+  orderBy = "abundance", verbose = TRUE, multithread = TRUE)
 }
 \arguments{
 \item{dir.in}{The directory where the fastq files are located. If NULL 
@@ -42,6 +42,10 @@ should be sorted. Default "abundance". See
 
 \item{verbose}{Logical. Whether information on progress should be outputted 
 (default: TRUE)}
+
+\item{multithread}{Whether use parallel computation for dada algorithm. 
+Possible options include \code{TRUE}, \code{FALSE} or an integer 
+indicating the number of processes.}
 }
 \value{
 Return a list with several elements:

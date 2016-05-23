@@ -347,7 +347,7 @@ raw2data.proc <- function(fn, nRead=1e8, EndAdapter="P7_last10",
                           index.mismatch=0, gene="Gene",  
                           amplic.size="Amplicon", truncQ=2, qrep=FALSE,
                        dada=TRUE, pool=FALSE, plot.err=FALSE, chim=TRUE,
-                       orderBy="abundance") {
+                       orderBy="abundance", multithread=TRUE) {
   #----------------------------------------------------------------------------#
   # Helper functions
   #----------------------------------------------------------------------------#
@@ -390,7 +390,8 @@ extract.sums <- function(ldproc, el)  {
       txt <- capture.output(
       ldproc[[g]] <- data.proc(dir.in=path.results[g], bp=bp, truncQ=truncQ, 
                             qrep=qrep, dada=dada, pool=pool, plot.err=plot.err, 
-                            chim=chim, orderBy=orderBy, verbose=FALSE)
+                            chim=chim, orderBy=orderBy, verbose=FALSE, 
+                            multithread=multithread)
     )
   }
   
