@@ -9,7 +9,8 @@ raw2data.proc(fn, nRead = 1e+08, EndAdapter = "P7_last10",
   Fprimer = "F_Primer", Rprimer = "R_Primer", primer.mismatch = 0,
   Find = "F_ind", Rind = "R_ind", index.mismatch = 0, gene = "Gene",
   amplic.size = "Amplicon", truncQ = 2, qrep = FALSE, dada = TRUE,
-  pool = FALSE, plot.err = FALSE, chim = TRUE, orderBy = "abundance")
+  pool = FALSE, plot.err = FALSE, chim = TRUE, orderBy = "abundance",
+  multithread = TRUE)
 }
 \arguments{
 \item{fn}{Fully qualified name (i.e. the complete path) of the fastq file}
@@ -72,6 +73,10 @@ be plotted}
 \item{orderBy}{Character vector specifying how the returned sequence table 
 should be sorted. Default "abundance". See
 \code{\link[dada2]{makeSequenceTable}} for details}
+
+\item{multithread}{Whether use parallel computation for dada algorithm. 
+Possible options include \code{TRUE}, \code{FALSE} or an integer 
+indicating the number of processes.}
 }
 \value{
 A list that has for elements the output of \code{\link{data.proc}} 

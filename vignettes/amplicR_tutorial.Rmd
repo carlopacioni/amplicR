@@ -73,8 +73,8 @@ source("https://bioconductor.org/biocLite.R")
 
 
 # Disclamer 
-All reasonable care has been taken to ensure that `amplicR` functions report the 
-correct results. However, there is no guarantee that the package is bug-free and no responsibility is assumed for erranous results. 
+All reasonable care has been taken to ensure that `amplicR` functions report the correct results. However, there is no guarantee that the package is bug-free and no responsibility is assumed for erranous results.  
+
 
 # Documentation 
 Use `help(amplicR)` `?amplicR` or `??amplicR` to see a broad 
@@ -323,6 +323,7 @@ fam <- get_taxa_unique(physeq = ps, taxonomic.rank = "Family")
 ```
    
 Or, we can compare bacteria biodiversity between sample types 
+
 ```{r, fig.width=8, warning=FALSE, fig.cap="__Plot of bacteria diversity within samples__"} 
   plot_richness(ps, x="Type", measures=c("Shannon", "Simpson"), color="Type") 
 ```

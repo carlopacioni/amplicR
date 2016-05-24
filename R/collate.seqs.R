@@ -69,6 +69,7 @@
 
 
 collate.seqs <- function(ldproc=NULL, rdas.in=NULL, dir.out=NULL) {
+  suppressWarnings(library(dada2, quietly=TRUE))
   suppressPackageStartupMessages(library(ShortRead, quietly=TRUE))
   #----------------------------------------------------------------------------#
   # Helper functions

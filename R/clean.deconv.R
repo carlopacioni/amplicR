@@ -291,8 +291,8 @@ deconv <- function(fn, nRead=1e8, info.file, sample.IDs="Sample_IDs",
   }
   nInitial <- stream$status()["total"]
   message(paste("Processed", nInitial, "reads - retained", nIndRet, 
-                "after having removed the index."))
-  message(paste(nPrimRet, "were retained after removing the primers."))
+                "after having removed the index(es)."))
+  message(paste(nPrimRet, "reads were retained after removing the primers."))
   return(list(Read=unname(nInitial), IndexRm=nIndRet, PrimerRm=nPrimRet))
 }
 
@@ -347,7 +347,7 @@ raw2data.proc <- function(fn, nRead=1e8, EndAdapter="P7_last10",
                           index.mismatch=0, gene="Gene",  
                           amplic.size="Amplicon", truncQ=2, qrep=FALSE,
                        dada=TRUE, pool=FALSE, plot.err=FALSE, chim=TRUE,
-                       orderBy="abundance") {
+                       orderBy="abundance", multithread=TRUE) {
   #----------------------------------------------------------------------------#
   # Helper functions
   #----------------------------------------------------------------------------#
@@ -390,14 +390,15 @@ extract.sums <- function(ldproc, el)  {
       txt <- capture.output(
       ldproc[[g]] <- data.proc(dir.in=path.results[g], bp=bp, truncQ=truncQ, 
                             qrep=qrep, dada=dada, pool=pool, plot.err=plot.err, 
-                            chim=chim, orderBy=orderBy, verbose=FALSE)
+                            chim=chim, orderBy=orderBy, verbose=FALSE, 
+                            multithread=multithread)
     )
   }
   
   writeLines(c(paste("The number of reads found in", fn, "was", rme[[1]]), 
                paste("The end adapter was found and removed in", rme[[2]], "reads"),
-               paste("The index(es) were found and removed in", dec[[2]]),
-               paste("Primers were found and removed in ", dec[[3]]),
+               paste("The index(es) were found and removed in", dec[[2]], "reads"),
+               paste("Primers were found and removed in ", dec[[3]], "reads"),
                paste("The number of reads retained after applying the quality filter was",
                      extract.sums(ldproc, "nFiltered")),
                paste("The number of unique reads retained across all samples was", 
