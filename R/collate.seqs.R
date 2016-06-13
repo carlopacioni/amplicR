@@ -129,7 +129,7 @@ collate.seqs <- function(ldproc=NULL, rdas.in=NULL, dir.out=NULL) {
   lbysamples <- lapply(samples, combine.sample, lseqs)
   names(lbysamples) <- samples
   
-  stable <- makeSequenceTable(lbysamples)
+  stable <- suppressWarnings(makeSequenceTable(lbysamples))
   seqs <- colnames(stable)
   seq_names <- paste0("seq", 1:dim(stable)[2])
   colnames(stable) <- seq_names
