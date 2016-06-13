@@ -1,7 +1,7 @@
 library(amplicR, quietly=TRUE)
 context("Collate sequences")
 
-test_that("test detect: check sum of number of seqs", {
+test_that("test collate.seqs: check sum of number of seqs", {
   sink(file="NUL")
  
   example.data <- system.file("extdata", "HTJ", package="amplicR")
@@ -20,7 +20,7 @@ test_that("test detect: check sum of number of seqs", {
   col_read <- collate.seqs(rdas.in=rdas, dir.out=out)
   checkSum <- sum(col_data$stable[1,])
   sink()
-  expect_equal(col_data, col_read)
+  expect_equal(col_data[1:3], col_read[1:3])
   expect_equal(checkSum, 666)
   
   # Clean up the temp directory
