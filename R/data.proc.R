@@ -111,6 +111,11 @@ data.proc <- function(dir.in=NULL, dir.out=NULL, bp, truncQ=2, qrep=FALSE,
 # Helper functions
 #----------------------------------------------------------------------------#
 
+getnFiltered <- function (derep) {
+  nFiltered <- length(derep$map)
+  return(nFiltered)
+}
+  
 getnUniques <- function (derep) {
   nUniques <- length(derep$uniques)
   return(nUniques)
@@ -181,30 +186,28 @@ for(i in seq_along(fastqs)) {
                                verbose=FALSE))
 }
 
-filtered <- lapply(filtRs, readFastq)
-fnSeqs <- unlist(lapply(filtered, length))
-retain <- fnSeqs > 0
-if (0 %in% fnSeqs) {
-  if(verbose) {
-    message("NOTE: no reads were retained for one or more samples.
-Samples with no reads will be removed from the the filtered set.")
-    message("List of sample(s) with zero reads:")
-    message(cat(sample_names[!retain], sep="\n"))
-  }
-  }
+filtRs <- list.files(path=paste(dir.out, filt_fold, sep="/"), full.names=TRUE)
+sample_names_fil <- sub("_filt.fastq.gz", "", sapply(filtRs, basename, USE.NAMES=FALSE))
 
-lsummary <- list()
-lsummary[[1]] <- data.frame(Sample= sample_names, nFiltered=fnSeqs)
-
-filtRs <- filtRs[retain]
 if(qrep == TRUE) browseURL(report(qa(filtRs)))
 
 #### Dereplicate ####
 derepReads <- lapply(filtRs, derepFastq, verbose=FALSE)
-names(derepReads) <- sample_names[retain]
+names(derepReads) <- sample_names_fil
+
+lsummary <- list()
+fnSeqs <- unlist(lapply(derepReads, getnFiltered))
+lsummary[[1]] <- merge(data.table(Sample=sample_names), 
+                                   data.table(Sample=sample_names_fil, 
+                                              nFiltered=fnSeqs), 
+                                   all.x=TRUE,
+                                   by="Sample")
+  
+  data.frame(Sample= sample_names, nFiltered=fnSeqs)
+
 
 unSeqs <- unlist(lapply(derepReads, getnUniques))
-lsummary[[2]] <- data.frame(Sample=sample_names[retain], nDerep=unSeqs)
+lsummary[[2]] <- data.frame(Sample=sample_names_fil, nDerep=unSeqs)
 el <- 2
 
 #### dada ####
