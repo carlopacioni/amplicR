@@ -340,6 +340,7 @@ deconv <- function(fn, nRead=1e8, info.file, sample.IDs="Sample_IDs",
 #'   in the same location where the raw data are, summarising the number of
 #'   reads retained in each step of the analysis
 #' @export
+#' @import data.table
 raw2data.proc <- function(fn, nRead=1e8, EndAdapter="P7_last10", 
                           adapter.mismatch=0, info.file, sample.IDs="Sample_IDs", 
                           Fprimer="F_Primer", Rprimer="R_Primer", 
@@ -356,7 +357,12 @@ extract.sums <- function(ldproc, el)  {
                                       if(el == "nFiltered") i <- 1
                                       if(el == "nDerep") i <- 2
                                       if(el == "nSeq") i <- length(dproc)
-                                      r <- sum(dproc$lsummary[[i]][el])
+                                      r <- if(is.data.table(dproc$lsummary[[i]])) {
+                                        sum(dproc$lsummary[[i]][, el, with=FALSE], 
+                                            na.rm=TRUE)
+                                      } else {
+                                        sum(dproc$lsummary[[i]][el], na.rm=TRUE)
+                                      }
                                       return(r)
                                     },
               el)
