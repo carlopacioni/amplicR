@@ -202,9 +202,6 @@ lsummary[[1]] <- merge(data.table(Sample=sample_names),
                                               nFiltered=fnSeqs), 
                                    all.x=TRUE,
                                    by="Sample")
-  
-  data.frame(Sample= sample_names, nFiltered=fnSeqs)
-
 
 unSeqs <- unlist(lapply(derepReads, getnUniques))
 lsummary[[2]] <- data.frame(Sample=sample_names_fil, nDerep=unSeqs)
