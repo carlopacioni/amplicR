@@ -24,6 +24,7 @@
 #'   \code{\link[phyloseq]{phyloseq}} for details)
 #' @seealso \code{\link{data.proc}}, \code{\link[phyloseq]{phyloseq}}
 #' @export
+#' @importFrom phyloseq phyloseq
 make.phyloseq <- function(dproc, sample.table=NULL, tax.table=NULL, 
                           phy.tree=NULL ) {
   suppressWarnings(library(phyloseq, quietly=TRUE, warn.conflicts=FALSE))
