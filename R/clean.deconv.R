@@ -63,7 +63,7 @@ rmEndAdapter <- function(fn, nRead=1e8, EndAdapter="P7_last10", adapter.mismatch
                              with.indels=FALSE, fixed=TRUE,
                              algorithm="auto")
     
-    if(sum(elementLengths(P7_hits) > 1) > 0) {
+    if(sum(elementNROWS(P7_hits) > 1) > 0) {
       message(cat(paste("Note: some reads in", fn, "have more than one match with:", 
                         EndAdapter, "The first match from the left is used",
                         sep="\n")))
@@ -209,7 +209,7 @@ deconv <- function(fn, nRead=1e8, info.file, sample.IDs="Sample_IDs",
                                    with.indels=FALSE, fixed=FALSE,
                                    algorithm="auto")
       
-      if(sum(elementLengths(primer_hits) > 1) > 0) {
+      if(sum(elementNROWS(primer_hits) > 1) > 0) {
         message(cat(paste("Note: some reads in", fn, 
                           "have more than one match with the foward primer:", 
                           primer, "Gene:",
@@ -220,9 +220,9 @@ deconv <- function(fn, nRead=1e8, info.file, sample.IDs="Sample_IDs",
                        sep="/")
         message(cat(paste("Details of reads with multiple primer hits are saved in the txt file:",
                           mhits, sep="\n")))
-        capture.output(id(fq)[elementLengths(primer_hits) > 1], file=mhits)
+        capture.output(id(fq)[elementNROWS(primer_hits) > 1], file=mhits)
       }
-      retain <- as.logical(elementLengths(primer_hits))
+      retain <- as.logical(elementNROWS(primer_hits))
       seqs <- seqs[retain]
       qual <- qual[retain]
       ids <- id(fq)[retain]
