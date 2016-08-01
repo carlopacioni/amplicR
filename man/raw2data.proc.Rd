@@ -52,8 +52,8 @@ containing the name of the gene or other group idenifiers (see details)}
 info.file containing the amplicon size of the PCR product}
 
 \item{truncQ}{Truncate reads at the first instance of a quality score less 
-than or equal to truncQ when conduction quality filtering. 
-See \code{\link[dada2]{fastqFilter}} for details}
+than or equal to truncQ when conduction quality filtering. See
+\code{\link[dada2]{fastqFilter}} for details}
 
 \item{qrep}{Logical. Should the quality report be generated? (default 
 \code{FALSE})}
@@ -62,7 +62,8 @@ See \code{\link[dada2]{fastqFilter}} for details}
 \code{TRUE})}
 
 \item{pool}{Logical. Should samples be pooled together prior to sample 
-inference? (default \code{FALSE}). See \code{\link[dada2]{dada}} for details}
+inference? (default \code{FALSE}). See \code{\link[dada2]{dada}} for
+details}
 
 \item{plot.err}{Logical. Whether error rates obtained from \code{dada} should
 be plotted}
@@ -71,12 +72,12 @@ be plotted}
 (default \code{TRUE})}
 
 \item{orderBy}{Character vector specifying how the returned sequence table 
-should be sorted. Default "abundance". See
+should be sorted. Default "abundance". See 
 \code{\link[dada2]{makeSequenceTable}} for details}
 
 \item{multithread}{Whether use parallel computation for dada algorithm. 
-Possible options include \code{TRUE}, \code{FALSE} or an integer 
-indicating the number of processes.}
+Possible options include \code{TRUE}, \code{FALSE} or an integer indicating
+the number of processes.}
 }
 \value{
 A list that has for elements the output of \code{\link{data.proc}} 
@@ -100,7 +101,8 @@ the NGS run.
 \details{
 Note that the amplicon size for \code{\link{data.proc}} is obtained from the 
 comma delimited file \code{info.file}, searching in the column with the 
-heading indicated in \code{amplic.size}. For each entry in the column 
+heading indicated in \code{amplic.size}. Zeros can be used in this column if 
+no truncation is wanted. For each entry in the column 
 indicated with the argument \code{gene}, the function will use the first 
 entry found in \code{amplic.size} for the relevant \code{gene}. If the same 
 gene identifier is used for multiple forward primers (see documentation for 

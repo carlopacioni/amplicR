@@ -308,7 +308,8 @@ deconv <- function(fn, nRead=1e8, info.file, sample.IDs="Sample_IDs",
 #' 
 #' Note that the amplicon size for \code{\link{data.proc}} is obtained from the 
 #' comma delimited file \code{info.file}, searching in the column with the 
-#' heading indicated in \code{amplic.size}. For each entry in the column 
+#' heading indicated in \code{amplic.size}. Zeros can be used in this column if 
+#' no truncation is wanted. For each entry in the column 
 #' indicated with the argument \code{gene}, the function will use the first 
 #' entry found in \code{amplic.size} for the relevant \code{gene}. If the same 
 #' gene identifier is used for multiple forward primers (see documentation for 
