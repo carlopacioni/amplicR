@@ -22,4 +22,3 @@ Suggests:
     devtools,
     roxygen2,
     testthat
-VignetteBuilder: knitr
