@@ -61,16 +61,17 @@ out <- tempdir()
 out140 <- paste(out, "out140", sep="/")
 HTJ.140 <- data.proc(example.data, out140, bp=140)
 
-# Make up some new sequences to collate by running data.proc with bp=141 and 
-# saving it in a sub folder
-out141 <- paste(out, "out141", sep="/")
-HTJ.141 <- data.proc(example.data, out141, bp=141)
+# Repeat the process in a different sub folder
+out140bis <- paste(out, "out140bis", sep="/")
+HTJ.140bis <- data.proc(example.data, out140bis, bp=140)
 
-# Collate seqs of the two objects HTJ.140 and HTJ.141 
-collate.seqs(ldproc=list(HTJ.140, HTJ.141), dir.out=out)
+
+# Collate seqs of the two objects HTJ.140 and HTJ.140bis 
+# Note that the sequences are recognised to be identical and size is summed
+collate.seqs(ldproc=list(HTJ.140, HTJ.140bis), dir.out=out)
 
 # As above but using the .rda files
-rdas <- paste(out, c("out140", "out141"), "data.proc.rda", sep="/")
+rdas <- paste(out, c("out140", "out140bis"), "data.proc.rda", sep="/")
 collate.seqs(rdas.in=rdas, dir.out=out)
 
 # Clean up the temp directory
