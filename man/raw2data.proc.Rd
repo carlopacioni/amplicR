@@ -9,8 +9,7 @@ raw2data.proc(fn, nRead = 1e+08, EndAdapter = "P7_last10",
   Fprimer = "F_Primer", Rprimer = "R_Primer", primer.mismatch = 0,
   Find = "F_ind", Rind = "R_ind", index.mismatch = 0, gene = "Gene",
   amplic.size = "Amplicon", truncQ = 2, qrep = FALSE, dada = TRUE,
-  pool = FALSE, plot.err = FALSE, chim = TRUE, orderBy = "abundance",
-  multithread = TRUE)
+  pool = FALSE, plot.err = FALSE, chim = TRUE, orderBy = "abundance")
 }
 \arguments{
 \item{fn}{Fully qualified name (i.e. the complete path) of the fastq file}
