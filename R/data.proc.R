@@ -97,8 +97,11 @@ data.proc <- function(dir.in=NULL, dir.out=NULL, bp=0, truncQ=2, qrep=FALSE,
                       orderBy="abundance", verbose=TRUE) {
   
 #----------------------------------------------------------------------------#
-  suppressWarnings(library(dada2, quietly=TRUE))
-  suppressPackageStartupMessages(library(ShortRead, quietly=TRUE))
+  if (!requireNamespace("dada2", quietly = TRUE)) {
+    stop("Package 'dada2' needed for this function to work. Please install it 
+         either manually or using the function amplicR::setup().",
+         call. = FALSE)
+  }
 #----------------------------------------------------------------------------#
 # Helper functions
 #----------------------------------------------------------------------------#
@@ -114,7 +117,7 @@ getnUniques <- function (derep) {
 }
 
 ndada <- function(dada_el) {
-  nSeqs <- length(getUniques(dada_el))
+  nSeqs <- length(dada2::getUniques(dada_el))
   return(nSeqs)
 }
 
@@ -124,7 +127,7 @@ ndada <- function(dada_el) {
 # NOTE: the same process can be applied to dada elements (for example data.frame)
 # to maintain additional info if needed later on
 rm.chim<-function(i, dada_el, chim_el) {
-  no_chim <- getUniques(dada_el[[i]])[!chim_el[[i]]]
+  no_chim <- dada2::getUniques(dada_el[[i]])[!chim_el[[i]]]
   return(no_chim)
 }
 
@@ -134,7 +137,7 @@ nChim <- function(chim_el) {
 }
 
 dp_extract <- function(nm, derep) {
-  seqs <- getUniques(derep[[nm]])
+  seqs <- dada2::getUniques(derep[[nm]])
   return(seqs)
 }
 
@@ -168,7 +171,7 @@ sample_names <- sub(".fastq.{,3}$", "", fastqs)
 
 
 for(i in seq_along(fastqs)) {
-  suppressWarnings(fastqFilter(paste(dir.in, fastqs[i], sep="/"), 
+  suppressWarnings(dada2::fastqFilter(paste(dir.in, fastqs[i], sep="/"), 
                                filtRs[i], 
                                maxN=0, 
                                maxEE=3,
@@ -179,12 +182,13 @@ for(i in seq_along(fastqs)) {
 }
 
 filtRs <- list.files(path=paste(dir.out, filt_fold, sep="/"), full.names=TRUE)
-sample_names_fil <- sub("_filt.fastq.gz", "", sapply(filtRs, basename, USE.NAMES=FALSE))
+sample_names_fil <- sub("_filt.fastq.gz", "", 
+                        sapply(filtRs, basename, USE.NAMES=FALSE))
 
 if(qrep == TRUE) browseURL(report(qa(filtRs)))
 
 #### Dereplicate ####
-derepReads <- lapply(filtRs, derepFastq, verbose=FALSE)
+derepReads <- lapply(filtRs, dada2::derepFastq, verbose=FALSE)
 names(derepReads) <- sample_names_fil
 
 lsummary <- list()
@@ -201,18 +205,18 @@ el <- 2
 
 #### dada ####
 if(dada == TRUE) {
-  dadaReads <- dada(derepReads, err=inflateErr(tperr1,3),
-                    errorEstimationFunction=loessErrfun,
+  dadaReads <- dada2::dada(derepReads, err=dada2::inflateErr(dada2::tperr1,3),
+                    errorEstimationFunction=dada2::loessErrfun,
                     selfConsist=TRUE, pool=pool)
   if(plot.err == TRUE) {
     pdf(file = paste(dir.out, "Plot_ErrorRates.pdf", sep="/"))
     if(length(derepReads) > 1) {
       for (i in seq_along(dadaReads)) {
-        p <- plotErrors(dadaReads[[i]], nominalQ=TRUE)
+        p <- dada2::plotErrors(dadaReads[[i]], nominalQ=TRUE)
         print(p + ggtitle(names(dadaReads[i])))
       }
     } else {
-      p <- plotErrors(dadaReads, nominalQ=TRUE)
+      p <- dada2::plotErrors(dadaReads, nominalQ=TRUE)
       print(p + ggtitle(names(derepReads)))
     }
     dev.off()
@@ -221,7 +225,7 @@ if(dada == TRUE) {
   if(length(derepReads) > 1) {
     nDenoised <- sapply(dadaReads, ndada)
   } else {
-    nDenoised <- length(getUniques(dadaReads))
+    nDenoised <- length(dada2::getUniques(dadaReads))
     names(nDenoised) <- names(derepReads)
   }
   el <-el + 1
@@ -233,9 +237,9 @@ if(dada == TRUE) {
   }
   
   if(length(derepReads) > 1) {
-    lda <- lapply(dadaReads, getUniques)
+    lda <- lapply(dadaReads, dada2::getUniques)
   } else {
-    lda <- list(getUniques(dadaReads))
+    lda <- list(dada2::getUniques(dadaReads))
     names(lda) <- names(derepReads)
   }
 }
@@ -245,10 +249,10 @@ if(chim == TRUE)  {
   if(dada == TRUE) {
     if(length(derepReads) > 1) {
       single <- FALSE
-      bimReads <- sapply(dadaReads, isBimeraDenovo, verbose=FALSE)
+      bimReads <- sapply(dadaReads, dada2::isBimeraDenovo, verbose=FALSE)
     } else {
       single <- TRUE
-      bimReads <- isBimeraDenovo(dadaReads, verbose=FALSE)
+      bimReads <- dada2::isBimeraDenovo(dadaReads, verbose=FALSE)
     }
   } else {
     if(length(derepReads) > 1) {
@@ -256,7 +260,7 @@ if(chim == TRUE)  {
     } else {
       single <- TRUE
     }
-    bimReads <- sapply(derepReads, isBimeraDenovo, verbose=FALSE)
+    bimReads <- sapply(derepReads, dada2::isBimeraDenovo, verbose=FALSE)
   }
   
   if(verbose) {
@@ -287,7 +291,7 @@ if(chim == TRUE)  {
   lsummary[[el]] <- data.frame(Sample=names(nChimeras), nChimeras)
   if(dada == T) {
     if(single) {
-      no_chim <- list(getUniques(dadaReads)[!bimReads])
+      no_chim <- list(dada2::getUniques(dadaReads)[!bimReads])
       names(no_chim) <- names(derepReads)
     } else {
       no_chim <- lapply(seq_along(dadaReads), rm.chim, dadaReads, bimReads)
@@ -313,7 +317,7 @@ if(chim == TRUE) {
   }
 }
 
-stable <-makeSequenceTable(luniseqsFinal, orderBy=orderBy)
+stable <- dada2::makeSequenceTable(luniseqsFinal, orderBy=orderBy)
 seqs <- colnames(stable)
 seq_names <- paste0("seq", 1:dim(stable)[2])
 colnames(stable) <- seq_names

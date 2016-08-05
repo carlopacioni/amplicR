@@ -76,9 +76,11 @@
 
 detect <- function(data=NULL, rda.in=NULL, dir.out=NULL, ref_seqs) {
   #----------------------------------------------------------------------------#
-  library(dada2, quietly=TRUE)
-  suppressPackageStartupMessages(library(ShortRead, quietly=TRUE))
- 
+  if (!requireNamespace("dada2", quietly = TRUE)) {
+    stop("Package 'dada2' needed for this function to work. Please install it 
+         either manually or using the function amplicR::setup().",
+         call. = FALSE)
+  }
   #----------------------------------------------------------------------------#
   call <- sys.call(1)
   
@@ -97,7 +99,7 @@ detect <- function(data=NULL, rda.in=NULL, dir.out=NULL, ref_seqs) {
   } 
   seq_list <- data[[4]]
   stable <- data[[3]]
-  DNAstr <- DNAStringSet(seq_list[, "sequence"])
+  DNAstr <- Biostrings::DNAStringSet(seq_list[, "sequence"])
   names(DNAstr) <- seq_list[, "seq_names"]
 
     if(is.null(dir.out)) {
@@ -118,7 +120,7 @@ detect <- function(data=NULL, rda.in=NULL, dir.out=NULL, ref_seqs) {
   dir.create(aln.out, showWarnings=FALSE, recursive=TRUE)
   
   for (i in seq_along(ref_seqs)) {
-    nDiff <- unlist(srdistance(DNAstr, ref_seqs[i]))
+    nDiff <- unlist(ShortRead::srdistance(DNAstr, ref_seqs[i]))
     MDiff <- matrix(nDiff, nrow=dim(stable)[1], ncol=length(nDiff), byrow=TRUE)
     stable[stable == 0] <- NA
     stable <- stable > 0
@@ -128,8 +130,8 @@ detect <- function(data=NULL, rda.in=NULL, dir.out=NULL, ref_seqs) {
               file=paste(dir.out,  
                          paste0("Results_detect_", names(ref_seqs)[i], ".csv"), 
                          sep="/"))
-    aln <- pairwiseAlignment(DNAstr, ref_seqs[i])
-    writePairwiseAlignments(aln, 
+    aln <- Biostrings::pairwiseAlignment(DNAstr, ref_seqs[i])
+    Biostrings::writePairwiseAlignments(aln, 
                             paste(aln.out, 
                             paste0("aln_", names(ref_seqs)[i], ".fasta"), sep="/"), 
                             block.width=2000)

@@ -42,8 +42,11 @@
 #' 
 table2fasta <- function(stable, seq.list=NULL, dir.out=NULL, verbose=TRUE) {
   #----------------------------------------------------------------------------#
-  library(dada2, quietly=TRUE)
-  suppressPackageStartupMessages(library(ShortRead, quietly=TRUE))
+  if (!requireNamespace("dada2", quietly = TRUE)) {
+    stop("Package 'dada2' needed for this function to work. Please install it 
+         either manually or using the function amplicR::setup().",
+         call. = FALSE)
+  }  
   #----------------------------------------------------------------------------#
   # Helper functions
   #----------------------------------------------------------------------------#
@@ -55,7 +58,7 @@ table2fasta <- function(stable, seq.list=NULL, dir.out=NULL, verbose=TRUE) {
     seq_names_sub <- paste0(seq_names[retain], ";size=", unname(uniq_vect), ";")
     if(verbose) 
       message(paste("Writing fasta file", paste0(row.names(stable)[i], ".fasta")))
-    uniquesToFasta(uniq_vect, 
+    dada2::uniquesToFasta(uniq_vect, 
                    paste(dir.out, paste0(row.names(stable)[i], ".fasta"), sep="/"),
                    ids=seq_names_sub)
   }

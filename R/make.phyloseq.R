@@ -26,13 +26,20 @@
 #' @export
 make.phyloseq <- function(dproc, sample.table=NULL, tax.table=NULL, 
                           phy.tree=NULL ) {
-  suppressWarnings(library(phyloseq, quietly=TRUE, warn.conflicts=FALSE))
+  #----------------------------------------------------------------------------#
+  if (!requireNamespace("phyloseq", quietly = TRUE)) {
+    stop("Package 'phyloseq' needed for this function to work. Please install it 
+         either manually or using the function amplicR::setup().",
+         call. = FALSE)
+  }  
+  #----------------------------------------------------------------------------#
+  
   stable <- dproc$stable
   colnames(stable) <- dproc$seq_list$sequence
-  ps <- phyloseq(otu_table(stable, taxa_are_rows=FALSE), 
-                 if(!is.null(sample.table)) sample_data(sample.table), 
-                 if(!is.null(tax.table)) tax_table(tax.table),
-                 if(!is.null(phy.tree)) phy_tree(phy.tree))
+  ps <- phyloseq::phyloseq(phyloseq::otu_table(stable, taxa_are_rows=FALSE), 
+                 if(!is.null(sample.table)) phyloseq::sample_data(sample.table), 
+                 if(!is.null(tax.table)) phyloseq::tax_table(tax.table),
+                 if(!is.null(phy.tree)) phyloseq::phy_tree(phy.tree))
   
   return(ps)
 }

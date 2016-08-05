@@ -70,8 +70,11 @@
 
 
 collate.seqs <- function(ldproc=NULL, rdas.in=NULL, dir.out=NULL) {
-  suppressWarnings(library(dada2, quietly=TRUE))
-  suppressPackageStartupMessages(library(ShortRead, quietly=TRUE))
+  if (!requireNamespace("dada2", quietly = TRUE)) {
+    stop("Package 'dada2' needed for this function to work. Please install it 
+         either manually or using the function amplicR::setup().",
+         call. = FALSE)
+  }
   #----------------------------------------------------------------------------#
   # Helper functions
   #----------------------------------------------------------------------------#
@@ -130,7 +133,7 @@ collate.seqs <- function(ldproc=NULL, rdas.in=NULL, dir.out=NULL) {
   lbysamples <- lapply(samples, combine.sample, lseqs)
   names(lbysamples) <- samples
   
-  stable <- suppressWarnings(makeSequenceTable(lbysamples))
+  stable <- suppressWarnings(dada2::makeSequenceTable(lbysamples))
   seqs <- colnames(stable)
   seq_names <- paste0("seq", 1:dim(stable)[2])
   colnames(stable) <- seq_names

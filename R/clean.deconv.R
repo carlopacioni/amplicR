@@ -34,7 +34,11 @@
 #'   reads that were processed and retained is also returned.
 #'   
 rmEndAdapter <- function(fn, nRead=1e8, EndAdapter="P7_last10", adapter.mismatch=0) {
-  suppressPackageStartupMessages(library(ShortRead, quietly=TRUE))
+  if (!requireNamespace("ShortRead", quietly = TRUE)) {
+    stop("Package 'ShortRead' needed for this function to work. Please install it 
+         either manually or using the function amplicR::setup().",
+         call. = FALSE)
+  }
   #----------------------------------------------------------------------------#
   # Helper functions
   #----------------------------------------------------------------------------#
@@ -48,41 +52,44 @@ rmEndAdapter <- function(fn, nRead=1e8, EndAdapter="P7_last10", adapter.mismatch
   if(EndAdapter == "P7") EndAdapter <- "CAAGCAGAAGACGGCATACGAGAT"
   if(EndAdapter == "P7_last10") EndAdapter <- "CATACGAGAT"  
   
-  stream <- FastqStreamer(fn, nRead)
+  stream <- ShortRead::FastqStreamer(fn, nRead)
   on.exit(close(stream))
   nRetained <- 0
   
-  while (length(fq <- yield(stream))) {
-    seqs <- sread(fq)
-    qual <- quality(fq)
-    qual <- quality(qual)
-    P7_hits <- vmatchPattern(pattern=reverseComplement(DNAString(EndAdapter)), 
+  while (length(fq <- ShortRead::yield(stream))) {
+    seqs <- ShortRead::sread(fq)
+    qual <- Biostrings::quality(fq)
+    qual <- Biostrings::quality(qual)
+    P7_hits <- Biostrings::vmatchPattern(
+                             pattern=Biostrings::reverseComplement(
+                                             Biostrings::DNAString(EndAdapter)), 
                              subject=seqs,
                              max.mismatch=adapter.mismatch, 
                              min.mismatch=0,
                              with.indels=FALSE, fixed=TRUE,
                              algorithm="auto")
     
-    if(sum(elementNROWS(P7_hits) > 1) > 0) {
+    if(sum(S4Vectors::elementNROWS(P7_hits) > 1) > 0) {
       message(cat(paste("Note: some reads in", fn, "have more than one match with:", 
                         EndAdapter, "The first match from the left is used",
                         sep="\n")))
     }
-    ends <- startIndex(P7_hits)
+    ends <- Biostrings::startIndex(P7_hits)
     ends <- lapply(ends, "[", 1)
     ends <- lapply(ends, putzero)
     
-    seqs <- DNAStringSet(seqs, start=1, end=unlist(ends))
-    qual <- BStringSet(qual, start=1, end=unlist(ends))
-    qual <- SFastqQuality(qual) 
-    trimmed <- ShortReadQ(sread=seqs, quality=qual, id=id(fq))
-    trimmed <- trimmed[width(trimmed) > 0]
+    seqs <- Biostrings::DNAStringSet(seqs, start=1, end=unlist(ends))
+    qual <- Biostrings::BStringSet(qual, start=1, end=unlist(ends))
+    qual <- ShortRead::SFastqQuality(qual) 
+    trimmed <- ShortRead::ShortReadQ(sread=seqs, quality=qual, 
+                                                           id=ShortRead::id(fq))
+    trimmed <- trimmed[IRanges::width(trimmed) > 0]
     
     fname <- paste0(substr(fn, start=1, stop=regexpr(".fastq", fn)[1] - 1), 
                     "_EndAdRm.fastq.gz")
     if(file.exists(fname)) message(cat(paste("Note: the file", fname, 
                                     "already exists\nSequences were appended")))
-    writeFastq(trimmed, fname, mode="a")
+    ShortRead::writeFastq(trimmed, fname, mode="a")
     nRetained <- nRetained + length(trimmed)
   }
   nInitial <- stream$status()["total"]
@@ -179,21 +186,26 @@ deconv <- function(fn, nRead=1e8, info.file, sample.IDs="Sample_IDs",
                    Fprimer="F_Primer", Rprimer="R_Primer", primer.mismatch=0,
                    Find="F_ind", Rind="R_ind", index.mismatch=0,
                    gene="Gene", dir.out=NULL) {
-  suppressPackageStartupMessages(library(ShortRead, quietly=TRUE))
+  if (!requireNamespace("ShortRead", quietly = TRUE)) {
+    stop("Package 'ShortRead' needed for this function to work. Please install it 
+         either manually or using the function amplicR::setup().",
+         call. = FALSE)
+  }
+  
   
   info_table <- read.csv(info.file)
   primers <- unique(info_table[, Fprimer])
   if (is.null(dir.out)) dir.out  <- dirname(fn)
   nRetained <- 0
-  stream <- FastqStreamer(fn, nRead)
+  stream <- ShortRead::FastqStreamer(fn, nRead)
   on.exit(close(stream))
   nIndRet <- 0
   nPrimRet <- 0
-  while (length(fq <- yield(stream))) {
+  while (length(fq <- ShortRead::yield(stream))) {
     for(primer in primers) {
-      seqs <- sread(fq)
-      qual <- quality(fq)
-      qual <- quality(qual)
+      seqs <- ShortRead::sread(fq)
+      qual <- Biostrings::quality(fq)
+      qual <- Biostrings::quality(qual)
       sel <- info_table[, Fprimer] == primer
       sub_info_table <- info_table[sel, ]
       gene.out <- paste(dir.out, sub_info_table[, gene][1], sep="/") 
@@ -202,14 +214,15 @@ deconv <- function(fn, nRead=1e8, info.file, sample.IDs="Sample_IDs",
       
       
       # Search for earch primers and identify gene
-      primer_hits <- vmatchPattern(pattern=DNAString(primer), 
+      primer_hits <- Biostrings::vmatchPattern(
+                                   pattern=Biostrings::DNAString(primer), 
                                    subject=seqs,
                                    max.mismatch=primer.mismatch, 
                                    min.mismatch=primer.mismatch,
                                    with.indels=FALSE, fixed=FALSE,
                                    algorithm="auto")
       
-      if(sum(elementNROWS(primer_hits) > 1) > 0) {
+      if(sum(S4Vectors::elementNROWS(primer_hits) > 1) > 0) {
         message(cat(paste("Note: some reads in", fn, 
                           "have more than one match with the foward primer:", 
                           primer, "Gene:",
@@ -220,69 +233,82 @@ deconv <- function(fn, nRead=1e8, info.file, sample.IDs="Sample_IDs",
                        sep="/")
         message(cat(paste("Details of reads with multiple primer hits are saved in the txt file:",
                           mhits, sep="\n")))
-        capture.output(id(fq)[elementNROWS(primer_hits) > 1], file=mhits)
+        capture.output(
+          ShortRead::id(fq)[S4Vectors::elementNROWS(primer_hits) > 1], file=mhits)
       }
-      retain <- as.logical(elementNROWS(primer_hits))
+      retain <- as.logical(S4Vectors::elementNROWS(primer_hits))
       seqs <- seqs[retain]
       qual <- qual[retain]
-      ids <- id(fq)[retain]
+      ids <- ShortRead::id(fq)[retain]
       
       for(row in 1:dim(sub_info_table)[1]) {
         
         # Removing indexes
-        trimCoords <- trimLRPatterns(Lpattern=DNAString(sub_info_table[row, Find]), 
-                 Rpattern=reverseComplement(DNAString(sub_info_table[row, Rind])), 
+        trimCoords <- Biostrings::trimLRPatterns(
+                      Lpattern=Biostrings::DNAString(sub_info_table[row, Find]), 
+                      Rpattern=Biostrings::reverseComplement(
+                              Biostrings::DNAString(sub_info_table[row, Rind])), 
                  subject=seqs,
                  max.Lmismatch=index.mismatch, max.Rmismatch=index.mismatch,
                  with.Lindels=FALSE, with.Rindels=FALSE,
                  Lfixed=TRUE, Rfixed=TRUE, ranges=TRUE)
-        retain <- width(trimCoords) == width(seqs) - 
+        retain <- IRanges::width(trimCoords) == IRanges::width(seqs) - 
           (nchar(as.vector(sub_info_table[row, Find])) + 
              nchar(as.vector(sub_info_table[row, Rind])))
-        seqs_NoInd <- DNAStringSet(seqs, start=start(trimCoords), 
-                                   end=end(trimCoords))
-        qual_NoInd <- BStringSet(qual, start=start(trimCoords), 
-                                 end=end(trimCoords))
-        qual_NoInd <- SFastqQuality(qual_NoInd) 
-        trimmed <- ShortReadQ(sread=seqs_NoInd, quality=qual_NoInd, id=ids)
+        seqs_NoInd <- Biostrings::DNAStringSet(seqs, 
+                                          start=BiocGenerics::start(trimCoords), 
+                                          end=BiocGenerics::end(trimCoords))
+        qual_NoInd <- Biostrings::BStringSet(qual, 
+                                          start=BiocGenerics::start(trimCoords), 
+                                          end=BiocGenerics::end(trimCoords))
+        qual_NoInd <- ShortRead::SFastqQuality(qual_NoInd) 
+        trimmed <- ShortRead::ShortReadQ(sread=seqs_NoInd, quality=qual_NoInd, id=ids)
         trimmed <- trimmed[retain]
         nIndRet <- nIndRet + length(trimmed)
         if(length(trimmed) > 0) {
           fname <- paste(gene.out, 
                          paste0(sub_info_table[row, sample.IDs], "_IndRm.fastq.gz"), 
                          sep="/")
-          writeFastq(trimmed, fname, mode="a")
+          ShortRead::writeFastq(trimmed, fname, mode="a")
         }
         
         # Removing primers
-        seqs_NoInd <- sread(trimmed)
-        qual_NoInd <- quality(trimmed)
-        qual_NoInd <- quality(qual_NoInd)
-        trimCoords <- trimLRPatterns(Lpattern=DNAString(sub_info_table[row, Fprimer]), 
-                 Rpattern=reverseComplement(DNAString(sub_info_table[row, Rprimer])), 
+        seqs_NoInd <- ShortRead::sread(trimmed)
+        qual_NoInd <- Biostrings::quality(trimmed)
+        qual_NoInd <- Biostrings::quality(qual_NoInd)
+        trimCoords <- Biostrings::trimLRPatterns(
+                   Lpattern=Biostrings::DNAString(sub_info_table[row, Fprimer]), 
+                   Rpattern=Biostrings::reverseComplement(
+                           Biostrings::DNAString(sub_info_table[row, Rprimer])), 
                  subject=seqs_NoInd,
                  max.Lmismatch=primer.mismatch, max.Rmismatch=primer.mismatch,
                  with.Lindels=FALSE, with.Rindels=FALSE,
                  Lfixed=FALSE, Rfixed=FALSE, ranges=TRUE)
-        retain <- width(trimCoords) == width(seqs_NoInd) - 
+        retain <- IRanges::width(trimCoords) == IRanges::width(seqs_NoInd) - 
           (nchar(as.vector(sub_info_table[row, Fprimer])) + 
              nchar(as.vector(sub_info_table[row, Rprimer])))
         seqs_NoPrim <- 
-          DNAStringSet(seqs_NoInd, start=start(trimCoords), end=end(trimCoords))
+          Biostrings::DNAStringSet(seqs_NoInd, 
+                                          start=BiocGenerics::start(trimCoords), 
+                                          end=BiocGenerics::end(trimCoords))
         qual_NoPrim <- 
-          BStringSet(qual_NoInd, start=start(trimCoords), end=end(trimCoords))
-        qual_NoPrim <- SFastqQuality(qual_NoPrim) 
+          Biostrings::BStringSet(qual_NoInd, 
+                                         start=BiocGenerics::start(trimCoords), 
+                                         end=BiocGenerics::end(trimCoords))
+        qual_NoPrim <- ShortRead::SFastqQuality(qual_NoPrim) 
         trimmed <- 
-          ShortReadQ(sread=seqs_NoPrim, quality=qual_NoPrim, id=id(trimmed))
+          ShortRead::ShortReadQ(sread=seqs_NoPrim, quality=qual_NoPrim, 
+                                                      id=ShortRead::id(trimmed))
         trimmed <- trimmed[retain]
         nPrimRet <- nPrimRet + length(trimmed)
         if(length(trimmed) > 0) {
           dir.create(path=paste(gene.out, "Final", sep="/"),
                      showWarnings=FALSE, recursive=TRUE)
           fname <- paste(gene.out, "Final",
-                         paste0(sub_info_table[row, sample.IDs], "_Ind_primerRm.fastq.gz"), 
+                         paste0(sub_info_table[row, sample.IDs], 
+                                "_Ind_primerRm.fastq.gz"), 
                          sep="/")
-          writeFastq(trimmed, fname, mode="a")
+          ShortRead::writeFastq(trimmed, fname, mode="a")
         }
         
       }

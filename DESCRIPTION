@@ -1,7 +1,7 @@
 Package: amplicR
 Type: Package
 Title: An R package to process amplicon data
-Version: 0.1.1.999
+Version: 0.1.2.999
 Date: 2016-05-04
 Author: as.person(
     "Carlo Pacioni <c.pacioni@murdoch.edu.au> [aut, cre]")
@@ -12,7 +12,7 @@ License: GPL-3
 Depends: R (>= 3.2.0)
 LazyData: TRUE
 RoxygenNote: 5.0.1
-Imports: 
+Imports:
   data.table,
   ggplot2,
   plyr
@@ -21,4 +21,11 @@ Suggests:
     rmarkdown,
     devtools,
     roxygen2,
-    testthat
+    testthat,
+    dada2,
+    ShortRead,
+    phyloseq,
+    BiocGenerics,
+    S4Vectors,
+    IRanges,
+    Biostrings
