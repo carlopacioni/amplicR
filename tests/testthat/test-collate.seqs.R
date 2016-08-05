@@ -1,4 +1,5 @@
 library(amplicR, quietly=TRUE)
+library(ShortRead, quietly=TRUE)
 context("Collate sequences")
 
 test_that("test collate.seqs: check sum of number of seqs", {
