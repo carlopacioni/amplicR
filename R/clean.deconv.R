@@ -218,7 +218,7 @@ deconv <- function(fn, nRead=1e8, info.file, sample.IDs="Sample_IDs",
                                    pattern=Biostrings::DNAString(primer), 
                                    subject=seqs,
                                    max.mismatch=primer.mismatch, 
-                                   min.mismatch=primer.mismatch,
+                                   min.mismatch=0,
                                    with.indels=FALSE, fixed=FALSE,
                                    algorithm="auto")
       
