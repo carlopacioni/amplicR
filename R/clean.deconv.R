@@ -514,11 +514,12 @@ deconv <- function(fn, nRead=1e8, info.file, sample.IDs="Sample_IDs",
 #' gene-specific amplicon length to correctly process the data.
 #' 
 #' By default, \code{dir.out} is set to the location where the input file is and 
-#'   \code{verbose=FALSE} for \code{\link{data.proc}}.
+#'   \code{verbose=FALSE}.
 #' 
 #' 
 #' Please, see documentations for each functions for more information.
 #' 
+#' @param rmEnd Whether \code{rmEndAdapter} should be performed
 #' @inheritParams rmEndAdapter
 #' @inheritParams deconv
 #' @inheritParams data.proc
@@ -534,7 +535,7 @@ deconv <- function(fn, nRead=1e8, info.file, sample.IDs="Sample_IDs",
 #'   reads retained in each step of the analysis
 #' @export
 #' @import data.table
-raw2data.proc <- function(fn, nRead=1e8, EndAdapter="P7_last10", 
+raw2data.proc <- function(fn, nRead=1e8, rmEnd=TRUE, EndAdapter="P7_last10", 
                           adapter.mismatch=0, info.file, sample.IDs="Sample_IDs", 
                           Fprimer="F_Primer", Rprimer="R_Primer", 
                           primer.mismatch=0, Find="F_ind", Rind="R_ind", 
@@ -569,11 +570,15 @@ extract.sums <- function(ldproc, el)  {
   if(length(primers) != length(genes)) 
     stop(paste("Detected a different number of unique forward primers and",
                gene))
-  
+  if(rmEnd){
   rme <- rmEndAdapter(fn, nRead, EndAdapter, adapter.mismatch)
   
   fn_Endrm <- paste0(substr(fn, start=1, stop=regexpr(".fastq", fn)[1] - 1), 
                         "_EndAdRm.fastq.gz")
+  } else {
+    fn_Endrm <- fn
+  }
+  
   dec <- deconv(fn_Endrm, nRead, info.file, 
           sample.IDs, Fprimer, Rprimer, primer.mismatch,
           Find, Rind, index.mismatch,
@@ -593,8 +598,14 @@ extract.sums <- function(ldproc, el)  {
     )
   }
   
-  writeLines(c(paste("The number of reads found in", fn, "was", rme[[1]]), 
-               paste("The end adapter was found and removed in", rme[[2]], "reads"),
+  writeLines(c(paste("The number of reads found in", fn, "was", 
+                     if(fn_Endrm) {
+                       rme[[1]]
+                       } else {
+                         dec[[1]]
+                         }), 
+               if(fn_Endrm) {
+                paste("The end adapter was found and removed in", rme[[2]], "reads")},
                paste("The index(es) were found and removed in", dec[[2]], "reads"),
                paste("Primers were found and removed in ", dec[[3]], "reads"),
                paste("The number of reads retained after applying the quality filter was",
