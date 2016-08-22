@@ -130,13 +130,15 @@ sel.match <- function(i, subjectSet, patt_hits, patt, type="F") {
 #' @param EndAdapter A character vector with the sequence of the end adapter,
 #'   "P7" or "P7_last10" (See details)
 #' @param adapter.mismatch The maximum number of allowed mismatch (See details)
+#' @param verbose Whether print out information on hits (default: FALSE)
 #' @export
 #' @return A fastq file with the reads where the end adapter was found (and 
 #'   removed) saved in the same location where the input data was located. The 
 #'   file is named with the suffix "_EndAdRm". A list with the total number of
 #'   reads that were processed and retained is also returned.
 #'   
-rmEndAdapter <- function(fn, nRead=1e8, EndAdapter="P7_last10", adapter.mismatch=0) {
+rmEndAdapter <- function(fn, nRead=1e8, EndAdapter="P7_last10", 
+                         adapter.mismatch=0, verbose=FALSE) {
   if (!requireNamespace("ShortRead", quietly = TRUE)) {
     stop("Package 'ShortRead' needed for this function to work. Please install it 
          either manually or using the function amplicR::setup().",
@@ -161,11 +163,12 @@ rmEndAdapter <- function(fn, nRead=1e8, EndAdapter="P7_last10", adapter.mismatch
                              min.mismatch=0,
                              with.indels=FALSE, fixed=TRUE,
                              algorithm="auto")
-    
+    if(verbose) {
     if(sum(S4Vectors::elementNROWS(P7_hits) > 1) > 0) {
       message(paste("\nNote: some reads in", fn, "have more than one match with:", 
                         EndAdapter, "The first match from the left is used",
                         sep="\n"))
+    }
     }
     ends <- Biostrings::startIndex(P7_hits)
     ends <- lapply(ends, "[", 1)
@@ -279,7 +282,7 @@ rmEndAdapter <- function(fn, nRead=1e8, EndAdapter="P7_last10", adapter.mismatch
 deconv <- function(fn, nRead=1e8, info.file, sample.IDs="Sample_IDs", 
                    Fprimer="F_Primer", Rprimer="R_Primer", primer.mismatch=0,
                    Find="F_ind", Rind="R_ind", index.mismatch=0,
-                   gene="Gene", dir.out=NULL) {
+                   gene="Gene", dir.out=NULL, verbose=FALSE) {
   if (!requireNamespace("ShortRead", quietly = TRUE)) {
     stop("Package 'ShortRead' needed for this function to work. Please install it 
          either manually or using the function amplicR::setup().",
@@ -322,7 +325,7 @@ deconv <- function(fn, nRead=1e8, info.file, sample.IDs="Sample_IDs",
                                    min.mismatch=0,
                                    with.indels=FALSE, fixed=FALSE,
                                    algorithm="auto")
-        
+      if(verbose) {  
       if(sum(S4Vectors::elementNROWS(primer_hits) > 1) > 0) {
         message(paste("\nNote: some reads in", fn, 
                           "have more than one match with the foward primer:", 
@@ -336,6 +339,7 @@ deconv <- function(fn, nRead=1e8, info.file, sample.IDs="Sample_IDs",
                           mhits, sep="\n"))
         capture.output(
           ShortRead::id(fq)[S4Vectors::elementNROWS(primer_hits) > 1], file=mhits)
+      }
       }
       retain <- as.logical(S4Vectors::elementNROWS(primer_hits))
       seqs_gene <- seqs_left[retain]
@@ -355,8 +359,10 @@ deconv <- function(fn, nRead=1e8, info.file, sample.IDs="Sample_IDs",
                         with.indels=FALSE, fixed=TRUE,
                         algorithm="auto")
           
+          if(verbose) {
           info(patt_hits=ind_hits, fn=fn, table=sub_info_table, row=row, 
                gene=gene, name_patt=Find, mismatch=index.mismatch)
+          }
           
           starts <- where2trim(mismatch=index.mismatch, 
                                subjectSet=seqs_gene, 
@@ -382,9 +388,11 @@ deconv <- function(fn, nRead=1e8, info.file, sample.IDs="Sample_IDs",
             min.mismatch=0,
             with.indels=FALSE, fixed=TRUE,
             algorithm="auto")
-
+          
+          if(verbose) {
           info(patt_hits=ind_hits, fn=fn, table=sub_info_table, row=row, 
                gene=gene, name_patt=Rind, mismatch=index.mismatch)
+          }
           
           starts <- where2trim(mismatch=index.mismatch, 
                                subjectSet=seqs_rm, 
@@ -410,8 +418,10 @@ deconv <- function(fn, nRead=1e8, info.file, sample.IDs="Sample_IDs",
                     with.indels=FALSE, fixed=FALSE,
                     algorithm="auto")
           
+          if(verbose) {
           info(patt_hits=ind_hits, fn=fn, table=sub_info_table, row=row, 
                gene=gene, name_patt=Fprimer, mismatch=primer.mismatch)
+          }
           
           starts <- where2trim(mismatch=primer.mismatch, 
                                subjectSet=seqs_rm, 
@@ -436,8 +446,10 @@ deconv <- function(fn, nRead=1e8, info.file, sample.IDs="Sample_IDs",
             with.indels=FALSE, fixed=FALSE,
             algorithm="auto")
           
+          if(verbose) {
           info(patt_hits=ind_hits, fn=fn, table=sub_info_table, row=row, 
                gene=gene, name_patt=Rprimer, mismatch=primer.mismatch)
+          }
           
           starts <- where2trim(mismatch=primer.mismatch, 
                                subjectSet=seqs_rm, 
