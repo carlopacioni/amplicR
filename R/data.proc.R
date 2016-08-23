@@ -328,7 +328,8 @@ write.csv(seq_list, file=paste(dir.out, "Seq_list.csv", sep="/"), row.names=FALS
 el <- el + 1
 lsummary[[el]] <- data.frame(Sample=names(nSeq), nSeq)
 summary <- plyr::join_all(lsummary, by="Sample", type="left")
-write.csv(summary, file=paste(dir.out, "data.proc.summary.csv", sep="/"), row.names=FALSE)
+write.csv(summary, file=paste(dir.out, "data.proc.summary.csv", sep="/"), 
+          row.names=FALSE)
 
 fasta_fold <- "Final_seqs"
 fasta_dir <- paste(dir.out, fasta_fold, sep="/")
