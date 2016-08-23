@@ -584,7 +584,7 @@ extract.sums <- function(ldproc, el)  {
           Find, Rind, index.mismatch,
           gene)
   
-  path.results <- paste(dirname(fn), genes, "Final", sep="/")
+  path.results <- paste(dirname(fn), genes, sep="/")
   names(path.results) <- genes
   ldproc <- list()
   for(g in genes) {
