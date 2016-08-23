@@ -7,7 +7,7 @@
 deconv(fn, nRead = 1e+08, info.file, sample.IDs = "Sample_IDs",
   Fprimer = "F_Primer", Rprimer = "R_Primer", primer.mismatch = 0,
   Find = "F_ind", Rind = "R_ind", index.mismatch = 0, gene = "Gene",
-  dir.out = NULL)
+  dir.out = NULL, verbose = FALSE)
 }
 \arguments{
 \item{fn}{Fully qualified name (i.e. the complete path) of the fastq file}
@@ -36,6 +36,8 @@ containing the name of the gene or other group idenifiers (see details)}
 
 \item{dir.out}{The directory where to save the results. If NULL (default) 
 then it will be set the same location where the input data was located}
+
+\item{verbose}{Whether print out information on hits (default: FALSE)}
 }
 \value{
 A fastq file with the reads that were retained after removing the 
