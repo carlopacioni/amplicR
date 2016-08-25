@@ -249,7 +249,8 @@ if(chim == TRUE)  {
   if(dada == TRUE) {
     if(length(derepReads) > 1) {
       single <- FALSE
-      bimReads <- sapply(dadaReads, dada2::isBimeraDenovo, verbose=FALSE)
+      bimReads <- lapply(dadaReads, dada2::isBimeraDenovo, verbose=FALSE)
+      names(bimReads) <- names(dadaReads)
     } else {
       single <- TRUE
       bimReads <- dada2::isBimeraDenovo(dadaReads, verbose=FALSE)
@@ -260,7 +261,8 @@ if(chim == TRUE)  {
     } else {
       single <- TRUE
     }
-    bimReads <- sapply(derepReads, dada2::isBimeraDenovo, verbose=FALSE)
+    bimReads <- lapply(derepReads, dada2::isBimeraDenovo, verbose=FALSE)
+    names(bimReads) <- names(derepReads)
   }
   
   if(verbose) {
