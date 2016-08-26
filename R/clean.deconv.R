@@ -599,12 +599,12 @@ extract.sums <- function(ldproc, el)  {
   }
   
   writeLines(c(paste("The number of reads found in", fn, "was", 
-                     if(fn_Endrm) {
+                     if(rmEnd) {
                        rme[[1]]
                        } else {
                          dec[[1]]
                          }), 
-               if(fn_Endrm) {
+               if(rmEnd) {
                 paste("The end adapter was found and removed in", rme[[2]], "reads")},
                paste("The index(es) were found and removed in", dec[[2]], "reads"),
                paste("Primers were found and removed in ", dec[[3]], "reads"),
