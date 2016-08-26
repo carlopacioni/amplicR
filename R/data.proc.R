@@ -279,7 +279,7 @@ if(chim == TRUE)  {
   
   el <- el + 1
   lsummary[[el]] <- data.frame(Sample=names(nChimeras), nChimeras)
-  if(dada == T) {
+  if(dada == TRUE) {
     if(single) {
       no_chim <- list(dada2::getUniques(dadaReads)[!bimReads])
       names(no_chim) <- names(derepReads)
