@@ -267,23 +267,11 @@ if(chim == TRUE)  {
   
   if(verbose) {
     message("Proportion of bimeras found in each sample")
-    if(single) {
-      message(cat(round(mean(bimReads), digits=2), "\n"))
-    } else {
       message(cat(round(sapply(bimReads, mean), digits=2), "\n"))
-    }
   }
   
-  if(single) {
-    nChimeras <- sum(bimReads)
-    if(dada == TRUE) {
-      names(nChimeras) <- names(derepReads)
-    } else {
-      names(nChimeras) <- colnames(bimReads)
-    }
-  } else {
     nChimeras <- sapply(bimReads, nChim)
-  }
+
   if(verbose) {
     message("Number of bimeras found in each sample:")
     message(cat(nChimeras, "\n"))
