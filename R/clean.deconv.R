@@ -205,23 +205,26 @@ rmEndAdapter <- function(fn, nRead=1e8, EndAdapter="P7_last10",
 #' \code{deconv} takes a fastq file and will search for the forward primer and 
 #' use this to separate the reads. That is, different PCR products ('genes') 
 #' will be separated based on the forward primer. Within each gene, reads are 
-#' then separated based on forward and/or reverse index.  The end products are 
-#' several fastq files - one for each samples, in as many folders as how many 
-#' gene identifiers were provided with the \code{info.file} - where primers and 
-#' indexes were removed.
+#' then separated based on forward and/or reverse index (if present).  The end 
+#' products are several fastq files - one for each samples, in as many folders 
+#' as how many gene identifiers were provided with the \code{info.file} - where 
+#' primers and indexes were removed.
 #' 
-#' This function applies only to reads with in-line indexes. That is, where the 
-#' architecture of the reads is as follows:
+#' If a search for indexes is conducted, this function applies only to reads 
+#' with in-line indexes. That is, where the architecture of the reads is as 
+#' follows:
 #' 
 #' F_index---F_primer---Target_sequence---R_primer---R_index
 #' 
-#' Note that the P7 adapter can be removed with \code{\link{rmEndAdapter}}.
+#' Note that the P7 adapter can be removed with \code{\link{rmEndAdapter}}, 
+#' although, because \code{deconv} scans the whole length of the reads, removing
+#' the end adapter beforehand is not compulsory.
 #' 
 #' It is possible to control the number of mismatch, and IUPAC ambiguities codes
-#' can be used only in the search for primers (i.e. the search for the primers
+#' can be used only in the search for primers (i.e. the search for the primers 
 #' is conducted with \code{fixed=FALSE}, which means (from Biostring): "an IUPAC
-#' ambiguity code in the pattern can match any letter in the subject that is
-#' associated with the code, and vice versa". Note that indexes are searched
+#' ambiguity code in the pattern can match any letter in the subject that is 
+#' associated with the code, and vice versa". Note that indexes are searched 
 #' with \code{fixed=TRUE}).
 #' 
 #' Information about the reads are passed with a comma separated file (CSV), 
@@ -249,18 +252,26 @@ rmEndAdapter <- function(fn, nRead=1e8, EndAdapter="P7_last10",
 #' \code{gene} to group PCR products in other logical way than genes, but all 
 #' identical forward primer should have the same \code{gene} information. This 
 #' is because (for efficiency) \code{deconv} uses only the first line for each 
-#' forward primer to identify where the processed data should be saved and if 
-#' multiple codes are used for \code{gene} for the same forward primer, these 
-#' are actually ignored.
-#' 
-#' When relevant, a warning is reported and a text file with the sequence IDs 
-#' that had multiple hits in the preliminary search for the forward primer is 
-#' saved.
+#' unique forward primer to identify where the processed data should be saved 
+#' and if multiple codes are used for \code{gene} for the same forward primer, 
+#' these are actually ignored.
 #' 
 #' After reads are separated based on the forward primer, indexes and primers 
 #' are removed and processed samples are written to fastq files. Only reads 
 #' where both primers (forward and reverse) and indexes (if there is information
 #' for both in \code{info.file}) were found are retained.
+#' 
+#' #' If \code{verbose=TRUE}, a warning is reported if reads have multiple hits 
+#' in the serach for the pattern (indexes or primers). When there are multiple 
+#' hits, the most external one is used if not mismatches are allowed. If 
+#' mismatches are allowed, then the match with the lowest edit distance
+#' (calculated using \code{\link[ShortRead]{srdistance}}) between the pattern
+#' and the match is used (i.e. if there is for example a match with zero and a
+#' match with one mismatch, the match with zero mismatch will be used). When
+#' there are multiple matches with the same lowest edit distance, the most
+#' external one will be used. Because emasuring the edit distance is 
+#' computetionally demanding, allowing mismatches may slow down the data 
+#' processing by several folds.
 #' 
 #' @param info.file Fully qualified name (i.e. the complete path) of the CSV 
 #'   file with the information needed on primers, indexes etc. (See details)
@@ -500,7 +511,7 @@ deconv <- function(fn, nRead=1e8, info.file, sample.IDs="Sample_IDs",
 #' This function is a wrapper for \code{\link{rmEndAdapter}}, 
 #' \code{\link{deconv}} and \code{\link{data.proc}}. It takes in a raw fastq 
 #' file, removes the end adapter, separates the reads based on their forward 
-#' primers. Within each of the iodentified group, separates the reads based on 
+#' primers. Within each of the identified group, separates the reads based on 
 #' barcodes (indexes) and eventually calls \code{\link{data.proc}} to process 
 #' (quality checking, denoising and chimeras filtering) the retained data from 
 #' the NGS run.
@@ -508,20 +519,19 @@ deconv <- function(fn, nRead=1e8, info.file, sample.IDs="Sample_IDs",
 #' Note that the amplicon size for \code{\link{data.proc}} is obtained from the 
 #' comma delimited file \code{info.file}, searching in the column with the 
 #' heading indicated in \code{amplic.size}. Zeros can be used in this column if 
-#' no truncation is wanted. For each entry in the column 
-#' indicated with the argument \code{gene}, the function will use the first 
-#' entry found in \code{amplic.size} for the relevant \code{gene}. If the same 
-#' gene identifier is used for multiple forward primers (see documentation for 
-#' the \code{\link{deconv}} to see how multiple PCR product can be grouped 
-#' together using the \code{gene} column), then these have to have all the same 
-#' amplicon length to use \code{raw2data.proc}, otherwise the three functions 
-#' (\code{\link{rmEndAdapter}}, \code{\link{deconv}} and 
-#' \code{\link{data.proc}}) need to be called manually, rather than with 
-#' \code{raw2data.proc}. This is because \code{\link{data.proc}} needs a 
-#' gene-specific amplicon length to correctly process the data.
+#' no truncation is wanted. For each entry in the column indicated with the 
+#' argument \code{gene}, the function will use the first entry found in 
+#' \code{amplic.size} for the relevant \code{gene}. If the same gene identifier 
+#' is used for multiple forward primers, refer to the documentation for the 
+#' \code{\link{deconv}} to see how multiple PCR product can be grouped together 
+#' using the \code{gene} column).  Note that withing each gene, the same
+#' amplicon length is used \code{raw2data.proc}. To use different amplicon sizes
+#' within a gene, run the three functions (\code{\link{rmEndAdapter}},
+#' \code{\link{deconv}} and \code{\link{data.proc}}) manually,
+#' rather than with \code{raw2data.proc}. 
 #' 
-#' By default, \code{dir.out} is set to the location where the input file is and 
-#'   \code{verbose=FALSE}.
+#' By default, \code{dir.out} is set to the location where the input file is and
+#' \code{verbose=FALSE}.
 #' 
 #' 
 #' Please, see documentations for each functions for more information.
@@ -535,10 +545,10 @@ deconv <- function(fn, nRead=1e8, info.file, sample.IDs="Sample_IDs",
 #' @return A list that has for elements the output of \code{\link{data.proc}} 
 #'   for each PCR product
 #'   
-#'   Also, in addition to the output files described in the documentations for
-#'   \code{\link{rmEndAdapter}}, \code{\link{deconv}} and
-#'   \code{\link{data.proc}}, a text file, named "summary_nReads.txt" is saved
-#'   in the same location where the raw data are, summarising the number of
+#'   Also, in addition to the output files described in the documentations for 
+#'   \code{\link{rmEndAdapter}}, \code{\link{deconv}} and 
+#'   \code{\link{data.proc}}, a text file, named "summary_nReads.txt" is saved 
+#'   in the same location where the raw data are, summarising the number of 
 #'   reads retained in each step of the analysis
 #' @import data.table
 #' @export
