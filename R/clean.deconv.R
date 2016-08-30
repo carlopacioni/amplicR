@@ -56,6 +56,7 @@ where2trim <- function(mismatch, subjectSet, patt_hits, patt, type="F") {
                        patt_hits=patt_hits, 
                        patt=patt,
                        type=type)
+    
     if(type == "F") {
       starts <- lapply(sel_hits, BiocGenerics::end)
     } else {
@@ -75,25 +76,31 @@ sel.match <- function(i, subjectSet, patt_hits, patt, type="F") {
          either manually or using the function amplicR::setup().",
          call. = FALSE)
   }
-  
-  if(type == "F") {
-    patt <- Biostrings::DNAString(patt)
-  } else {
-    patt <- Biostrings::reverseComplement(Biostrings::DNAString(patt))
-  }
-  
-  v <- IRanges::Views(subjectSet[[i]], patt_hits[[i]])
-  hits <- suppressWarnings(as.character(v, check.limits=FALSE))
-  nDiff <- unlist(ShortRead::srdistance(Biostrings::DNAStringSet(hits), patt))
-  if(type == "F") {
-    m <- patt_hits[[i]][which.min(nDiff)]
-  } else {
-    if(length(nDiff) == 0) {
-      m <- patt_hits[[i]][integer()]
+  if(length(patt_hits[[i]]) > 1) {
+    if(type == "F") {
+      patt <- Biostrings::DNAString(patt)
     } else {
-      m <- patt_hits[[i]][max(which(nDiff == min(nDiff)))]
+      patt <- Biostrings::reverseComplement(Biostrings::DNAString(patt))
     }
+    
+    v <- IRanges::Views(subjectSet[[i]], patt_hits[[i]])
+    hits <- suppressWarnings(as.character(v, use.names=FALSE, check.limits=FALSE))
+    sr <- ShortRead::srdistance(Biostrings::DNAStringSet(hits), patt)
+    nDiff2 <- unlist(sr)
+    nDiff <- unlist(sr, use.names=FALSE)
+    if(type == "F") {
+      m <- patt_hits[[i]][which.min(nDiff)]
+    } else {
+      if(length(nDiff) == 0) {
+        m <- patt_hits[[i]][integer()]
+      } else {
+        m <- patt_hits[[i]][max(which(nDiff == min(nDiff)))]
+      }
+    }
+  } else {
+    return(patt_hits[[i]])
   }
+  
   return(m)
 }
 
@@ -533,8 +540,9 @@ deconv <- function(fn, nRead=1e8, info.file, sample.IDs="Sample_IDs",
 #'   \code{\link{data.proc}}, a text file, named "summary_nReads.txt" is saved
 #'   in the same location where the raw data are, summarising the number of
 #'   reads retained in each step of the analysis
-#' @export
 #' @import data.table
+#' @export
+
 raw2data.proc <- function(fn, nRead=1e8, rmEnd=TRUE, EndAdapter="P7_last10", 
                           adapter.mismatch=0, info.file, sample.IDs="Sample_IDs", 
                           Fprimer="F_Primer", Rprimer="R_Primer", 
@@ -551,7 +559,8 @@ extract.sums <- function(ldproc, el)  {
                                       if(el == "nFiltered") i <- 1
                                       if(el == "nDerep") i <- 2
                                       if(el == "nSeq") i <- length(dproc)
-                                      r <- if(is.data.table(dproc$lsummary[[i]])) {
+                                      r <- if(data.table::is.data.table(
+                                        dproc$lsummary[[i]])) {
                                         sum(dproc$lsummary[[i]][, el, with=FALSE], 
                                             na.rm=TRUE)
                                       } else {
