@@ -154,6 +154,8 @@ dir.create(dir.out, showWarnings=FALSE, recursive=TRUE)
 
 fns <- list.files(path=dir.in)
 fastqs <- fns[grepl(".fastq.{,3}$", fns)]
+if(length(fastqs) == 0) stop(paste("There are no files in", dir.in,
+                                   "with either fastq or fastq.gz extension"))
 
 #### Filter ####
 filt_fold <- "Filtered_seqs"
@@ -193,6 +195,9 @@ names(derepReads) <- sample_names_fil
 
 lsummary <- list()
 fnSeqs <- unlist(lapply(derepReads, getnFiltered))
+if(length(fnSeqs) == 0) stop(paste("There are no sequences that passed the filter in", 
+                                   dir.in))
+
 lsummary[[1]] <- merge(data.table(Sample=sample_names), 
                                    data.table(Sample=sample_names_fil, 
                                               nFiltered=fnSeqs), 

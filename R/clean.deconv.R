@@ -599,12 +599,20 @@ extract.sums <- function(ldproc, el)  {
   for(g in genes) {
     sel <- info_table[, gene] == g
     bp <- info_table[sel, amplic.size][1]
-  
+    
+    fns <- list.files(path=path.results[g])
+    fastqs <- fns[grepl(".fastq.{,3}$", fns)]
+    if(length(fastqs) == 0) {
+      message(paste("There are no files in", path.results[g],
+            "with either fastq or fastq.gz extension"))
+      next
+    } else {
       txt <- capture.output(
       ldproc[[g]] <- data.proc(dir.in=path.results[g], bp=bp, truncQ=truncQ, 
                             qrep=qrep, dada=dada, pool=pool, plot.err=plot.err, 
                             chim=chim, orderBy=orderBy, verbose=FALSE)
     )
+    }
   }
   
   writeLines(c(paste("The number of reads found in", fn, "was", 
