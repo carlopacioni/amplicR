@@ -4,7 +4,7 @@
 \alias{raw2data.proc}
 \title{From raw data to data.proc()}
 \usage{
-raw2data.proc(fn, nRead = 1e+08, EndAdapter = "P7_last10",
+raw2data.proc(fn, nRead = 1e+08, rmEnd = FALSE, EndAdapter = "P7_last10",
   adapter.mismatch = 0, info.file, sample.IDs = "Sample_IDs",
   Fprimer = "F_Primer", Rprimer = "R_Primer", primer.mismatch = 0,
   Find = "F_ind", Rind = "R_ind", index.mismatch = 0, gene = "Gene",
@@ -16,6 +16,8 @@ raw2data.proc(fn, nRead = 1e+08, EndAdapter = "P7_last10",
 
 \item{nRead}{The number of bytes or characters to be read at one time. See 
 \code{\link[ShortRead]{FastqStreamer}} for details}
+
+\item{rmEnd}{Whether \code{rmEndAdapter} should be performed (default: FALSE)}
 
 \item{EndAdapter}{A character vector with the sequence of the end adapter,
 "P7" or "P7_last10" (See details)}
@@ -78,17 +80,17 @@ should be sorted. Default "abundance". See
 A list that has for elements the output of \code{\link{data.proc}} 
   for each PCR product
   
-  Also, in addition to the output files described in the documentations for
-  \code{\link{rmEndAdapter}}, \code{\link{deconv}} and
-  \code{\link{data.proc}}, a text file, named "summary_nReads.txt" is saved
-  in the same location where the raw data are, summarising the number of
+  Also, in addition to the output files described in the documentations for 
+  \code{\link{rmEndAdapter}}, \code{\link{deconv}} and 
+  \code{\link{data.proc}}, a text file, named "summary_nReads.txt" is saved 
+  in the same location where the raw data are, summarising the number of 
   reads retained in each step of the analysis
 }
 \description{
 This function is a wrapper for \code{\link{rmEndAdapter}}, 
 \code{\link{deconv}} and \code{\link{data.proc}}. It takes in a raw fastq 
 file, removes the end adapter, separates the reads based on their forward 
-primers. Within each of the iodentified group, separates the reads based on 
+primers. Within each of the identified group, separates the reads based on 
 barcodes (indexes) and eventually calls \code{\link{data.proc}} to process 
 (quality checking, denoising and chimeras filtering) the retained data from 
 the NGS run.
@@ -97,20 +99,19 @@ the NGS run.
 Note that the amplicon size for \code{\link{data.proc}} is obtained from the 
 comma delimited file \code{info.file}, searching in the column with the 
 heading indicated in \code{amplic.size}. Zeros can be used in this column if 
-no truncation is wanted. For each entry in the column 
-indicated with the argument \code{gene}, the function will use the first 
-entry found in \code{amplic.size} for the relevant \code{gene}. If the same 
-gene identifier is used for multiple forward primers (see documentation for 
-the \code{\link{deconv}} to see how multiple PCR product can be grouped 
-together using the \code{gene} column), then these have to have all the same 
-amplicon length to use \code{raw2data.proc}, otherwise the three functions 
-(\code{\link{rmEndAdapter}}, \code{\link{deconv}} and 
-\code{\link{data.proc}}) need to be called manually, rather than with 
-\code{raw2data.proc}. This is because \code{\link{data.proc}} needs a 
-gene-specific amplicon length to correctly process the data.
+no truncation is wanted. For each entry in the column indicated with the 
+argument \code{gene}, the function will use the first entry found in 
+\code{amplic.size} for the relevant \code{gene}. If the same gene identifier 
+is used for multiple forward primers, refer to the documentation for the 
+\code{\link{deconv}} to see how multiple PCR product can be grouped together 
+using the \code{gene} column).  Note that withing each gene, the same
+amplicon length is used \code{raw2data.proc}. To use different amplicon sizes
+within a gene, run the three functions (\code{\link{rmEndAdapter}},
+\code{\link{deconv}} and \code{\link{data.proc}}) manually,
+rather than with \code{raw2data.proc}.
 
-By default, \code{dir.out} is set to the location where the input file is and 
-  \code{verbose=FALSE} for \code{\link{data.proc}}.
+By default, \code{dir.out} is set to the location where the input file is and
+\code{verbose=FALSE}.
 
 Please, see documentations for each functions for more information.
 }

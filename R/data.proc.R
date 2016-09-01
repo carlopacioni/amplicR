@@ -154,6 +154,8 @@ dir.create(dir.out, showWarnings=FALSE, recursive=TRUE)
 
 fns <- list.files(path=dir.in)
 fastqs <- fns[grepl(".fastq.{,3}$", fns)]
+if(length(fastqs) == 0) stop(paste("There are no files in", dir.in,
+                                   "with either fastq or fastq.gz extension"))
 
 #### Filter ####
 filt_fold <- "Filtered_seqs"
@@ -193,6 +195,9 @@ names(derepReads) <- sample_names_fil
 
 lsummary <- list()
 fnSeqs <- unlist(lapply(derepReads, getnFiltered))
+if(length(fnSeqs) == 0) stop(paste("There are no sequences that passed the filter in", 
+                                   dir.in))
+
 lsummary[[1]] <- merge(data.table(Sample=sample_names), 
                                    data.table(Sample=sample_names_fil, 
                                               nFiltered=fnSeqs), 
@@ -249,7 +254,8 @@ if(chim == TRUE)  {
   if(dada == TRUE) {
     if(length(derepReads) > 1) {
       single <- FALSE
-      bimReads <- sapply(dadaReads, dada2::isBimeraDenovo, verbose=FALSE)
+      bimReads <- lapply(dadaReads, dada2::isBimeraDenovo, verbose=FALSE)
+      names(bimReads) <- names(dadaReads)
     } else {
       single <- TRUE
       bimReads <- dada2::isBimeraDenovo(dadaReads, verbose=FALSE)
@@ -260,28 +266,17 @@ if(chim == TRUE)  {
     } else {
       single <- TRUE
     }
-    bimReads <- sapply(derepReads, dada2::isBimeraDenovo, verbose=FALSE)
+    bimReads <- lapply(derepReads, dada2::isBimeraDenovo, verbose=FALSE)
+    names(bimReads) <- names(derepReads)
   }
   
   if(verbose) {
     message("Proportion of bimeras found in each sample")
-    if(single) {
-      message(cat(round(mean(bimReads), digits=2), "\n"))
-    } else {
       message(cat(round(sapply(bimReads, mean), digits=2), "\n"))
-    }
   }
   
-  if(single) {
-    nChimeras <- sum(bimReads)
-    if(dada == TRUE) {
-      names(nChimeras) <- names(derepReads)
-    } else {
-      names(nChimeras) <- colnames(bimReads)
-    }
-  } else {
     nChimeras <- sapply(bimReads, nChim)
-  }
+
   if(verbose) {
     message("Number of bimeras found in each sample:")
     message(cat(nChimeras, "\n"))
@@ -289,7 +284,7 @@ if(chim == TRUE)  {
   
   el <- el + 1
   lsummary[[el]] <- data.frame(Sample=names(nChimeras), nChimeras)
-  if(dada == T) {
+  if(dada == TRUE) {
     if(single) {
       no_chim <- list(dada2::getUniques(dadaReads)[!bimReads])
       names(no_chim) <- names(derepReads)
@@ -328,7 +323,8 @@ write.csv(seq_list, file=paste(dir.out, "Seq_list.csv", sep="/"), row.names=FALS
 el <- el + 1
 lsummary[[el]] <- data.frame(Sample=names(nSeq), nSeq)
 summary <- plyr::join_all(lsummary, by="Sample", type="left")
-write.csv(summary, file=paste(dir.out, "data.proc.summary.csv", sep="/"), row.names=FALSE)
+write.csv(summary, file=paste(dir.out, "data.proc.summary.csv", sep="/"), 
+          row.names=FALSE)
 
 fasta_fold <- "Final_seqs"
 fasta_dir <- paste(dir.out, fasta_fold, sep="/")

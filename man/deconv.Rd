@@ -7,7 +7,7 @@
 deconv(fn, nRead = 1e+08, info.file, sample.IDs = "Sample_IDs",
   Fprimer = "F_Primer", Rprimer = "R_Primer", primer.mismatch = 0,
   Find = "F_ind", Rind = "R_ind", index.mismatch = 0, gene = "Gene",
-  dir.out = NULL)
+  dir.out = NULL, verbose = FALSE)
 }
 \arguments{
 \item{fn}{Fully qualified name (i.e. the complete path) of the fastq file}
@@ -36,6 +36,8 @@ containing the name of the gene or other group idenifiers (see details)}
 
 \item{dir.out}{The directory where to save the results. If NULL (default) 
 then it will be set the same location where the input data was located}
+
+\item{verbose}{Whether print out information on hits (default: FALSE)}
 }
 \value{
 A fastq file with the reads that were retained after removing the 
@@ -51,24 +53,28 @@ A fastq file with the reads that were retained after removing the
 \code{deconv} takes a fastq file and will search for the forward primer and 
 use this to separate the reads. That is, different PCR products ('genes') 
 will be separated based on the forward primer. Within each gene, reads are 
-then separated based on forward and/or reverse index.  The end products are 
-several fastq files - one for each samples, in as many folders as how many 
-gene identifiers were provided with the \code{info.file} - where primers and 
-indexes were removed.
+then separated based on forward and/or reverse index (if present).  The end 
+products are several fastq files - one for each samples, in as many folders 
+as how many gene identifiers were provided with the \code{info.file} - where 
+primers and indexes were removed.
 }
 \details{
-This function applies only to reads with in-line indexes. That is, where the 
-architecture of the reads is as follows:
+If a search for indexes is conducted, this function applies only to reads 
+with in-line indexes. That is, where the architecture of the reads is as 
+follows:
 
 F_index---F_primer---Target_sequence---R_primer---R_index
 
-Note that the P7 adapter can be removed with \code{\link{rmEndAdapter}}.
+Note that the P7 adapter can be removed with \code{\link{rmEndAdapter}}, 
+although, because \code{deconv} scans the whole length of the reads, removing
+the end adapter beforehand is not compulsory.
 
 It is possible to control the number of mismatch, and IUPAC ambiguities codes
-can be used in primers (i.e.the search for the primers is conducted with 
-\code{fixed=FALSE}, which means (from Biostring): "an IUPAC ambiguity code in
-the pattern can match any letter in the subject that is associated with the 
-code, and vice versa". Note that indexes are searched with \code{fixed=TRUE}.
+can be used only in the search for primers (i.e. the search for the primers 
+is conducted with \code{fixed=FALSE}, which means (from Biostring): "an IUPAC
+ambiguity code in the pattern can match any letter in the subject that is 
+associated with the code, and vice versa". Note that indexes are searched 
+with \code{fixed=TRUE}).
 
 Information about the reads are passed with a comma separated file (CSV), 
 whose path and name is passed with \code{info.file}. This must contain a 
@@ -92,20 +98,28 @@ to 3' direction and are internally reversed and complemented when necessary.
 reads creating (if not existing already) a folder named as for the relevant 
 information provided in the column \code{gene}, which is typically an 
 identifier of the targeted genes. It is possible to use the column 
-\code{gene} to group PCR products in other logical way than genes, but all
-identical forward primer should have the same \code{gene} information. This
-is because (for efficiency) \code{deconv} uses only the first line for each
-forward primer to identify where the processed data should be saved and if
-multiple codes are used for \code{gene} for the same forward primer, these
-are actually ignored.
-
-When relevant, a warning is reported and a text file with the sequence IDs 
-that had multiple hits in the preliminary search for the forward primer is 
-saved.
+\code{gene} to group PCR products in other logical way than genes, but all 
+identical forward primer should have the same \code{gene} information. This 
+is because (for efficiency) \code{deconv} uses only the first line for each 
+unique forward primer to identify where the processed data should be saved 
+and if multiple codes are used for \code{gene} for the same forward primer, 
+these are actually ignored.
 
 After reads are separated based on the forward primer, indexes and primers 
 are removed and processed samples are written to fastq files. Only reads 
 where both primers (forward and reverse) and indexes (if there is information
 for both in \code{info.file}) were found are retained.
+
+#' If \code{verbose=TRUE}, a warning is reported if reads have multiple hits 
+in the serach for the pattern (indexes or primers). When there are multiple 
+hits, the most external one is used if not mismatches are allowed. If 
+mismatches are allowed, then the match with the lowest edit distance
+(calculated using \code{\link[ShortRead]{srdistance}}) between the pattern
+and the match is used (i.e. if there is for example a match with zero and a
+match with one mismatch, the match with zero mismatch will be used). When
+there are multiple matches with the same lowest edit distance, the most
+external one will be used. Because emasuring the edit distance is 
+computetionally demanding, allowing mismatches may slow down the data 
+processing by several folds.
 }
 

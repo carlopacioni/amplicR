@@ -5,7 +5,7 @@
 \title{Remove end adapter}
 \usage{
 rmEndAdapter(fn, nRead = 1e+08, EndAdapter = "P7_last10",
-  adapter.mismatch = 0)
+  adapter.mismatch = 0, verbose = FALSE)
 }
 \arguments{
 \item{fn}{Fully qualified name (i.e. the complete path) of the fastq file}
@@ -17,6 +17,8 @@ rmEndAdapter(fn, nRead = 1e+08, EndAdapter = "P7_last10",
 "P7" or "P7_last10" (See details)}
 
 \item{adapter.mismatch}{The maximum number of allowed mismatch (See details)}
+
+\item{verbose}{Whether print out information on hits (default: FALSE)}
 }
 \value{
 A fastq file with the reads where the end adapter was found (and 
