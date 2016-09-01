@@ -536,7 +536,7 @@ deconv <- function(fn, nRead=1e8, info.file, sample.IDs="Sample_IDs",
 #' 
 #' Please, see documentations for each functions for more information.
 #' 
-#' @param rmEnd Whether \code{rmEndAdapter} should be performed
+#' @param rmEnd Whether \code{rmEndAdapter} should be performed (default: FALSE)
 #' @inheritParams rmEndAdapter
 #' @inheritParams deconv
 #' @inheritParams data.proc
@@ -553,7 +553,7 @@ deconv <- function(fn, nRead=1e8, info.file, sample.IDs="Sample_IDs",
 #' @import data.table
 #' @export
 
-raw2data.proc <- function(fn, nRead=1e8, rmEnd=TRUE, EndAdapter="P7_last10", 
+raw2data.proc <- function(fn, nRead=1e8, rmEnd=FALSE, EndAdapter="P7_last10", 
                           adapter.mismatch=0, info.file, sample.IDs="Sample_IDs", 
                           Fprimer="F_Primer", Rprimer="R_Primer", 
                           primer.mismatch=0, Find="F_ind", Rind="R_ind", 
