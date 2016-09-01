@@ -2,7 +2,7 @@ Package: amplicR
 Type: Package
 Title: An R package to process amplicon data
 Version: 0.2.2.999
-Date: 2016-05-04
+Date: 01-Sept-16
 Author: as.person(
     "Carlo Pacioni <c.pacioni@murdoch.edu.au> [aut, cre]")
 Maintainer: Carlo Pacioni <c.pacioni@murdoch.edu.au>
