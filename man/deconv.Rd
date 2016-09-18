@@ -42,7 +42,7 @@ then it will be set the same location where the input data was located}
 \value{
 A fastq file with the reads that were retained after removing the 
   indexes (with the suffix "_IndRm") and after removing the primers (with the
-  suffix "_Ind_primerRm", in a folder named "Final") were end adapter was 
+  suffix "_Ind_primerRm") were end adapter was 
   found (and removed) saved. A list with the total number of reads that were 
   processed and retained is also returned.
   

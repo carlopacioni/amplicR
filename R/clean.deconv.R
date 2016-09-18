@@ -290,7 +290,7 @@ rmEndAdapter <- function(fn, nRead=1e8, EndAdapter="P7_last10",
 #' @inheritParams rmEndAdapter
 #' @return  A fastq file with the reads that were retained after removing the 
 #'   indexes (with the suffix "_IndRm") and after removing the primers (with the
-#'   suffix "_Ind_primerRm", in a folder named "Final") were end adapter was 
+#'   suffix "_Ind_primerRm") were end adapter was 
 #'   found (and removed) saved. A list with the total number of reads that were 
 #'   processed and retained is also returned.
 #'   
