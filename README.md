@@ -74,7 +74,7 @@ Use `help(amplicR)` `?amplicR` or `??amplicR` to see a broad
 description of the package. Use `help(package = "amplicR")` to see the 
 documentations available.
 Alternatively, a manual is available [here](https://www.researchgate.net/publication/307545309_amplicR_-_Manual)
-and a tutorial is available [here]().
+and a tutorial is available [here](https://www.researchgate.net/publication/308204446_amplicR_-_tutorial?ev=prf_pub).
 
 ## Citation 
 If you use `amplicR`, please cite: _Pending_
