@@ -30,12 +30,12 @@ setup <- function() {
     } else {
       message(paste("Package ", pkg, " is not installed", sep=""))
       message(paste("Installing", pkg), sep="")
-      biocLite(pkg)
+      if (!requireNamespace("BiocManager", quietly = TRUE))
+        install.packages("BiocManager")
+      BiocManager::install(pkg)
     }
   }
-  source("https://bioconductor.org/biocLite.R")
-  biocLite()
-
+# 
   pkgs<-c("ShortRead", "phyloseq", "dada2")
   
   for (pkg in pkgs) {
