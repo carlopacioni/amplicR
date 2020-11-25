@@ -54,4 +54,3 @@ same sequences in different samples in down stream analysis.
 \code{\link{data.proc}},
   \code{\link[dada2]{uniquesToFasta}}, \code{\link[dada2]{makeSequenceTable}}
 }
-

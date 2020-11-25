@@ -11,7 +11,7 @@ Description: An R package to process amplicon data
 License: GPL-3
 Depends: R (>= 3.2.0)
 LazyData: TRUE
-RoxygenNote: 5.0.1
+RoxygenNote: 7.1.1
 Imports:
   data.table,
   ggplot2,

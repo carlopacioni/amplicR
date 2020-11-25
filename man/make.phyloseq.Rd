@@ -4,8 +4,7 @@
 \alias{make.phyloseq}
 \title{Create a phyloseq object}
 \usage{
-make.phyloseq(dproc, sample.table = NULL, tax.table = NULL,
-  phy.tree = NULL)
+make.phyloseq(dproc, sample.table = NULL, tax.table = NULL, phy.tree = NULL)
 }
 \arguments{
 \item{dproc}{The \code{\link{data.proc}} output}
@@ -39,4 +38,3 @@ A \code{data.frame} can be passed with \code{sample.table} to include sample
 \seealso{
 \code{\link{data.proc}}, \code{\link[phyloseq]{phyloseq}}
 }
-

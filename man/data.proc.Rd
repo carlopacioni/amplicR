@@ -4,9 +4,19 @@
 \alias{data.proc}
 \title{Data processing}
 \usage{
-data.proc(dir.in = NULL, dir.out = NULL, bp = 0, truncQ = 2,
-  qrep = FALSE, dada = TRUE, pool = FALSE, plot.err = FALSE,
-  chim = TRUE, orderBy = "abundance", verbose = TRUE)
+data.proc(
+  dir.in = NULL,
+  dir.out = NULL,
+  bp = 0,
+  truncQ = 2,
+  qrep = FALSE,
+  dada = TRUE,
+  pool = FALSE,
+  plot.err = FALSE,
+  chim = TRUE,
+  orderBy = "abundance",
+  verbose = TRUE
+)
 }
 \arguments{
 \item{dir.in}{The directory where the fastq files are located. If NULL 
@@ -116,4 +126,3 @@ Benjamin J Callahan, Paul J McMurdie, Michael J Rosen, Andrew W
 \seealso{
 \code{\link[dada2]{dada}}, \code{\link[dada2]{makeSequenceTable}}
 }
-

@@ -3,7 +3,6 @@
 \docType{package}
 \name{amplicR}
 \alias{amplicR}
-\alias{amplicR-package}
 \title{amplicR}
 \description{
 An R package to process amplicon data.

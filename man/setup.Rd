@@ -11,11 +11,11 @@ Install/update additional packages needed that are not installed the
 conventional way.
 }
 \details{
-\code{Bioconductor} recommends installing its packages using
+\code{Bioconductor} recommends installing its packages using 
 
-\code{source("https://bioconductor.org/biocLite.R")}
+\code{source("https://bioconductor.org/biocLite.R")} 
 
-and
+and 
 
 \code{biocLite()}.
 
@@ -30,4 +30,3 @@ function, make sure that you do so when you first load \code{amplicR} (i.e. a
 fresh R session) so that no \code{Bioconductor}'s packages are in use and it
 is possible to update them if needed.
 }
-

@@ -4,10 +4,21 @@
 \alias{deconv}
 \title{Separate reads by genes and deconvolute them based on barcodes}
 \usage{
-deconv(fn, nRead = 1e+08, info.file, sample.IDs = "Sample_IDs",
-  Fprimer = "F_Primer", Rprimer = "R_Primer", primer.mismatch = 0,
-  Find = "F_ind", Rind = "R_ind", index.mismatch = 0, gene = "Gene",
-  dir.out = NULL, verbose = FALSE)
+deconv(
+  fn,
+  nRead = 1e+08,
+  info.file,
+  sample.IDs = "Sample_IDs",
+  Fprimer = "F_Primer",
+  Rprimer = "R_Primer",
+  primer.mismatch = 0,
+  Find = "F_ind",
+  Rind = "R_ind",
+  index.mismatch = 0,
+  gene = "Gene",
+  dir.out = NULL,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{fn}{Fully qualified name (i.e. the complete path) of the fastq file}
@@ -122,4 +133,3 @@ external one will be used. Because emasuring the edit distance is
 computetionally demanding, allowing mismatches may slow down the data 
 processing by several folds.
 }
-

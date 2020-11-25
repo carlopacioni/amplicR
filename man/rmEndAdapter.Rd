@@ -4,8 +4,13 @@
 \alias{rmEndAdapter}
 \title{Remove end adapter}
 \usage{
-rmEndAdapter(fn, nRead = 1e+08, EndAdapter = "P7_last10",
-  adapter.mismatch = 0, verbose = FALSE)
+rmEndAdapter(
+  fn,
+  nRead = 1e+08,
+  EndAdapter = "P7_last10",
+  adapter.mismatch = 0,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{fn}{Fully qualified name (i.e. the complete path) of the fastq file}
@@ -49,4 +54,3 @@ The search is conducted with \code{fixed=TRUE}, which means (from Biostring):
 "an IUPAC ambiguity code in the pattern can only match the same code in the 
 subject, and vice versa".
 }
-

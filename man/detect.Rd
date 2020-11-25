@@ -89,4 +89,3 @@ unlink(out, recursive=TRUE)
 \code{\link{data.proc}}, \code{\link[ShortRead]{srdistance}}, 
   \code{\link[Biostrings]{PairwiseAlignments}}
 }
-

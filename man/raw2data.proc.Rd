@@ -4,12 +4,30 @@
 \alias{raw2data.proc}
 \title{From raw data to data.proc()}
 \usage{
-raw2data.proc(fn, nRead = 1e+08, rmEnd = FALSE, EndAdapter = "P7_last10",
-  adapter.mismatch = 0, info.file, sample.IDs = "Sample_IDs",
-  Fprimer = "F_Primer", Rprimer = "R_Primer", primer.mismatch = 0,
-  Find = "F_ind", Rind = "R_ind", index.mismatch = 0, gene = "Gene",
-  amplic.size = "Amplicon", truncQ = 2, qrep = FALSE, dada = TRUE,
-  pool = FALSE, plot.err = FALSE, chim = TRUE, orderBy = "abundance")
+raw2data.proc(
+  fn,
+  nRead = 1e+08,
+  rmEnd = FALSE,
+  EndAdapter = "P7_last10",
+  adapter.mismatch = 0,
+  info.file,
+  sample.IDs = "Sample_IDs",
+  Fprimer = "F_Primer",
+  Rprimer = "R_Primer",
+  primer.mismatch = 0,
+  Find = "F_ind",
+  Rind = "R_ind",
+  index.mismatch = 0,
+  gene = "Gene",
+  amplic.size = "Amplicon",
+  truncQ = 2,
+  qrep = FALSE,
+  dada = TRUE,
+  pool = FALSE,
+  plot.err = FALSE,
+  chim = TRUE,
+  orderBy = "abundance"
+)
 }
 \arguments{
 \item{fn}{Fully qualified name (i.e. the complete path) of the fastq file}
@@ -108,11 +126,11 @@ using the \code{gene} column).  Note that withing each gene, the same
 amplicon length is used \code{raw2data.proc}. To use different amplicon sizes
 within a gene, run the three functions (\code{\link{rmEndAdapter}},
 \code{\link{deconv}} and \code{\link{data.proc}}) manually,
-rather than with \code{raw2data.proc}.
+rather than with \code{raw2data.proc}. 
 
 By default, \code{dir.out} is set to the location where the input file is and
 \code{verbose=FALSE}.
 
+
 Please, see documentations for each functions for more information.
 }
-

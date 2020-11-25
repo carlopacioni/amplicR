@@ -77,4 +77,3 @@ collate.seqs(rdas.in=rdas, dir.out=out)
 # Clean up the temp directory
 unlink(out, recursive=TRUE)
 }
-
