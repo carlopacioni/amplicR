@@ -39,8 +39,8 @@ test_that("test collate.seqs: check sum of number of seqs", {
   checkSum11 <- sum(col_data$stable[2,])
   sink()
   expect_equal(col_data[1:3], col_read[1:3])
-  expect_equal(checkSum10, 666)
-  expect_equal(checkSum11, 7278)
+  expect_equal(checkSum10, 656)
+  expect_equal(checkSum11, 7264)
   
   # Clean up the temp directory
   unlink(out, recursive=TRUE)
