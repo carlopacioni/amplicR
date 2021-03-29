@@ -234,6 +234,7 @@ dart2nexus <- function(LocMetrics, samplesIDs, fastq.dir.in=NULL, min.nSNPs=3, t
     lenSeqTable <- length(table(width(seqs))) # This computes the length in bp of the seqs
     lenSeq <- as.integer(names(table(width(seqs))[which.max(table(width(seqs)))]))
     if(lenSeqTable > 1 ) { # if the seqs have variable length
+      dir.create(file.path(dir.out, sampleID))
       fn_warning <- file.path(dir.out, sampleID, "inconsistent_length.csv")
       warning(paste("After removing the barcode", barcode, "for sample", sampleID,
                     "not all the reads have the same length/n", "See", fn_warning, 
@@ -242,6 +243,7 @@ dart2nexus <- function(LocMetrics, samplesIDs, fastq.dir.in=NULL, min.nSNPs=3, t
                            Length=width(seqs)[width(seqs) != lenSeq]),
                 file = fn_warning, row.names = FALSE)
       seqs <- seqs[width(seqs) == lenSeq]
+      retain <- retain[seq_along(seqs)]
       warning(paste("All reads of length different from the mode -", lenSeq, "- were removed."))
     }
     
@@ -262,35 +264,50 @@ dart2nexus <- function(LocMetrics, samplesIDs, fastq.dir.in=NULL, min.nSNPs=3, t
                                               sub.proc.data[J(locus), lenTrimSeq]), 
                                               collapse = ""))
         next
-      }
-      
-      max.dist <- lenSeq - sub.proc.data[J(locus), lenTrimSeq] + loci[J(locus), N]
+     }
+      # Trim seqs for the length of that allele in a temp DNAStringSet
+      temp.seqs <- DNAStringSet(seqs, start=1, 
+                                end=sub.proc.data[J(locus), lenTrimSeq])
+      max.dist <- loci[J(locus), N] # Max n of mismatches based on nSNPs
       
       # compute distance
-      sr <- ShortRead::srdistance(seqs, DNAString(sub.proc.data[J(locus), TrimmedSequence]))
+      #system.time(
+      sr <- ShortRead::srdistance(temp.seqs, DNAString(sub.proc.data[J(locus), TrimmedSequence]))
+      #)
       sel.matches <- which(sr[[1]] <= max.dist) # sr is subset [[1]] because 
          # it is a list of length=1 because only had one pattern searched (the target allele)
-      
+      if(length(sel.matches) == 0) {
+        warning(paste("No suitable reads found for sample", sampleID, 
+                      "and the locus",
+                      locus, "so alleles for this locus will be Ns "))
+        allele1[as.character(locus)] <- Biostrings::DNAStringSet(paste0(rep("N", 
+                                            sub.proc.data[J(locus), lenTrimSeq]), 
+                                                            collapse = ""))
+        allele2[as.character(locus)] <- Biostrings:: DNAStringSet(paste0(rep("N", 
+                                            sub.proc.data[J(locus), lenTrimSeq]), 
+                                                            collapse = ""))
+        next
+      }
+      # Check if there are gaps
+      aln <- pairwiseAlignment(temp.seqs[sel.matches], DNAString(sub.proc.data[J(locus), TrimmedSequence]))
+      noGaps <- grep("-", alignedPattern(aln), invert = TRUE)
+      sel.matches <- sel.matches[noGaps] # remove the seqs that align with gaps
       if(length(sel.matches)>2) {
-        temp.seqs <- DNAStringSet(seqs[sel.matches], start=1, 
-                                  end=sub.proc.data[J(locus), lenTrimSeq])
-        temp.sr <- ShortRead::srdistance(temp.seqs, DNAString(sub.proc.data[J(locus), TrimmedSequence]))
-        temp.sel.matches <- which(temp.sr[[1]] <= loci[J(locus), N])
-        if(length(temp.sel.matches)>2) {
-          temp.dist <- temp.sr[[1]]
+        n.matches <- length(sel.matches)
+          temp.dist <- sr[[1]]
           names(temp.dist) <- names(temp.seqs)
           temp.dist <- sort(temp.dist)
-          sel.matches <- which(names(seqs) %in% names(temp.dist)[1:2])
+          sel.matches <- which(names(temp.seqs) %in% names(temp.dist)[1:2])
           warning(c(paste("In the sample", sampleID, "there were", 
-                             length(temp.seqs), 
+                          n.matches, 
                           "reads that were \npossibly compatible alleles for locus:",
                           locus),
                     #paste(seqs[sel.matches], sep = "\n"), 
                     "\nretaining only the two with the lowest distance from the reference allele\n"))
         } else {
-          sel.matches <- which(names(seqs) %in% names(temp.seqs)[temp.sel.matches])
-          }
-      } 
+          sel.matches <- which(names(seqs) %in% names(temp.seqs)[sel.matches])
+        }
+      
       if(length(sel.matches) == 1) sel.matches <- c(sel.matches, sel.matches)
       
       allele1[as.character(locus)] <- DNAStringSet(seqs[sel.matches[1]], start=1, 
