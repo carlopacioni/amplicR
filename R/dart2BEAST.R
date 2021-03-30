@@ -172,9 +172,9 @@ dart2nexus <- function(LocMetrics, samplesIDs, fastq.dir.in=NULL, min.nSNPs=3, t
       )
     message("Done!")
     message(paste("Time needed (in seconds)", round(sys_time[3]), sep = "\n"))
-    
+    finReads <- dadaReads
   } else {
-    dadaReads <- lapply(derepReads, getSeqFromDerep)
+    finReads <- lapply(derepReads, getSeqFromDerep)
   }
   
   #### Search for alleles and separate by loci ####
@@ -185,22 +185,22 @@ dart2nexus <- function(LocMetrics, samplesIDs, fastq.dir.in=NULL, min.nSNPs=3, t
   #cloneIDs <- sub.proc.data[, CloneID]
   #info_table <- read.csv(info.file)
   #alleles <- sub.proc.data[, TrimmedSequence]
-  concatAllele1 <- vector("list", length = length(dadaReads))
-  names(concatAllele1) <- names(dadaReads)
-  concatAllele2 <- vector("list", length = length(dadaReads))
-  names(concatAllele2) <- names(dadaReads)
+  concatAllele1 <- vector("list", length = length(finReads))
+  names(concatAllele1) <- names(finReads)
+  concatAllele2 <- vector("list", length = length(finReads))
+  names(concatAllele2) <- names(finReads)
   
-  for(i in seq_along(dadaReads)) {
+  for(i in seq_along(finReads)) {
     sampleID <- readInfo[J(sample_names_fil[i]), genotype]
     #dir.create(file.path(dir.out, sampleID))
     barcode <- readInfo[J(sample_names_fil[i]), barcode]
     
-    #illqual <- lapply(seq_len(nrow(dadaReads[[i]]$quality)), getRow, 
-     #                 m=dadaReads[[i]]$quality)
+    #illqual <- lapply(seq_len(nrow(finReads[[i]]$quality)), getRow, 
+     #                 m=finReads[[i]]$quality)
     #qual <- BStringSet(do.call(c, illqual))
     
     #names(qual) <- nms
-    seqs <- dadaReads[[i]]$sequence
+    seqs <- finReads[[i]]$sequence
     nms <- paste0("seq", seq_along(seqs))
     names(seqs) <- nms
     #ids <- nms
