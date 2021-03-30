@@ -20,7 +20,7 @@ setwd("C:/Users/Carlo/Dropbox/BEASTly things/Data_handlingTest_Dec2020")
 #'  @import data.table
 #'  @import parallel 
 #'   
-dart2nexus <- function(LocMetrics, samplesIDs, fastq.dir.in=NULL, min.nSNPs=3, truncQ=20,
+dart2nexus <- function(LocMetrics, samplesIDs, fastq.dir.in=NULL, min.nSNPs=3, truncQ=20, minQ=25,
                        dir.out="Processed_data", singleAllele=TRUE, dada=TRUE, nCPUs="auto") {
   amplicR::setup()
   
@@ -118,6 +118,7 @@ dart2nexus <- function(LocMetrics, samplesIDs, fastq.dir.in=NULL, min.nSNPs=3, t
       clusterMap(cl = cl, dada2::fastqFilter, fn = file.path(fastq.dir.in, fastqs), fout=filtRs, 
              MoreArgs = list(
                maxN=0,
+               minQ=minQ,
                maxEE=Inf,
                truncQ=truncQ,
                minLen=77,
@@ -271,11 +272,12 @@ dart2nexus <- function(LocMetrics, samplesIDs, fastq.dir.in=NULL, min.nSNPs=3, t
       max.dist <- loci[J(locus), N] # Max n of mismatches based on nSNPs
       
       # compute distance
-      #system.time(
+      system.time(
       sr <- ShortRead::srdistance(temp.seqs, DNAString(sub.proc.data[J(locus), TrimmedSequence]))
-      #)
+      )
       sel.matches <- which(sr[[1]] <= max.dist) # sr is subset [[1]] because 
          # it is a list of length=1 because only had one pattern searched (the target allele)
+      sel.matches # This is to speed up testing. Rm once done
       if(length(sel.matches) == 0) {
         warning(paste("No suitable reads found for sample", sampleID, 
                       "and the locus",
