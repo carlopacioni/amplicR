@@ -106,3 +106,24 @@ getSeqFromDerep <- function(derepObj) {
   reads <- list(sequence=names(derepObj$uniques))
   return(reads)
 }
+
+#' Subset a derep-class based on abundance of the reads
+#'
+#' This function retains the reads that have their abundance >= \code{minAbund}.
+#' It returns an object similar to a derep-class in its structure. Indeed it has
+#' a \code{$uniques} and \code{quals} elemnt for the retained sequences, but,
+#' rather than having \code{map} as third element in the list, it has
+#' \code{rmed}, which is a vector with the index of the positions of the
+#' \code{uniques} from the original object that were removed.
+#' 
+#' @param derep The derep object to subset
+#' @param minAbund The threshold below which reads are removed
+#' @return A list where the first two elements are as a derep-class, and the third is rmed. See details.
+#' @export
+subsetDerep <- function(derep, minAbund=2){
+  sel <- derep$uniques >= minAbund
+  uniques <- derep$uniques[sel]
+  quals <- derep$quals[sel, ] 
+  rmed <- seq_along(sel)[sel]
+  return(list(uniques, quals, rmed))
+}

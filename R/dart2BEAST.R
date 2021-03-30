@@ -155,7 +155,7 @@ dart2nexus <- function(LocMetrics, samplesIDs, fastq.dir.in=NULL, min.nSNPs=3, t
   fnSeqs <- unlist(lapply(derepReads, getnFiltered))
   if(length(fnSeqs) == 0) stop(paste("There are no sequences that passed the filter in", 
                                      fastq.dir.in))
-  
+  if(!is.null(minAbund)) derepReads <- lapply(derepReads, subsetDerep, minAbund)
   #### dada ####
   if(dada == TRUE) {
     message("Applying denoising algorythm...")
