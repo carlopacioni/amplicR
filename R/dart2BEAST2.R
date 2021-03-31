@@ -251,6 +251,10 @@ dart2nexus <- function(LocMetrics, samplesIDs, fastq.dir.in=NULL, min.nSNPs=3, t
     setkey(loci, CloneID)
     allele1 <- Biostrings::DNAStringSet()
     allele2 <- Biostrings::DNAStringSet()
+    
+    #### new approach based on genotypes ####
+    IUPAC <- c("AC", "AG", "AT", "CG", "CT", "GT", "CA", "GA", "TA", "GC", "TC", "TG")
+    names(IUPAC) <- c("M", "R", "W", "S", "Y", "K", "M", "R", "W", "S", "Y", "K")
     gl5m <- as.matrix(gl5)
     locNamesgl5 <- names(gl5m[1,])
     loci_time <- system.time(
