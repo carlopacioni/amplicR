@@ -278,107 +278,123 @@ dart2nexus <- function(LocMetrics, samplesIDs, fastq.dir.in=NULL, min.nSNPs=3, t
         if((max(SNPpositions) + 1) == sub.proc.data[J(locus), lenTrimSeq, mult="first"]) 0 else 1
       sections <- vector("list", length=nsections)
       seqAlleles <- vector("character")
+      seqAlleles <- ""
       s <- 1
       #section <- 1
       for(section in (seq_len(nsections))) {
         sections[[section]] <- substr(baseAllele, start = s, stop = breaks[section])
         if(breaks[section] %in% (SNPpositions + 1)) {
           whichGen <- which(SNPpositions + 1 == breaks[section])
+          baseSNP <- substr(names(genotypes)[whichGen], 
+                 start = nchar(names(genotypes)[whichGen]) - 2, 
+                 stop = nchar(names(genotypes)[whichGen]) - 2)
+          altSNP <- substr(names(genotypes)[whichGen], 
+                           start = nchar(names(genotypes)[whichGen]), 
+                           stop = nchar(names(genotypes)[whichGen]))
           if(genotypes[whichGen] == 0) {
-            sections[[section]] <- substr(names(genotypes)[whichGen], 
-                          start = nchar(names(genotypes)[whichGen]) - 2, 
-                          stop = nchar(names(genotypes)[whichGen]) - 2)
+            sections[[section]] <- baseSNP
           } else {
             if(genotypes[whichGen] == 2) {
-              sections[[section]] <- substr(names(genotypes)[whichGen], 
-                            start = nchar(names(genotypes)[whichGen]), 
-                            stop = nchar(names(genotypes)[whichGen]))
+              sections[[section]] <- altSNP
             } else {
               if(is.na(genotypes[whichGen])) {
-                sections[[section]] <- "N"
+                sections[[section]] <- names(which(IUPAC == 
+                                      paste(c(baseSNP, altSNP), collapse = "")))
             } else {
-              sections[[section]] <- c(substr(names(genotypes)[whichGen], 
-                                start = nchar(names(genotypes)[whichGen]) - 2, 
-                                stop = nchar(names(genotypes)[whichGen]) - 2),
-                         substr(names(genotypes)[whichGen], 
-                                start = nchar(names(genotypes)[whichGen]), 
-                                stop = nchar(names(genotypes)[whichGen])))
+              sections[[section]] <- c(baseSNP, altSNP)
               }
           }
           }
         }
-          seqAlleles <- paste0(seqAlleles, sections[[section]])
+          seqAlleles <- unlist(lapply(seqAlleles, paste0, sections[[section]]))
           s <- breaks[section] + 1
           #section <- section + 1
-}
-      
-      
-     if(lenSeq < sub.proc.data[J(locus), lenTrimSeq]) {
-        warning(paste("The length of the reads -", lenSeq, 
-                      "- is less than the length of the alleles for the locus",
-                      locus, "so all alleles for this locus will be Ns "))
-        allele1[as.character(locus)] <-  Biostrings::DNAStringSet(paste0(rep("N", 
-                                              sub.proc.data[J(locus), lenTrimSeq]), 
-                                              collapse = ""))
-        allele2[as.character(locus)] <- Biostrings:: DNAStringSet(paste0(rep("N", 
-                                              sub.proc.data[J(locus), lenTrimSeq]), 
-                                              collapse = ""))
-        next
-     }
-      # Trim seqs for the length of that allele in a temp DNAStringSet
-      temp.seqs <- DNAStringSet(seqs, start=1, 
-                                end=sub.proc.data[J(locus), lenTrimSeq])
-      max.dist <- loci[J(locus), N] # Max n of mismatches based on nSNPs
-      
-      # compute distance
-      system.time(
-      sr <- ShortRead::srdistance(temp.seqs, DNAString(sub.proc.data[J(locus), TrimmedSequence]))
-      )
-      sel.matches <- which(sr[[1]] <= max.dist) # sr is subset [[1]] because 
-         # it is a list of length=1 because only had one pattern searched (the target allele)
-      sel.matches # This is to speed up testing. Rm once done
-      if(length(sel.matches) == 0) {
-        warning(paste("No suitable reads found for sample", sampleID, 
-                      "and the locus",
-                      locus, "so alleles for this locus will be Ns "))
-        allele1[as.character(locus)] <- Biostrings::DNAStringSet(paste0(rep("N", 
-                                            sub.proc.data[J(locus), lenTrimSeq]), 
-                                                            collapse = ""))
-        allele2[as.character(locus)] <- Biostrings:: DNAStringSet(paste0(rep("N", 
-                                            sub.proc.data[J(locus), lenTrimSeq]), 
-                                                            collapse = ""))
-        next
       }
-      # Check if there are gaps
-      aln <- pairwiseAlignment(temp.seqs[sel.matches], DNAString(sub.proc.data[J(locus), TrimmedSequence]))
-      noGaps <- grep("-", alignedPattern(aln), invert = TRUE)
-      sel.matches <- sel.matches[noGaps] # remove the seqs that align with gaps
-      if(length(sel.matches)>2) {
-        n.matches <- length(sel.matches)
-          temp.dist <- sr[[1]]
-          names(temp.dist) <- names(temp.seqs)
-          temp.dist <- sort(temp.dist)
-          sel.matches <- which(names(temp.seqs) %in% names(temp.dist)[1:2])
-          warning(c(paste("In the sample", sampleID, "there were", 
-                          n.matches, 
-                          "reads that were \npossibly compatible alleles for locus:",
-                          locus),
-                    #paste(seqs[sel.matches], sep = "\n"), 
-                    "\nretaining only the two with the lowest distance from the reference allele\n"))
-        } else {
-          sel.matches <- which(names(seqs) %in% names(temp.seqs)[sel.matches])
+      if(length(seqAlleles) == 1) {
+        seqAlleles <- c(seqAlleles, seqAlleles)
+      } else {
+        if(length(seqAlleles)>2) {
+          
+          #### handle here where there are more than two alleles based on genotypes ####
+          if(lenSeq < sub.proc.data[J(locus), lenTrimSeq]) {
+            warning(paste("Warning code: 1. Sample:", sampleID, "Locus:", locus,
+            "Number of possible alleles:", length(seqAlleles), 
+            "No reads of sufficient length. IUPAC ambiguity codes used"))
+            
+            hetGen <- which(genotypes == 1)
+            
+            replaceSNP <- function(genotypes, seqAlleles, SNPpositions) {
+              seq <- seqAlleles[1]
+              for(whichGen in seq_along(genotypes)) {
+                baseSNP <- substr(names(genotypes)[whichGen], 
+                                  start = nchar(names(genotypes)[whichGen]) - 2, 
+                                  stop = nchar(names(genotypes)[whichGen]) - 2)
+                altSNP <- substr(names(genotypes)[whichGen], 
+                                 start = nchar(names(genotypes)[whichGen]), 
+                                 stop = nchar(names(genotypes)[whichGen]))
+                substr(seq, start = SNPpositions[whichGen] + 1, stop = SNPpositions[whichGen] + 1) <-
+                  names(which(IUPAC == paste(c(baseSNP, altSNP), collapse = "")))
+              }
+              return(seq)
+            }
+            
+            seqAlleles <- replaceSNP(genotypes[hetGen], seqAlleles, SNPpositions[hetGen])
+            seqAlleles <- c(seqAlleles, seqAlleles)
+          }
+          # Trim seqs for the length of that allele in a temp DNAStringSet
+          temp.seqs <- DNAStringSet(seqs, start=1, 
+                                    end=sub.proc.data[J(locus), lenTrimSeq, mult="first"])
+          
+          # compute distance
+          system.time(
+            sr <- ShortRead::srdistance(temp.seqs, DNAStringSet(seqAlleles))
+          )
+          sel.matches <- lapply(sr, function(x) which(x == 0)) # sr is a list of 
+          # length=length(subject)
+          anything <- sapply(sel.matches, length)
+          if(sum(anything>0)) {
+            if(sum(anything>0) == 2) {
+              seqAlleles <- seqAlleles[anything>0]
+            } else {
+              if(sum(anything>0) == 1) {
+                warning(paste("Warning code: 2. Sample:", sampleID, "Locus:", locus,
+                              "Number of possible alleles:", length(seqAlleles), 
+                              "Only one sequence found and used"))
+                seqAlleles <- seqAlleles[anything>0]
+                seqAlleles <- c(seqAlleles, seqAlleles)
+              } else {
+                newsel.matches <- sel.matches[anything>0]
+                seqsIndex <- as.integer(
+                  substring(names(temp.seqs[newsel.matches]), first = 4)
+                  )
+                abund <- if(dada == TRUE) {
+                  dadaReads[[i]]$denoised[seqsIndex]
+                  } else {
+                    derepReads[[i]]$uniques[seqsIndex]
+                  }
+                warning(paste("Warning code: 3. Sample:", sampleID, "Locus:", locus,
+                              "Number of possible alleles:", length(seqAlleles), 
+                              "but n suitable sequences:", sum(anything>0),
+                              "with respective abundance:", abund))
+                seqAlleles <- seqAlleles[anything>0]
+                ordAbund <- order(abund)
+                seqAlleles <- seqAlleles[ordAbund[1:2]]
+              } 
+            }
+          } else {
+            warning(paste("Warning code: 4. Sample:", sampleID, "Locus:", locus,
+                          "Number of possible alleles:", length(seqAlleles), 
+                          "No suitable reads found. IUPAC ambiguity codes used"))
+            
+            hetGen <- which(genotypes == 1)
+            seqAlleles <- replaceSNP(genotypes[hetGen], seqAlleles, SNPpositions[hetGen])
+            seqAlleles <- c(seqAlleles, seqAlleles)
+          }
         }
-      
-      if(length(sel.matches) == 1) sel.matches <- c(sel.matches, sel.matches)
-      
-      allele1[as.character(locus)] <- DNAStringSet(seqs[sel.matches[1]], start=1, 
-                                           end=sub.proc.data[J(locus), lenTrimSeq])
-      allele2[as.character(locus)] <-  DNAStringSet(seqs[sel.matches[2]], start=1, 
-                                           end=sub.proc.data[J(locus), lenTrimSeq])
-      retain[sel.matches] <- FALSE
-      seqs <- seqs[retain]
-      retain <- rep(TRUE, length(seqs))
-    }
+      }
+      allele1[as.character(locus)] <- DNAStringSet(seqAlleles[1])
+      allele2[as.character(locus)] <-  DNAStringSet(seqAlleles[2])
+          }
     )
     concatAllele1[[i]] <- do.call(xscat, allele1) # concatenate alleles
     concatAllele2[[i]] <- do.call(xscat, allele2)
@@ -391,7 +407,8 @@ dart2nexus <- function(LocMetrics, samplesIDs, fastq.dir.in=NULL, min.nSNPs=3, t
   
   write.nexus(if(singleAllele == FALSE) c(alnAllele1, alnAllele2) else alnAllele1, 
               dir.out=dir.out, fn="phasedAln.nex", charset=TRUE, 
-              locusIDs=sub.proc.data[, as.character(CloneID)], locusLength==sub.proc.data[, lenTrimSeq])
+              locusIDs=sub.proc.data[, as.character(CloneID), mult="first"], 
+              locusLength==sub.proc.data[, lenTrimSeq], mult="first")
 }
 
 
