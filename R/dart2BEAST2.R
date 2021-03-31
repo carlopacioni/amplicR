@@ -272,8 +272,7 @@ dart2nexus <- function(gl, fastq.dir.in=NULL, min.nSNPs=3, truncQ=20, minQ=25,
     #### new approach based on genotypes ####
     IUPAC <- c("AC", "AG", "AT", "CG", "CT", "GT", "CA", "GA", "TA", "GC", "TC", "TG")
     names(IUPAC) <- c("M", "R", "W", "S", "Y", "K", "M", "R", "W", "S", "Y", "K")
-    glm <- as.matrix(gl)
-    locNamesgl <- names(glm[1,])
+    
     loci_time <- system.time(
     for(locus in target.loci) {
       print(locus)
@@ -294,7 +293,6 @@ dart2nexus <- function(gl, fastq.dir.in=NULL, min.nSNPs=3, truncQ=20, minQ=25,
       nsections <- length(SNPpositions) * 2 + 
         if((max(SNPpositions) + 1) == sub.proc.data[J(locus), lenTrimSeq, mult="first"]) 0 else 1
       sections <- vector("list", length=nsections)
-      seqAlleles <- vector("character")
       seqAlleles <- ""
       s <- 1
       #section <- 1
@@ -308,16 +306,16 @@ dart2nexus <- function(gl, fastq.dir.in=NULL, min.nSNPs=3, truncQ=20, minQ=25,
           altSNP <- substr(names(genotypes)[whichGen], 
                            start = nchar(names(genotypes)[whichGen]), 
                            stop = nchar(names(genotypes)[whichGen]))
-          if(genotypes[whichGen] == 0) {
-            sections[[section]] <- baseSNP
+          if(is.na(genotypes[whichGen])) {
+            sections[[section]] <- names(which(IUPAC == 
+                                                 paste(c(baseSNP, altSNP), collapse = "")))
           } else {
             if(genotypes[whichGen] == 2) {
               sections[[section]] <- altSNP
             } else {
-              if(is.na(genotypes[whichGen])) {
-                sections[[section]] <- names(which(IUPAC == 
-                                      paste(c(baseSNP, altSNP), collapse = "")))
-            } else {
+              if(genotypes[whichGen] == 0) {
+                sections[[section]] <- baseSNP
+              } else {
               sections[[section]] <- c(baseSNP, altSNP)
               }
           }
@@ -360,7 +358,7 @@ dart2nexus <- function(gl, fastq.dir.in=NULL, min.nSNPs=3, truncQ=20, minQ=25,
           }
           # Trim seqs for the length of that allele in a temp DNAStringSet
           temp.seqs <- DNAStringSet(seqs, start=1, 
-                                    end=sub.proc.data[J(locus), lenTrimSeq, mult="first"])
+                          end=sub.proc.data[J(locus), lenTrimSeq, mult="first"])
           
           # compute distance
           system.time(
@@ -411,8 +409,9 @@ dart2nexus <- function(gl, fastq.dir.in=NULL, min.nSNPs=3, truncQ=20, minQ=25,
       }
       allele1[as.character(locus)] <- DNAStringSet(seqAlleles[1])
       allele2[as.character(locus)] <-  DNAStringSet(seqAlleles[2])
-          }
+    } # close for(locus)
     )
+    loci_time
     concatAllele1[[i]] <- do.call(xscat, allele1) # concatenate alleles
     concatAllele2[[i]] <- do.call(xscat, allele2)
     
