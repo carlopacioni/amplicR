@@ -272,13 +272,13 @@ dart2nexus <- function(gl, fastq.dir.in=NULL, min.nSNPs=3, truncQ=20, minQ=25,
     #### new approach based on genotypes ####
     IUPAC <- c("AC", "AG", "AT", "CG", "CT", "GT", "CA", "GA", "TA", "GC", "TC", "TG")
     names(IUPAC) <- c("M", "R", "W", "S", "Y", "K", "M", "R", "W", "S", "Y", "K")
-    gl5m <- as.matrix(gl5)
-    locNamesgl5 <- names(gl5m[1,])
+    glm <- as.matrix(gl)
+    locNamesgl <- names(glm[1,])
     loci_time <- system.time(
     for(locus in target.loci) {
       print(locus)
       baseAllele <- sub.proc.data[J(locus), TrimmedSequence, mult="first"]
-      genotypes <- gl5m[sampleID, grep(locus, x = locNamesgl5)]
+      genotypes <- glm[sampleID, grep(locus, x = locNamesgl)]
       # remember that SNP position are one behind because position 1 is indexed as 0
       SNPpositions <- sub.proc.data[J(locus), SnpPosition, mult="all"] 
       breaks <- c(SNPpositions, 
