@@ -245,7 +245,7 @@ dart2nexus <- function(LocMetrics, samplesIDs, fastq.dir.in=NULL, min.nSNPs=3, t
                 file = fn_warning, row.names = FALSE)
       seqs <- seqs[width(seqs) == lenSeq]
       retain <- retain[seq_along(seqs)]
-      warning(paste("All reads of length different from the mode -", lenSeq, "- were removed."))
+      warning(paste("All reads of different length  from the mode -", lenSeq, "- were removed."))
     }
     
     setkey(loci, CloneID)
