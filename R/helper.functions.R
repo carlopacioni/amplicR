@@ -39,9 +39,10 @@ getRow <- function(m, rn) {
 #'   nexus file
 #' @param locusIDs \code{character} vector with the names of the loci (if
 #'   \code{charset=TRUE}) in the same order as they appear in the sequences
-#' @param locusLength Integervector with the length of each locus (if
+#' @param locusLength Integer vector with the length of each locus (if
 #'   \code{charset=TRUE}) in the same order as they appear in the sequences
 #' @return Writes a nexus file to disk
+#' @importFrom DECIPHER,AlignSeqs
 #' @export
 #' @examples seqs <- c("AAATTTT", "GAATTCT")
 #'         names(seqs) <- c("seq1", "seq2")
@@ -56,21 +57,24 @@ getRow <- function(m, rn) {
 write.nexus <- function(x, aln=FALSE, gapOpening=c(-18, -16), gapExtension=c(-2, -1), 
                         dir.out, fn, charset=FALSE, locusIDs, locusLength, verbose=FALSE) {
   whatsx <- class(x)
-  if(whatsx == "character") x <- Biostrings::DNAStringSet(x)
+  if(whatsx == "character") {
+    x <- Biostrings::DNAStringSet(x)
+    names(x) <- paste0("seq", seq_along(x))
+    }
   if(whatsx == "DNAStringSet" & aln == FALSE) {
     x <- DECIPHER::AlignSeqs(x, gapOpening=gapOpening, gapExtension=gapExtension) 
   } else {
     if(whatsx == "DNAStringSet" & aln == TRUE & verbose == TRUE) 
-      message("'aln' is set to TRUE, assuming that 'x' is an alignment")
+      message("'aln' is set to TRUE, assuming 'x' is an alignment")
   }
   
   nex <- c("#NEXUS", 
            "begin taxa;",
-           "dimensions ntax=", length(x), ";",
+           paste0("dimensions ntax=", length(x), ";"),
            "taxlabels", names(x), ";",
            "End;",
            "begin characters;",
-           "dimensions nchar=", IRanges::width(x)[1], ";",
+           paste0("dimensions nchar=", IRanges::width(x)[1], ";"),
            "Format datatype=dna missing=? gap=- matchchar=.;",
            "Matrix",
            paste(names(x), x),
