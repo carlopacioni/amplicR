@@ -200,77 +200,21 @@ dart2nexus <- function(gl, fastq.dir.in=NULL, min.nSNPs=3,
     finReads <- lapply(derepReads, getSeqFromDerep)
   }
   
-  #### Search for alleles and separate by loci ####
-  setkey(readInfo, targetid)
+  #### Search for alleles ####
+  setkey(readInfo, genotype)
   
   #dir.out <- file.path(dir.out, filt_fold)
   
   #cloneIDs <- sub.proc.data[, CloneID]
   #info_table <- read.csv(info.file)
   #alleles <- sub.proc.data[, TrimmedSequence]
-  concatAllele1 <- vector("list", length = length(finReads))
-  names(concatAllele1) <- names(finReads)
-  concatAllele2 <- vector("list", length = length(finReads))
-  names(concatAllele2) <- names(finReads)
+  concatAllele1 <- vector("list", length=length(samplesIDs))
+  names(concatAllele1) <- samplesIDs
+  concatAllele2 <- vector("list", length=length(samplesIDs))
+  names(concatAllele2) <- samplesIDs
   
-  for(i in seq_along(finReads)) {
-    sampleID <- readInfo[J(sample_names_fil[i]), genotype]
-    #dir.create(file.path(dir.out, sampleID))
-    barcode <- readInfo[J(sample_names_fil[i]), barcode]
-    
-    #illqual <- lapply(seq_len(nrow(finReads[[i]]$quality)), getRow, 
-     #                 m=finReads[[i]]$quality)
-    #qual <- BStringSet(do.call(c, illqual))
-    
-    #names(qual) <- nms
-    seqs <- finReads[[i]]$sequence
-    nms <- paste0("seq", seq_along(seqs))
-    names(seqs) <- nms
-    #ids <- nms
-    bar_time <- system.time(
-      # Search the sample barcode in the reads
-    barcode_hits <- Biostrings::vmatchPattern(
-      pattern=Biostrings::DNAString(barcode), 
-      subject=seqs,
-      max.mismatch=0, 
-      min.mismatch=0,
-      with.indels=FALSE, fixed=TRUE,
-      algorithm="auto")
-    )
-    
-    #if(verbose) {
-    # info(patt_hits=ind_hits, fn=fn, table=sub_info_table, row=row, 
-    #     gene=gene, name_patt=Find, mismatch=index.mismatch)
-    #}
-    
-    starts <- where2trim(mismatch=0, 
-                         subjectSet=seqs, 
-                         patt_hits=barcode_hits, 
-                         patt=barcode, 
-                         type="F")
-    # remomve barcode
-    seqs <- Biostrings::DNAStringSet(seqs, start=unlist(starts) + 1)
-    #qual <- Biostrings::BStringSet(qual, start=unlist(starts) + 1)
-    retain <- as.logical(S4Vectors::elementNROWS(barcode_hits))
-    seqs <- seqs[retain] # keep seqs where the barcode was found
-    #qual <- qual_rm[retain]
-    #ids <- ids[retain]
-    lenSeqTable <- length(table(width(seqs))) # This computes the length in bp of the seqs
-    lenSeq <- as.integer(names(table(width(seqs))[which.max(table(width(seqs)))]))
-    if(lenSeqTable > 1 ) { # if the seqs have variable length
-      dir.create(file.path(dir.out, sampleID))
-      fn_warning <- file.path(dir.out, sampleID, "inconsistent_length.csv")
-      warning(paste("After removing the barcode", barcode, "for sample", sampleID,
-                    "not all the reads have the same length/n", "See", fn_warning, 
-                    "for details"))
-      write.csv(data.frame(Seq=names(seqs)[width(seqs) != lenSeq], 
-                           Length=width(seqs)[width(seqs) != lenSeq]),
-                file = fn_warning, row.names = FALSE)
-      seqs <- seqs[width(seqs) == lenSeq]
-      retain <- retain[seq_along(seqs)]
-      warning(paste("All reads of length different from the mode -", lenSeq, "- were removed."))
-    }
-    
+  for(sampleID in samplesIDs) {
+
     setkey(loci, CloneID)
     allele1 <- Biostrings::DNAStringSet()
     allele2 <- Biostrings::DNAStringSet()
@@ -283,7 +227,7 @@ dart2nexus <- function(gl, fastq.dir.in=NULL, min.nSNPs=3,
     for(locus in target.loci) {
       print(locus)
       baseAllele <- sub.proc.data[J(locus), TrimmedSequence, mult="first"]
-      genotypes <- glm[sampleID, grep(locus, x = locNamesgl)]
+      genotypes <- glm[sampleID, grep(locus, x=locNamesgl)]
       # remember that SNP position are one behind because position 1 is indexed as 0
       SNPpositions <- sub.proc.data[J(locus), SnpPosition, mult="all"] 
       breaks <- c(SNPpositions, 
@@ -296,25 +240,30 @@ dart2nexus <- function(gl, fastq.dir.in=NULL, min.nSNPs=3,
                     }
                   , sub.proc.data[J(locus), lenTrimSeq, mult="first"])
       breaks <- sort(breaks)
+      breaks <- breaks[!duplicated(breaks)]
+      SNP1stPos <- which(SNPpositions == 0)
+      if(length(SNP1stPos) == 1) breaks <- breaks[-which(breaks == 0)]
       nsections <- length(SNPpositions) * 2 + 
         if((max(SNPpositions) + 1) == sub.proc.data[J(locus), lenTrimSeq, mult="first"]) 0 else 1
+      
+      if(length(SNP1stPos) == 1) nsections <- nsections - 1
       sections <- vector("list", length=nsections)
       seqAlleles <- ""
       s <- 1
       #section <- 1
       for(section in (seq_len(nsections))) {
-        sections[[section]] <- substr(baseAllele, start = s, stop = breaks[section])
+        sections[[section]] <- substr(baseAllele, start=s, stop=breaks[section])
         if(breaks[section] %in% (SNPpositions + 1)) {
           whichGen <- which(SNPpositions + 1 == breaks[section])
           baseSNP <- substr(names(genotypes)[whichGen], 
-                 start = nchar(names(genotypes)[whichGen]) - 2, 
-                 stop = nchar(names(genotypes)[whichGen]) - 2)
+                 start=nchar(names(genotypes)[whichGen]) - 2, 
+                 stop=nchar(names(genotypes)[whichGen]) - 2)
           altSNP <- substr(names(genotypes)[whichGen], 
-                           start = nchar(names(genotypes)[whichGen]), 
-                           stop = nchar(names(genotypes)[whichGen]))
+                           start=nchar(names(genotypes)[whichGen]), 
+                           stop=nchar(names(genotypes)[whichGen]))
           if(is.na(genotypes[whichGen])) {
             sections[[section]] <- names(which(IUPAC == 
-                                                 paste(c(baseSNP, altSNP), collapse = "")))
+                                   paste(c(baseSNP, altSNP), collapse = "")))
           } else {
             if(genotypes[whichGen] == 2) {
               sections[[section]] <- altSNP
@@ -336,24 +285,92 @@ dart2nexus <- function(gl, fastq.dir.in=NULL, min.nSNPs=3,
       } else {
         if(length(seqAlleles)>2) {
           
-          #### handle here where there are more than two alleles based on genotypes ####
-          if(lenSeq < sub.proc.data[J(locus), lenTrimSeq]) {
+    #----------------------------------------#
+          targets <- readInfo[sampleID, targetid, mult="all"]
+          seqs <- vector("list", length(targets))
+          for(target in targets) {
+          barcode <- readInfo[targetid == target, barcode]
+          
+          seqs[[which(targets == target)]] <- finReads[[as.character(target)]]$sequence
+          nms <- paste(target, seq_along(seqs[[which(targets == target)]]), sep = "_")
+          names(seqs[[which(targets == target)]]) <- nms
+          
+          bar_time <- system.time(
+            # Search the sample barcode in the reads
+            barcode_hits <- Biostrings::vmatchPattern(
+              pattern=Biostrings::DNAString(barcode), 
+              subject=seqs[[which(targets == target)]],
+              max.mismatch=0, 
+              min.mismatch=0,
+              with.indels=FALSE, fixed=TRUE,
+              algorithm="auto")
+          )
+          
+          #if(verbose) {
+          # info(patt_hits=ind_hits, fn=fn, table=sub_info_table, row=row, 
+          #     gene=gene, name_patt=Find, mismatch=index.mismatch)
+          #}
+          
+          starts <- where2trim(mismatch=0, 
+                               subjectSet=seqs[[which(targets == target)]], 
+                               patt_hits=barcode_hits, 
+                               patt=barcode, 
+                               type="F")
+          # remomve barcode
+          seqs[[which(targets == target)]] <- Biostrings::DNAStringSet(
+            seqs[[which(targets == target)]], start=unlist(starts) + 1)
+          retain <- as.logical(S4Vectors::elementNROWS(barcode_hits))
+          seqs[[which(targets == target)]] <- seqs[[which(targets == target)]][retain] # keep seqs where the barcode was found
+          lenSeqTable <- length(table(width(seqs[[which(targets == target)]]))) # This computes the length in bp of the seqs
+          lenSeq <- as.integer(names(table(width(seqs[[which(targets == target)]]))[
+            which.max(table(width(seqs[[which(targets == target)]])))]))
+          if(lenSeqTable > 1 ) { # if the seqs have variable length
+            dir.create(file.path(dir.out, sampleID))
+            fn_warning <- file.path(dir.out, sampleID, "inconsistent_length.csv")
+            warning(paste("After removing the barcode", barcode, "for sample", 
+                          sampleID, "and target", target,
+                          "not all the reads have the same length/n", "See", 
+                          fn_warning,  "for details"))
+            write.csv(data.frame(Seq=names(seqs[[which(targets == target)]])[width(seqs[[which(targets == target)]]) != lenSeq], 
+                                 Length=width(seqs[[which(targets == target)]])[width(seqs[[which(targets == target)]]) != lenSeq]),
+                      file=fn_warning, row.names=FALSE)
+            seqs[[which(targets == target)]] <- seqs[width(seqs[[which(targets == target)]]) == lenSeq]
+            retain <- retain[seq_along(seqs[[which(targets == target)]])]
+            warning(paste("All reads of length different from the mode -", lenSeq, 
+                          "- were removed."))
+          }
+          if(lenSeq < sub.proc.data[J(locus), lenTrimSeq, mult="first"]) {
             warning(paste("Warning code: 1. Sample:", sampleID, "Locus:", locus,
-            "Number of possible alleles:", length(seqAlleles), 
-            "No reads of sufficient length. IUPAC ambiguity codes used"))
+                          "target:", target,
+                          "Number of possible alleles:", length(seqAlleles), 
+                          "No reads of sufficient length. All sequences from this file removed"))
+            seqs[[which(targets == target)]] <- DNAStringSet(character(0))
+          }
+          } # end for target in targets
+          # Check if files were dumped
+          w <-sapply(seqs, function(x) as.integer(names(table(width(x)))))
+          if(class(w) == "list") w <- sapply(w, length)
+          
+          #### handle here where there are more than two alleles based on genotypes ####
+          if(all(w == 0)) { # IF there are no seqs left
+            warning(paste("Warning code: 1. Sample:", sampleID, "Locus:", locus,
+                          "target: all",
+                          "Number of possible alleles:", length(seqAlleles), 
+                          "After scanning all target fiels, no reads of sufficient length found. IUPAC ambiguity codes used"))
             
             hetGen <- which(genotypes == 1)
             
+            # Move function at the top
             replaceSNP <- function(genotypes, seqAlleles, SNPpositions) {
               seq <- seqAlleles[1]
               for(whichGen in seq_along(genotypes)) {
                 baseSNP <- substr(names(genotypes)[whichGen], 
-                                  start = nchar(names(genotypes)[whichGen]) - 2, 
-                                  stop = nchar(names(genotypes)[whichGen]) - 2)
+                                  start=nchar(names(genotypes)[whichGen]) - 2, 
+                                  stop=nchar(names(genotypes)[whichGen]) - 2)
                 altSNP <- substr(names(genotypes)[whichGen], 
-                                 start = nchar(names(genotypes)[whichGen]), 
-                                 stop = nchar(names(genotypes)[whichGen]))
-                substr(seq, start = SNPpositions[whichGen] + 1, stop = SNPpositions[whichGen] + 1) <-
+                                 start=nchar(names(genotypes)[whichGen]), 
+                                 stop=nchar(names(genotypes)[whichGen]))
+                substr(seq, start=SNPpositions[whichGen] + 1, stop=SNPpositions[whichGen] + 1) <-
                   names(which(IUPAC == paste(c(baseSNP, altSNP), collapse = "")))
               }
               return(seq)
@@ -361,7 +378,12 @@ dart2nexus <- function(gl, fastq.dir.in=NULL, min.nSNPs=3,
             
             seqAlleles <- replaceSNP(genotypes[hetGen], seqAlleles, SNPpositions[hetGen])
             seqAlleles <- c(seqAlleles, seqAlleles)
+            next # next locus
+          } else {
+            seqs <- unlist(do.call(DNAStringSetList, seqs[w>0]))
           }
+          
+          
           # Trim seqs for the length of that allele in a temp DNAStringSet
           temp.seqs <- DNAStringSet(seqs, start=1, 
                           end=sub.proc.data[J(locus), lenTrimSeq, mult="first"])
@@ -384,15 +406,22 @@ dart2nexus <- function(gl, fastq.dir.in=NULL, min.nSNPs=3,
                 seqAlleles <- seqAlleles[anything>0]
                 seqAlleles <- c(seqAlleles, seqAlleles)
               } else {
-                newsel.matches <- sel.matches[anything>0]
+                newsel.matches <- sel.matches[anything>0] # more than 2 matches
+                sourceSeqs <- strsplit(names(temp.seqs[newsel.matches]), "_")
+                targets <- sapply(sourceSeqs, '[[', 1)
+                
                 seqsIndex <- as.integer(
-                  substring(names(temp.seqs[newsel.matches]), first = 4)
+                  sapply(sourceSeqs, '[[', 2)
                   )
-                abund <- if(dada == TRUE) {
-                  dadaReads[[i]]$denoised[seqsIndex]
+                abund <- vector("integer", length=length(targets))
+                for(i in seq_along(targets)) {
+                  abund <- if(dada == TRUE) {
+                    dadaReads[[targets[i]]]$denoised[seqsIndex]
                   } else {
-                    derepReads[[i]]$uniques[seqsIndex]
+                    derepReads[[targets[i]]]$uniques[seqsIndex]
                   }
+                }
+                
                 warning(paste("Warning code: 3. Sample:", sampleID, "Locus:", locus,
                               "Number of possible alleles:", length(seqAlleles), 
                               "but n suitable sequences:", sum(anything>0),
@@ -402,7 +431,8 @@ dart2nexus <- function(gl, fastq.dir.in=NULL, min.nSNPs=3,
                 seqAlleles <- seqAlleles[ordAbund[1:2]]
               } 
             }
-          } else {
+          } else { # Close if(sum(anything>0))
+            # if no matches are found
             warning(paste("Warning code: 4. Sample:", sampleID, "Locus:", locus,
                           "Number of possible alleles:", length(seqAlleles), 
                           "No suitable reads found. IUPAC ambiguity codes used"))
@@ -411,21 +441,21 @@ dart2nexus <- function(gl, fastq.dir.in=NULL, min.nSNPs=3,
             seqAlleles <- replaceSNP(genotypes[hetGen], seqAlleles, SNPpositions[hetGen])
             seqAlleles <- c(seqAlleles, seqAlleles)
           }
-        }
+        } # close if(length(seqAlleles)>2)
       }
       allele1[as.character(locus)] <- DNAStringSet(seqAlleles[1])
       allele2[as.character(locus)] <-  DNAStringSet(seqAlleles[2])
     } # close for(locus)
     )
     loci_time
-    concatAllele1[[i]] <- do.call(xscat, allele1) # concatenate alleles
-    concatAllele2[[i]] <- do.call(xscat, allele2)
+    concatAllele1[[sampleID]] <- do.call(xscat, allele1) # concatenate alleles
+    concatAllele2[[sampleID]] <- do.call(xscat, allele2)
     
-  }
+  } # close samples
   alnAllele1 <- DNAStringSet(concatAllele1)
   alnAllele2 <- DNAStringSet(concatAllele2)
-  names(alnAllele1) <- names(dadaReads)
-  names(alnAllele2) <- names(dadaReads)
+  names(alnAllele1) <- names(samplesIDs)
+  names(alnAllele2) <- names(samplesIDs)
   
   write.nexus(if(singleAllele == FALSE) c(alnAllele1, alnAllele2) else alnAllele1, 
               dir.out=dir.out, fn="phasedAln.nex", charset=TRUE, 
