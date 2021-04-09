@@ -407,8 +407,8 @@ dart2nexus <- function(gl, fastq.dir.in=NULL, min.nSNPs=3,
   names(alnAllele2) <- names(samplesIDs)
   
   write.nexus(if(singleAllele == FALSE) c(alnAllele1, alnAllele2) else alnAllele1, 
-              dir.out=dir.out, fn="phasedAln.nex", charset=TRUE, 
-              locusIDs=sub.proc.data[, as.character(CloneID), mult="first"], 
+              dir.out=file.path(fastq.dir.in, dir.out), fn="phasedAln.nex", charset=TRUE, 
+              locusIDs=sub.proc.data[, unique(as.character(CloneID))], 
               locusLength==sub.proc.data[, lenTrimSeq], mult="first")
 }
 
