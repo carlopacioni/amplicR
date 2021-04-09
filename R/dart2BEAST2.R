@@ -200,7 +200,7 @@ dart2nexus <- function(gl, fastq.dir.in=NULL, min.nSNPs=3,
     finReads <- lapply(derepReads, getSeqFromDerep)
   }
   
-  #### Search for alleles ####
+  #### new approach based on genotypes ####
   setkey(readInfo, genotype)
   
   #dir.out <- file.path(dir.out, filt_fold)
@@ -213,15 +213,14 @@ dart2nexus <- function(gl, fastq.dir.in=NULL, min.nSNPs=3,
   concatAllele2 <- vector("list", length=length(samplesIDs))
   names(concatAllele2) <- samplesIDs
   
+  IUPAC <- c("AC", "AG", "AT", "CG", "CT", "GT", "CA", "GA", "TA", "GC", "TC", "TG")
+  names(IUPAC) <- c("M", "R", "W", "S", "Y", "K", "M", "R", "W", "S", "Y", "K")
+  
   for(sampleID in samplesIDs) {
 
     setkey(loci, CloneID)
     allele1 <- Biostrings::DNAStringSet()
     allele2 <- Biostrings::DNAStringSet()
-    
-    #### new approach based on genotypes ####
-    IUPAC <- c("AC", "AG", "AT", "CG", "CT", "GT", "CA", "GA", "TA", "GC", "TC", "TG")
-    names(IUPAC) <- c("M", "R", "W", "S", "Y", "K", "M", "R", "W", "S", "Y", "K")
     
     loci_time <- system.time(
     for(locus in target.loci) {
@@ -236,7 +235,6 @@ dart2nexus <- function(gl, fastq.dir.in=NULL, min.nSNPs=3,
       } else {
         if(length(seqAlleles)>2) {
           
-    #----------------------------------------#
           targets <- readInfo[sampleID, targetid, mult="all"]
           seqs <- vector("list", length(targets))
           for(target in targets) {
