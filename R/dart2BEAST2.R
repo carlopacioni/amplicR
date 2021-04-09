@@ -403,13 +403,15 @@ dart2nexus <- function(gl, fastq.dir.in=NULL, min.nSNPs=3,
   } # close samples
   alnAllele1 <- DNAStringSet(concatAllele1)
   alnAllele2 <- DNAStringSet(concatAllele2)
-  names(alnAllele1) <- names(samplesIDs)
-  names(alnAllele2) <- names(samplesIDs)
+  names(alnAllele1) <- samplesIDs
+  names(alnAllele2) <- samplesIDs
   
   write.nexus(if(singleAllele == FALSE) c(alnAllele1, alnAllele2) else alnAllele1, 
-              dir.out=file.path(fastq.dir.in, dir.out), fn="phasedAln.nex", charset=TRUE, 
+              dir.out=file.path(fastq.dir.in, dir.out), fn="phasedAln.nex", 
+              charset=TRUE, aln = TRUE,
               locusIDs=sub.proc.data[, unique(as.character(CloneID))], 
-              locusLength==sub.proc.data[, lenTrimSeq], mult="first")
+              locusLength=sub.proc.data[J(as.numeric(unique(as.character(CloneID)))), 
+                                         lenTrimSeq, mult="first"])
 }
 
 
