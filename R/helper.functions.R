@@ -28,7 +28,7 @@ getRow <- function(m, rn) {
 #' it is imported in software like BEAST2
 #'
 #' @param x Either a \code{character} vector or a \code{DNAStringSet}
-#' @param aln Logocal. Whether x is an alignment
+#' @param aln Logical. Whether x is an alignment
 #' @param gapOening Integer (negative). Penalty for opening a gap in the
 #'   alignment
 #' @param gapExtension Integer (negative). Penalty for extending a gap in the
