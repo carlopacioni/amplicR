@@ -243,10 +243,7 @@ dart2nexus <- function(gl, fastq.dir.in=NULL, min.nSNPs=3,
       breaks <- breaks[!duplicated(breaks)]
       SNP1stPos <- which(SNPpositions == 0)
       if(length(SNP1stPos) == 1) breaks <- breaks[-which(breaks == 0)]
-      nsections <- length(SNPpositions) * 2 + 
-        if((max(SNPpositions) + 1) == sub.proc.data[J(locus), lenTrimSeq, mult="first"]) 0 else 1
-      
-      if(length(SNP1stPos) == 1) nsections <- nsections - 1
+      nsections <- length(breaks) 
       sections <- vector("list", length=nsections)
       seqAlleles <- ""
       s <- 1
