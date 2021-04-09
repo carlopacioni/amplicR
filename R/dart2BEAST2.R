@@ -84,8 +84,8 @@ dart2nexus <- function(gl, fastq.dir.in=NULL, min.nSNPs=3,
   if(length(fastqs) == 0) stop(paste("There are no files in", fastq.dir.in,
                                      "with either fastq or fastq.gz extension"))
   fastqs <- fastqs[grep(paste0(paste0("^", keep.these), collapse = "|"), fastqs)]
-  if(length(fastqs) == length(samplesIDs)) 
-    message("fastq files were identified for all samples provided") else
+  if(length(fastqs) == length(keep.these)) 
+    message("fastq files were identified for all needed samples") else
       warning(paste(length(samplesIDs), "sample labels were provided, but", 
                     length(fastqs), "were found"))
   # set up a cluster 
