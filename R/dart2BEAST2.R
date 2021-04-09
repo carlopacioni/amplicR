@@ -6,6 +6,7 @@ setwd("C:/Users/Carlo/Dropbox/BEASTly things/Data_handlingTest_Dec2020")
 #' @param gl The ginlight object with the processed data
 #' @param fastq.dir.in Character vector wtih the path to the directorh where the
 #'   fastq files are located
+#'   @param minLen Minimum length of reads to keep when applying the filter
 #' @param min.nSNPs Integer indicating the minimum number of SNPs that a locus
 #'   has to have to be retained
 #' @param dir.out Character vector with the name of the directory where to save
@@ -19,12 +20,14 @@ setwd("C:/Users/Carlo/Dropbox/BEASTly things/Data_handlingTest_Dec2020")
 #'  @import data.table
 #'  @import parallel 
 #'   
-dart2nexus <- function(gl, fastq.dir.in=NULL, min.nSNPs=3, truncQ=20, minQ=25,
-                       dir.out="Processed_data", singleAllele=TRUE, dada=TRUE, nCPUs="auto") {
+dart2nexus <- function(gl, fastq.dir.in=NULL, min.nSNPs=3, 
+                       minLen=77, truncQ=20, minQ=25,
+                       dir.out="Processed_data", singleAllele=TRUE, dada=TRUE, 
+                       nCPUs="auto") {
   amplicR::setup()
   
-  #### Reading and getting basic info from LocMetrics ####
-  proc.data <- gl$other$loc.metrics
+  #### Getting basic info from LocMetrics ####
+  proc.data <- data.table(gl$other$loc.metrics)
   proc.data[, lenSeq := nchar(AlleleSequence)]
   proc.data[, lenTrimSeq := nchar(TrimmedSequence)]
   loci <- proc.data[, .N, by=c("CloneID")]
@@ -43,22 +46,32 @@ dart2nexus <- function(gl, fastq.dir.in=NULL, min.nSNPs=3, truncQ=20, minQ=25,
   #### Prep to read fastq files ####
   glm <- as.matrix(gl)
   locNamesgl <- names(glm[1,])
-  sampleIDs <- row.names(glm)
-  sampleNeeded <- rep(FALSE, length(sampleIDs))
-  names(sampleNeeded) <- sampleIDs
+  samplesIDs <- row.names(glm)
+  sampleNeeded <- rep(FALSE, length(samplesIDs))
+  names(sampleNeeded) <- samplesIDs
   
+  # Check whether samples have more than one heterozygous SNP, which need the raw 
+  # sequences to be read to resolve the phase
   for(locus in target.loci) {
-    genotypes <- glm[, grep(locus, x = locNamesgl)]
+    genotypes <- glm[, grep(locus, x=locNamesgl)]
     isHet <- genotypes == 1
-    res <- apply(isHet, MARGIN = 1, sum, na.rm=TRUE)
+    res <- apply(as.matrix(isHet), MARGIN=1, sum, na.rm=TRUE)
     sampleNeeded[res>1] <- TRUE
   }
+  
+  # These are the samples that will need the sequences 
   sampleNeeded <- names(sampleNeeded[sampleNeeded])
   if(length(sampleNeeded)>0) {
     warning(c("Raw sequence data are needed for the following samples:\n", paste(sampleNeeded, collapse = "; ")))
   }
   
-  
+  #### Read csv files and identify samples needed ####
+  csvs <- list.files(fastq.dir.in, ".csv$")
+  readInfo <- lapply(csvs, fread)
+  readInfo <- rbindlist(readInfo)
+  keep.these <- readInfo[genotype %in% samplesIDs, targetid]
+    
+  #### Filter ####
   if(is.null(fastq.dir.in)) {
     fastq.dir.in <- choose.dir(caption="Please, select the directory where the fastq
                        files are located")
@@ -66,16 +79,10 @@ dart2nexus <- function(gl, fastq.dir.in=NULL, min.nSNPs=3, truncQ=20, minQ=25,
   
   dir.create(file.path(fastq.dir.in, dir.out), showWarnings=FALSE, recursive=TRUE)
   
-  fns <- list.files(path=fastq.dir.in)
-  fastqs <- fns[grepl(".fastq|FASTQ.{,3}$", fns)]
+  fastqs <- list.files(path=fastq.dir.in, pattern = ".fastq|FASTQ.{,3}$")
+  #fastqs <- fns[grepl(".fastq|FASTQ.{,3}$", fns)]
   if(length(fastqs) == 0) stop(paste("There are no files in", fastq.dir.in,
                                      "with either fastq or fastq.gz extension"))
-  
-  #### Read csv files and identify samples needed ####
-  csvs <- list.files(fastq.dir.in, ".csv$")
-  readInfo <- lapply(csvs, fread)
-  readInfo <- rbindlist(readInfo)
-  keep.these <- readInfo[genotype %in% samplesIDs, targetid]
   fastqs <- fastqs[grep(paste0(paste0("^", keep.these), collapse = "|"), fastqs)]
   if(length(fastqs) == length(samplesIDs)) 
     message("fastq files were identified for all samples provided") else
@@ -86,12 +93,10 @@ dart2nexus <- function(gl, fastq.dir.in=NULL, min.nSNPs=3, truncQ=20, minQ=25,
     if(nCPUs == "auto") nCPUs <- parallel::detectCores()
     if(length(fastqs)<nCPUs) nCPUs <- length(fastqs)
     cl <- parallel::makeCluster(nCPUs)
-    on.exit(expr = parallel::stopCluster(cl))
+    on.exit(expr=parallel::stopCluster(cl))
     catch <- parallel::clusterEvalQ(cl, library("dada2"))
   }
-    
   
-  #### Filter ####
   filt_fold <- "Filtered_seqs"
   dir.create(file.path(fastq.dir.in, dir.out, filt_fold), showWarnings=FALSE, recursive=TRUE)
   filtRs <- paste(fastq.dir.in, dir.out, filt_fold,
@@ -108,39 +113,40 @@ dart2nexus <- function(gl, fastq.dir.in=NULL, min.nSNPs=3, truncQ=20, minQ=25,
     for(i in seq_along(fastqs)) {
       
         # suppressWarnings(
-        dada2::fastqFilter(fn = file.path(fastq.dir.in, fastqs[i]),
-                           fout = filtRs[i],
+        dada2::fastqFilter(fn=file.path(fastq.dir.in, fastqs[i]),
+                           fout=filtRs[i],
                            maxN=0,
+                           minQ=minQ,
                            maxEE=Inf,
                            truncQ=truncQ,
-                           minLen=77,
+                           minLen=minLen,
                            compress=TRUE,
-                           OMP = FALSE,
+                           OMP=FALSE,
                            verbose=FALSE)
         #)
     }
     
   } else {
-    # mapply(dada2::fastqFilter, fn = file.path(fastq.dir.in, fastqs), fout=filtRs, 
-    #        MoreArgs = list(
+    # mapply(dada2::fastqFilter, fn=file.path(fastq.dir.in, fastqs), fout=filtRs, 
+    #        MoreArgs=list(
     #          maxN=0,
     #          maxEE=Inf,
     #          truncQ=0,
     #          minLen=77,
     #          compress=TRUE,
-    #          OMP = FALSE,
+    #          OMP=FALSE,
     #          verbose=FALSE))
     
     clusterExport(cl, varlist=c("fastq.dir.in", "fastqs", "filtRs"), envir=.GlobalEnv) 
-      clusterMap(cl = cl, dada2::fastqFilter, fn = file.path(fastq.dir.in, fastqs), fout=filtRs, 
-             MoreArgs = list(
+      clusterMap(cl=cl, dada2::fastqFilter, fn=file.path(fastq.dir.in, fastqs), fout=filtRs, 
+             MoreArgs=list(
                maxN=0,
                minQ=minQ,
                maxEE=Inf,
                truncQ=truncQ,
                minLen=77,
                compress=TRUE,
-               OMP = FALSE,
+               OMP=FALSE,
                verbose=FALSE),
                .scheduling="dynamic")
     
@@ -161,7 +167,7 @@ dart2nexus <- function(gl, fastq.dir.in=NULL, min.nSNPs=3, truncQ=20, minQ=25,
   } else {
     clusterExport(cl, varlist=c("filtRs"), envir=.GlobalEnv) 
     #derepReads <- lapply(filtRs, dada2::derepFastq, verbose=FALSE)
-    derepReads <- parLapply(cl, filtRs, fun = dada2::derepFastq, verbose=FALSE)
+    derepReads <- parLapply(cl, filtRs, fun=dada2::derepFastq, verbose=FALSE)
   }
   )
   message("Done!")
