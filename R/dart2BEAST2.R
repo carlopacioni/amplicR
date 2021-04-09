@@ -28,8 +28,8 @@ dart2nexus <- function(gl, fastq.dir.in=NULL, min.nSNPs=3,
   
   #### Getting basic info from LocMetrics ####
   proc.data <- data.table(gl$other$loc.metrics)
-  proc.data[, lenSeq := nchar(AlleleSequence)]
-  proc.data[, lenTrimSeq := nchar(TrimmedSequence)]
+  proc.data[, lenSeq := nchar(as.character(AlleleSequence))]
+  proc.data[, lenTrimSeq := nchar(as.character(TrimmedSequence))]
   loci <- proc.data[, .N, by=c("CloneID")]
   message(paste(nrow(loci), "loci were detected, with a total of", loci[, sum(N)], "SNPs. "))
   message("The range of SNPs within each locus is ", paste(range(loci[, N]), collapse=" - "))
@@ -86,7 +86,7 @@ dart2nexus <- function(gl, fastq.dir.in=NULL, min.nSNPs=3,
   fastqs <- fastqs[grep(paste0(paste0("^", keep.these), collapse = "|"), fastqs)]
   if(length(fastqs) == length(keep.these)) 
     message("fastq files were identified for all needed samples") else
-      warning(paste(length(samplesIDs), "sample labels were provided, but", 
+      warning(paste(length(keep.these), "fastq files were needed, but", 
                     length(fastqs), "were found"))
   # set up a cluster 
   if(nCPUs != 1) {
@@ -217,7 +217,7 @@ dart2nexus <- function(gl, fastq.dir.in=NULL, min.nSNPs=3,
   names(IUPAC) <- c("M", "R", "W", "S", "Y", "K", "M", "R", "W", "S", "Y", "K")
   
   for(sampleID in samplesIDs) {
-
+message(paste("Processing samples" , sampleID))
     setkey(loci, CloneID)
     allele1 <- Biostrings::DNAStringSet()
     allele2 <- Biostrings::DNAStringSet()
@@ -283,7 +283,7 @@ dart2nexus <- function(gl, fastq.dir.in=NULL, min.nSNPs=3,
             write.csv(data.frame(Seq=names(seqs[[which(targets == target)]])[width(seqs[[which(targets == target)]]) != lenSeq], 
                                  Length=width(seqs[[which(targets == target)]])[width(seqs[[which(targets == target)]]) != lenSeq]),
                       file=fn_warning, row.names=FALSE)
-            seqs[[which(targets == target)]] <- seqs[width(seqs[[which(targets == target)]]) == lenSeq]
+            seqs[[which(targets == target)]] <- seqs[[which(targets == target)]][width(seqs[[which(targets == target)]]) == lenSeq]
             retain <- retain[seq_along(seqs[[which(targets == target)]])]
             warning(paste("All reads of length different from the mode -", lenSeq, 
                           "- were removed."))
