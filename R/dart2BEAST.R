@@ -5,7 +5,7 @@ setwd("C:/Users/Carlo/Dropbox/BEASTly things/Data_handlingTest_Dec2020")
 
 #' @param LocMetrics Fully qualified path to the LocMetrics file
 #' @param sampleIDs Character vector with the sample labels to retain
-#' @param fastq.dir.in Character vector wtih the path to the directorh where the
+#' @param fastq.dir.in Character vector with the path to the directorh where the
 #'   fastq files are located
 #' @param min.nSNPs Integer indicating the minimum number of SNPs that a locus
 #'   has to have to be retained
