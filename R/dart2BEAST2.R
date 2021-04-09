@@ -225,11 +225,14 @@ message(paste("Processing samples" , sampleID))
     loci_time <- system.time(
     for(locus in target.loci) {
       print(locus)
-      
-      seqAlleles <- make.alleles(baseAllele=sub.proc.data[J(locus), TrimmedSequence, mult="first"], 
-                                 genotypes=glm[sampleID, grep(locus, x=locNamesgl)], 
-                                 SNPpositions=sub.proc.data[J(locus), SnpPosition, mult="all"] , 
-                                 lenAllele=sub.proc.data[J(locus), lenTrimSeq, mult="first"])
+      baseAllele <- sub.proc.data[J(locus), TrimmedSequence, mult="first"]
+      genotypes <- glm[sampleID, grep(locus, x=locNamesgl)]
+      SNPpositions <- sub.proc.data[J(locus), SnpPosition, mult="all"]
+      lenAllele <- sub.proc.data[J(locus), lenTrimSeq, mult="first"]
+      seqAlleles <- make.alleles(baseAllele=baseAllele, 
+                                 genotypes=genotypes, 
+                                 SNPpositions=SNPpositions, 
+                                 lenAllele=lenAllele)
       if(length(seqAlleles) == 1) {
         seqAlleles <- c(seqAlleles, seqAlleles)
       } else {
