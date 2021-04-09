@@ -144,7 +144,7 @@ dart2nexus <- function(gl, fastq.dir.in=NULL, min.nSNPs=3,
                minQ=minQ,
                maxEE=Inf,
                truncQ=truncQ,
-               minLen=77,
+               minLen=minLen,
                compress=TRUE,
                OMP=FALSE,
                verbose=FALSE),
@@ -155,7 +155,7 @@ dart2nexus <- function(gl, fastq.dir.in=NULL, min.nSNPs=3,
   message("Done!")
   message(paste("Time needed (in seconds)", round(sys_time[3]), sep = "\n"))
   
-  filtRs <- list.files(path=file.path(dir.out, filt_fold), full.names=TRUE)
+  filtRs <- list.files(path=file.path(fastq.dir.in, dir.out, filt_fold), full.names=TRUE)
   sample_names_fil <- as.integer(sub("_filt.fastq.gz", "", 
                           sapply(filtRs, basename, USE.NAMES=FALSE)))
   
