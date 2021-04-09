@@ -71,13 +71,13 @@ write.nexus <- function(x, aln=FALSE, gapOpening=c(-18, -16), gapExtension=c(-2,
   nex <- c("#NEXUS", 
            "begin taxa;",
            paste0("dimensions ntax=", length(x), ";"),
-           "taxlabels", names(x), ";",
+           "taxlabels", make.names(names(x), unique = TRUE), ";",
            "End;",
            "begin characters;",
            paste0("dimensions nchar=", IRanges::width(x)[1], ";"),
            "Format datatype=dna missing=? gap=- matchchar=.;",
            "Matrix",
-           paste(names(x), x),
+           paste(make.names(names(x), unique = TRUE), x),
            ";",
            "End;")
  
@@ -91,9 +91,6 @@ write.nexus <- function(x, aln=FALSE, gapOpening=c(-18, -16), gapExtension=c(-2,
       pos <- pos + locusLength[i]
       charblock <- c("begin assumptions;", charsets, "end;")
     }
-    
-    
-    
   }
   writeLines(c(nex, if(charset == TRUE) charblock), con=file.path(dir.out, fn))
 }
