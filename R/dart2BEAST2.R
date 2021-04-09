@@ -226,57 +226,11 @@ dart2nexus <- function(gl, fastq.dir.in=NULL, min.nSNPs=3,
     loci_time <- system.time(
     for(locus in target.loci) {
       print(locus)
-      baseAllele <- sub.proc.data[J(locus), TrimmedSequence, mult="first"]
-      genotypes <- glm[sampleID, grep(locus, x=locNamesgl)]
-      # remember that SNP position are one behind because position 1 is indexed as 0
-      SNPpositions <- sub.proc.data[J(locus), SnpPosition, mult="all"] 
-      breaks <- c(SNPpositions, 
-                  # if the last SNP position is at the end of the allele sequence, 
-                  # this need to be dropped as it is already being taken care of by the next line
-                  if((max(SNPpositions) + 1) == sub.proc.data[J(locus), lenTrimSeq, mult="first"]) {
-                    head(SNPpositions, -1) + 1
-                  } else {
-                    SNPpositions + 1  
-                    }
-                  , sub.proc.data[J(locus), lenTrimSeq, mult="first"])
-      breaks <- sort(breaks)
-      breaks <- breaks[!duplicated(breaks)]
-      SNP1stPos <- which(SNPpositions == 0)
-      if(length(SNP1stPos) == 1) breaks <- breaks[-which(breaks == 0)]
-      nsections <- length(breaks) 
-      sections <- vector("list", length=nsections)
-      seqAlleles <- ""
-      s <- 1
-      #section <- 1
-      for(section in (seq_len(nsections))) {
-        sections[[section]] <- substr(baseAllele, start=s, stop=breaks[section])
-        if(breaks[section] %in% (SNPpositions + 1)) {
-          whichGen <- which(SNPpositions + 1 == breaks[section])
-          baseSNP <- substr(names(genotypes)[whichGen], 
-                 start=nchar(names(genotypes)[whichGen]) - 2, 
-                 stop=nchar(names(genotypes)[whichGen]) - 2)
-          altSNP <- substr(names(genotypes)[whichGen], 
-                           start=nchar(names(genotypes)[whichGen]), 
-                           stop=nchar(names(genotypes)[whichGen]))
-          if(is.na(genotypes[whichGen])) {
-            sections[[section]] <- names(which(IUPAC == 
-                                   paste(c(baseSNP, altSNP), collapse = "")))
-          } else {
-            if(genotypes[whichGen] == 2) {
-              sections[[section]] <- altSNP
-            } else {
-              if(genotypes[whichGen] == 0) {
-                sections[[section]] <- baseSNP
-              } else {
-              sections[[section]] <- c(baseSNP, altSNP)
-              }
-          }
-          }
-        }
-          seqAlleles <- unlist(lapply(seqAlleles, paste0, sections[[section]]))
-          s <- breaks[section] + 1
-          #section <- section + 1
-      }
+      
+      seqAlleles <- make.alleles(baseAllele=sub.proc.data[J(locus), TrimmedSequence, mult="first"], 
+                                 genotypes=glm[sampleID, grep(locus, x=locNamesgl)], 
+                                 SNPpositions=sub.proc.data[J(locus), SnpPosition, mult="all"] , 
+                                 lenAllele=sub.proc.data[J(locus), lenTrimSeq, mult="first"])
       if(length(seqAlleles) == 1) {
         seqAlleles <- c(seqAlleles, seqAlleles)
       } else {

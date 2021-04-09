@@ -98,7 +98,7 @@ write.nexus <- function(x, aln=FALSE, gapOpening=c(-18, -16), gapExtension=c(-2,
 #' 
 #' This function is used internally to batch-extract sequences from a derep object
 #' 
-#' @param derepObj The derep-element (that is one element from the list that constitutes the dereb list)
+#' @param derepObj The derep-element (that is one element from the list that constitutes the derep list)
 #' @return A character vector with the sequences
 #' @export
 #' 
@@ -126,4 +126,96 @@ subsetDerep <- function(derep, minAbund=2){
   quals <- derep$quals[sel, ] 
   rmed <- seq_along(sel)[sel]
   return(list(uniques, quals, rmed))
+}
+
+#' Build (possible) allele sequences based on genotypes
+#'
+#' Given the sequence of the reference allele, the genotypes, the SNPs (as the
+#' substitute nucleotide) and their positions, this function builds the possible
+#' allele sequences.
+#'
+#' The genotypes are to be codified as 0 for the reference allele, 2 for the
+#' alternative allele, and 1 for the hetorozygous. The genotype vector has to be
+#' a named integer vector where the names follow the convention.
+#' "something-p-nb/na" something is usually the name of the locus, p is the
+#' position of the SNP (as integer), nb is the nucleotide in the base allele and
+#' na is the nucleotide of the alternative allele. For examples:
+#' "100614668-2-A/C". Of all these, the critical elements are that nb and na has
+#' to be in the second to last and penultimate position in the string.
+#' @param baseAllele (Character) The sequence of the reference allele
+#' @param genotypes (named integer) The genotypes (0,1,2) named with SNPs (see
+#'   Details)
+#' @param SNPpositions (integer) The position where the SNPs occur
+#' @param lenAllele (integer) The length of the allele (as number of
+#'   nucleotides)
+#' @return A character vector with all the possible allele sequences
+#' @export
+#' @examples
+#' SNPpositions <- list(
+#' c(0,2,7),
+#' c(0,1,2),
+#' c(0,1,3),
+#' c(1,2,7),
+#' c(1,2,3),
+#' c(2,4,6),
+#' c(5,6,7)
+#' )
+#'
+#'
+#' baseAllele <- "AAAAAAAA"
+#' genotypes <- c(2,1,1)
+#' names(genotypes) <- paste0("something-p-", c("A/G", "A/C", "A/T"))
+#' seqAlleles <- lapply(SNPpositions, make.alleles, baseAllele=baseAllele,
+#'                      genotypes=genotypes,lenAllele=8)
+#' seqAlleles                      
+make.alleles <- function(baseAllele, genotypes, SNPpositions, lenAllele) {
+  # remember that SNP position are one behind because position 1 is indexed as 0
+  breaks <- c(SNPpositions, 
+              # if the last SNP position is at the end of the allele sequence, 
+              # this needs to be dropped as it is already being taken care of by the next line
+              if((max(SNPpositions) + 1) == lenAllele) {
+                head(SNPpositions, -1) + 1
+              } else {
+                SNPpositions + 1  
+              }
+              , lenAllele)
+  breaks <- sort(breaks)
+  breaks <- breaks[!duplicated(breaks)] # if SNP are consecutive
+  SNP1stPos <- which(SNPpositions == 0) # Check if one SNP is at the start
+  if(length(SNP1stPos) == 1) breaks <- breaks[-which(breaks == 0)] # if so rm 0
+  nsections <- length(breaks) 
+  sections <- vector("list", length=nsections)
+  seqAlleles <- ""
+  s <- 1
+  #section <- 1
+  for(section in (seq_len(nsections))) {
+    sections[[section]] <- substr(baseAllele, start=s, stop=breaks[section])
+    if(breaks[section] %in% (SNPpositions + 1)) {
+      whichGen <- which(SNPpositions + 1 == breaks[section])
+      baseSNP <- substr(names(genotypes)[whichGen], 
+                        start=nchar(names(genotypes)[whichGen]) - 2, 
+                        stop=nchar(names(genotypes)[whichGen]) - 2)
+      altSNP <- substr(names(genotypes)[whichGen], 
+                       start=nchar(names(genotypes)[whichGen]), 
+                       stop=nchar(names(genotypes)[whichGen]))
+      if(is.na(genotypes[whichGen])) {
+        sections[[section]] <- names(which(IUPAC == 
+                                             paste(c(baseSNP, altSNP), collapse = "")))
+      } else {
+        if(genotypes[whichGen] == 2) {
+          sections[[section]] <- altSNP
+        } else {
+          if(genotypes[whichGen] == 0) {
+            sections[[section]] <- baseSNP
+          } else {
+            sections[[section]] <- c(baseSNP, altSNP)
+          }
+        }
+      }
+    }
+    seqAlleles <- unlist(lapply(seqAlleles, paste0, sections[[section]]))
+    s <- breaks[section] + 1
+    #section <- section + 1
+  }
+  return(seqAlleles)
 }
