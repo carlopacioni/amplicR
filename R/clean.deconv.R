@@ -2,22 +2,6 @@
 # Helper functions
 #----------------------------------------------------------------------------#
 
-putzero <- function(x){
-  if(is.null(x)) x <- 0 else x <- x - 1
-  return(x)
-}
-
-
-putna <- function(x){
-  if(is.null(x)) {
-    x <- NA 
-  } else {
-    if(length(x) == 0) x <- NA
-  }
-  return(x)
-}
-
-
 info <- function(patt_hits, fn, table, row, gene, name_patt, mismatch) {
   if(sum(S4Vectors::elementNROWS(patt_hits) > 1) > 0) {
     message(paste("\nNote: some reads in", fn, 
@@ -34,78 +18,7 @@ info <- function(patt_hits, fn, table, row, gene, name_patt, mismatch) {
   }
 }
 
-
-where2trim <- function(mismatch, subjectSet, patt_hits, patt, type="F") {
-  if(length(patt_hits) == 0) return(list())
-  
-  if(mismatch == 0) {
-    if(type == "F") {
-      starts <- Biostrings::endIndex(patt_hits)
-      starts <- lapply(starts, "[", 1)
-      starts <- lapply(starts, putna)
-    } else {
-      starts <- Biostrings::startIndex(patt_hits)
-      starts <- lapply(starts, putna)
-      starts <- lapply(starts, max)
-    }
-    
-  } else {
-    
-    sel_hits <- lapply(1:length(subjectSet), sel.match, 
-                       subjectSet=subjectSet, 
-                       patt_hits=patt_hits, 
-                       patt=patt,
-                       type=type)
-    
-    if(type == "F") {
-      starts <- lapply(sel_hits, BiocGenerics::end)
-    } else {
-      starts <- lapply(sel_hits, BiocGenerics::start)
-    }
-    
-    starts <- lapply(starts, putna)
-  }
-   
-  return(starts) 
-}
-
-
-sel.match <- function(i, subjectSet, patt_hits, patt, type="F") {
-  if (!requireNamespace("ShortRead", quietly = TRUE)) {
-    stop("Package 'ShortRead' needed for this function to work. Please install it 
-         either manually or using the function amplicR::setup().",
-         call. = FALSE)
-  }
-  if(length(patt_hits[[i]]) > 1) {
-    if(type == "F") {
-      patt <- Biostrings::DNAString(patt)
-    } else {
-      patt <- Biostrings::reverseComplement(Biostrings::DNAString(patt))
-    }
-    
-    v <- IRanges::Views(subjectSet[[i]], patt_hits[[i]])
-    hits <- suppressWarnings(as.character(v, use.names=FALSE, check.limits=FALSE))
-    sr <- ShortRead::srdistance(Biostrings::DNAStringSet(hits), patt)
-    nDiff2 <- unlist(sr)
-    nDiff <- unlist(sr, use.names=FALSE)
-    if(type == "F") {
-      m <- patt_hits[[i]][which.min(nDiff)]
-    } else {
-      if(length(nDiff) == 0) {
-        m <- patt_hits[[i]][integer()]
-      } else {
-        m <- patt_hits[[i]][max(which(nDiff == min(nDiff)))]
-      }
-    }
-  } else {
-    return(patt_hits[[i]])
-  }
-  
-  return(m)
-}
-
 #----------------------------------------------------------------------------#
-
 
 
 #' Remove end adapter
