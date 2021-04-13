@@ -106,20 +106,6 @@ data.proc <- function(dir.in=NULL, dir.out=NULL, bp=0, truncQ=2, qrep=FALSE,
 # Helper functions
 #----------------------------------------------------------------------------#
 
-getnFiltered <- function (derep) {
-  nFiltered <- length(derep$map)
-  return(nFiltered)
-}
-  
-getnUniques <- function (derep) {
-  nUniques <- length(derep$uniques)
-  return(nUniques)
-}
-
-ndada <- function(dada_el) {
-  nSeqs <- length(dada2::getUniques(dada_el))
-  return(nSeqs)
-}
 
 # pass dada list, extracts unique reads with dada2::getUniques() and returns
 # only those that are not chimeras.

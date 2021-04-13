@@ -1,3 +1,45 @@
+#' Return the number of filtered sequences from a derep obj
+#' 
+#' Return the number of filtered sequences from a derep obj
+#' 
+#' This function is used internally by amplicR
+#' 
+#' @param derep 
+#' @return A vector
+#' @export
+getnFiltered <- function (derep) {
+  nFiltered <- length(derep$map)
+  return(nFiltered)
+}
+
+#' Return the number of unique sequences in a derep obj
+#' 
+#' Return the number of unique sequences in a derep obj
+#' 
+#' This function is used internally by amplicR
+#' 
+#' @param derep 
+#' @return A vector
+#' @export
+getnUniques <- function (derep) {
+  nUniques <- length(derep$uniques)
+  return(nUniques)
+}
+
+#' Return the number of unique sequences in a dada obj
+#' 
+#' Return the number of unique sequences in a dada obj
+#' 
+#' This function is used internally by amplicR
+#' 
+#' @param dada_el the element of a dada object
+#' @return A vector
+#' @export
+ndada <- function(dada_el) {
+  nSeqs <- length(dada2::getUniques(dada_el))
+  return(nSeqs)
+}
+
 #' Extracts rows from a matrix into a vector
 #' 
 #' The row rn becomes an element of a vector. This function is used internally by amplicR
@@ -126,7 +168,7 @@ subsetDerep <- function(derep, minAbund=2){
   uniques <- derep$uniques[sel]
   quals <- derep$quals[sel, ] 
   rmed <- seq_along(sel)[sel]
-  return(list(uniques, quals, rmed))
+  return(list(uniques=uniques, quals=quals, rmed=rmed))
 }
 
 #' Build (possible) allele sequences based on genotypes
