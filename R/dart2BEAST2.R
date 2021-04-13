@@ -215,10 +215,10 @@ dart2nexus <- function(gl, fastq.dir.in=NULL, min.nSNPs=3,
   
   IUPAC <- c("AC", "AG", "AT", "CG", "CT", "GT", "CA", "GA", "TA", "GC", "TC", "TG")
   names(IUPAC) <- c("M", "R", "W", "S", "Y", "K", "M", "R", "W", "S", "Y", "K")
-  
+  setkey(loci, CloneID)
   for(sampleID in samplesIDs) {
 message(paste("Processing samples" , sampleID))
-    setkey(loci, CloneID)
+    
     allele1 <- Biostrings::DNAStringSet()
     allele2 <- Biostrings::DNAStringSet()
     
