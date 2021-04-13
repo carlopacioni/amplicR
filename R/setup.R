@@ -36,7 +36,7 @@ setup <- function() {
     }
   }
 # 
-  pkgs<-c("ShortRead", "phyloseq", "dada2")
+  pkgs<-c("ShortRead", "phyloseq", "dada2", "DECIPHER")
   
   for (pkg in pkgs) {
   pkgchk(pkg)
