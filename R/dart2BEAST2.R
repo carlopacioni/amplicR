@@ -395,6 +395,7 @@ message(paste("Processing samples" , sampleID))
           }
         } # close if(length(seqAlleles)>2)
       }
+      seqAlleles <- sample(seqAlleles, 2, replace = FALSE) # Shuffle the alleles so that the base allele is not always the first
       allele1[as.character(locus)] <- DNAStringSet(seqAlleles[1])
       allele2[as.character(locus)] <-  DNAStringSet(seqAlleles[2])
     } # close for(locus)
