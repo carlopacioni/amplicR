@@ -62,7 +62,7 @@ dart2nexus <- function(gl, fastq.dir.in=NULL, min.nSNPs=3,
   # These are the samples that will need the sequences 
   sampleNeeded <- names(sampleNeeded[sampleNeeded])
   if(length(sampleNeeded)>0) {
-    warning(c("Raw sequence data are needed for the following samples:\n", paste(sampleNeeded, collapse = "; ")))
+    message(c("Raw sequence data are needed for the following samples:\n", paste(sampleNeeded, collapse = "; ")))
   }
   
   #### Read csv files and identify samples needed ####
