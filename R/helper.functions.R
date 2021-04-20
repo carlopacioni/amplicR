@@ -335,6 +335,8 @@ subsetDerep <- function(derep, minAbund=2){
 #'                      genotypes=genotypes,lenAllele=8)
 #' seqAlleles                      
 make.alleles <- function(baseAllele, genotypes, SNPpositions, lenAllele) {
+  IUPAC <- c("AC", "AG", "AT", "CG", "CT", "GT", "CA", "GA", "TA", "GC", "TC", "TG")
+  names(IUPAC) <- c("M", "R", "W", "S", "Y", "K", "M", "R", "W", "S", "Y", "K")
   # remember that SNP position are one behind because position 1 is indexed as 0
   breaks <- c(SNPpositions, 
               # if the last SNP position is at the end of the allele sequence, 
@@ -384,4 +386,31 @@ make.alleles <- function(baseAllele, genotypes, SNPpositions, lenAllele) {
     #section <- section + 1
   }
   return(seqAlleles)
+}
+
+
+#' Replace SNPs with IUPAC ambiguities
+#' 
+#' Replace SNPs with IUPAC ambiguities
+#' 
+#' See \code{make.alleles} for details on how \code{genotypes} should be formatted
+#' 
+#' @param seqAlleles possible sequences of the alleles or baseAllele (see \code{make.alleles} for details)
+#' @inheritParams make.alleles
+# Move function at the top
+replaceSNP <- function(genotypes, seqAlleles, SNPpositions) {
+  IUPAC <- c("AC", "AG", "AT", "CG", "CT", "GT", "CA", "GA", "TA", "GC", "TC", "TG")
+  names(IUPAC) <- c("M", "R", "W", "S", "Y", "K", "M", "R", "W", "S", "Y", "K")
+  seq <- seqAlleles[1]
+  for(whichGen in seq_along(genotypes)) {
+    baseSNP <- substr(names(genotypes)[whichGen], 
+                      start=nchar(names(genotypes)[whichGen]) - 2, 
+                      stop=nchar(names(genotypes)[whichGen]) - 2)
+    altSNP <- substr(names(genotypes)[whichGen], 
+                     start=nchar(names(genotypes)[whichGen]), 
+                     stop=nchar(names(genotypes)[whichGen]))
+    substr(seq, start=SNPpositions[whichGen] + 1, stop=SNPpositions[whichGen] + 1) <-
+      names(which(IUPAC == paste(c(baseSNP, altSNP), collapse = "")))
+  }
+  return(seq)
 }

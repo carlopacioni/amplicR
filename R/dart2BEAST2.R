@@ -213,8 +213,6 @@ dart2nexus <- function(gl, fastq.dir.in=NULL, min.nSNPs=3,
   concatAllele2 <- vector("list", length=length(samplesIDs))
   names(concatAllele2) <- samplesIDs
   
-  IUPAC <- c("AC", "AG", "AT", "CG", "CT", "GT", "CA", "GA", "TA", "GC", "TC", "TG")
-  names(IUPAC) <- c("M", "R", "W", "S", "Y", "K", "M", "R", "W", "S", "Y", "K")
   setkey(loci, CloneID)
   for(sampleID in samplesIDs) {
 message(paste("Processing samples" , sampleID))
@@ -305,36 +303,18 @@ message(paste("Processing samples" , sampleID))
           
           #### handle here where there are more than two alleles based on genotypes ####
           if(all(w == 0)) { # IF there are no seqs left
-            warning(paste("Warning code: 1. Sample:", sampleID, "Locus:", locus,
+            warning(paste("Warning code: 2. Sample:", sampleID, "Locus:", locus,
                           "target: all",
                           "Number of possible alleles:", length(seqAlleles), 
-                          "After scanning all target fiels, no reads of sufficient length found. IUPAC ambiguity codes used"))
+                          "After scanning all target files, no reads of sufficient length found. IUPAC ambiguity codes used"))
             
             hetGen <- which(genotypes == 1)
-            
-            # Move function at the top
-            replaceSNP <- function(genotypes, seqAlleles, SNPpositions) {
-              seq <- seqAlleles[1]
-              for(whichGen in seq_along(genotypes)) {
-                baseSNP <- substr(names(genotypes)[whichGen], 
-                                  start=nchar(names(genotypes)[whichGen]) - 2, 
-                                  stop=nchar(names(genotypes)[whichGen]) - 2)
-                altSNP <- substr(names(genotypes)[whichGen], 
-                                 start=nchar(names(genotypes)[whichGen]), 
-                                 stop=nchar(names(genotypes)[whichGen]))
-                substr(seq, start=SNPpositions[whichGen] + 1, stop=SNPpositions[whichGen] + 1) <-
-                  names(which(IUPAC == paste(c(baseSNP, altSNP), collapse = "")))
-              }
-              return(seq)
-            }
-            
             seqAlleles <- replaceSNP(genotypes[hetGen], seqAlleles, SNPpositions[hetGen])
             seqAlleles <- c(seqAlleles, seqAlleles)
             next # next locus
           } else {
             seqs <- unlist(do.call(DNAStringSetList, seqs[w>0]))
           }
-          
           
           # Trim seqs for the length of that allele in a temp DNAStringSet
           temp.seqs <- DNAStringSet(seqs, start=1, 
@@ -352,7 +332,7 @@ message(paste("Processing samples" , sampleID))
               seqAlleles <- seqAlleles[anything>0]
             } else {
               if(sum(anything>0) == 1) {
-                warning(paste("Warning code: 2. Sample:", sampleID, "Locus:", locus,
+                warning(paste("Warning code: 3. Sample:", sampleID, "Locus:", locus,
                               "Number of possible alleles:", length(seqAlleles), 
                               "Only one sequence found and used"))
                 seqAlleles <- seqAlleles[anything>0]
@@ -374,7 +354,7 @@ message(paste("Processing samples" , sampleID))
                   }
                 }
                 
-                warning(paste("Warning code: 3. Sample:", sampleID, "Locus:", locus,
+                warning(paste("Warning code: 4. Sample:", sampleID, "Locus:", locus,
                               "Number of possible alleles:", length(seqAlleles), 
                               "but n suitable sequences:", sum(anything>0),
                               "with respective abundance:", abund))
@@ -385,7 +365,7 @@ message(paste("Processing samples" , sampleID))
             }
           } else { # Close if(sum(anything>0))
             # if no matches are found
-            warning(paste("Warning code: 4. Sample:", sampleID, "Locus:", locus,
+            warning(paste("Warning code: 5. Sample:", sampleID, "Locus:", locus,
                           "Number of possible alleles:", length(seqAlleles), 
                           "No suitable reads found. IUPAC ambiguity codes used"))
             
