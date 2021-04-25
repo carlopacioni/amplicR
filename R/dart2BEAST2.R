@@ -45,6 +45,7 @@ dart2nexus <- function(gl, fastq.dir.in=NULL, min.nSNPs=3,
   locNamesgl <- names(glm[1,])
   samplesIDs <- row.names(glm)
   sampleNeeded <- rep(FALSE, length(samplesIDs))
+  countLoci <- rep(0, length(samplesIDs))
   names(sampleNeeded) <- samplesIDs
   
   # Check whether samples have more than one heterozygous SNP, which need the raw 
@@ -53,30 +54,40 @@ dart2nexus <- function(gl, fastq.dir.in=NULL, min.nSNPs=3,
     genotypes <- glm[, grep(locus, x=locNamesgl)]
     isHet <- genotypes == 1
     res <- apply(as.matrix(isHet), MARGIN=1, sum, na.rm=TRUE)
+    countLoci <- countLoci + (res>1)
     sampleNeeded[res>1] <- TRUE
   }
   
   # These are the samples that will need the sequences 
-  sampleNeeded <- names(sampleNeeded[sampleNeeded])
-  if(length(sampleNeeded)>0) {
-    message(c("Raw sequence data are needed for the following samples:\n", paste(sampleNeeded, collapse = "; ")))
+  countLoci <- countLoci[sampleNeeded]
+  
+  if(length(countLoci)>0) {
+    message("The following samples have this number of loci with multiple 
+              possible alleles and sequences would be needed to resolve their phase:\n")
+    print(countLoci)
   }
   
-  #### Read csv files and identify samples needed ####
+  if(is.null(fastq.dir.in)) {
+    fastq.dir.in <- choose.dir(caption="Please, select the directory where the fastq
+                       files are located")
+  } else {
+    if(is.na(fastq.dir.in)&length(countLoci>0)) {
+      message("No raw sequences were provided but they were needed for at least some samples\n
+              For samples with multiple possible alleles, the SNPs will be replace with IUPAC ambiguities")
+    }
+  }
+  #### Filter ####
+  if(is.na(fastq.dir.in)&length(countLoci>0)) {
+    
+  
+  # Read csv files and identify samples needed 
   csvs <- list.files(fastq.dir.in, ".csv$")
   readInfo <- lapply(csvs, fread)
   readInfo <- rbindlist(readInfo)
   keep.these <- readInfo[genotype %in% samplesIDs, targetid]
-    
-  #### Filter ####
-  if(is.null(fastq.dir.in)) {
-    fastq.dir.in <- choose.dir(caption="Please, select the directory where the fastq
-                       files are located")
-  }
   
   dir.create(file.path(fastq.dir.in, dir.out), showWarnings=FALSE, recursive=TRUE)
-  
-  fastqs <- list.files(path=fastq.dir.in, pattern = ".fastq|FASTQ.{,3}$")
+    fastqs <- list.files(path=fastq.dir.in, pattern = ".fastq|FASTQ.{,3}$")
   #fastqs <- fns[grepl(".fastq|FASTQ.{,3}$", fns)]
   if(length(fastqs) == 0) stop(paste("There are no files in", fastq.dir.in,
                                      "with either fastq or fastq.gz extension"))
@@ -196,6 +207,7 @@ dart2nexus <- function(gl, fastq.dir.in=NULL, min.nSNPs=3,
   } else {
     finReads <- lapply(derepReads, getSeqFromDerep)
   }
+  } # close  if(is.na(fastq.dir.in)&length(countLoci>0))
   
   #### new approach based on genotypes ####
   setkey(readInfo, genotype)
@@ -232,7 +244,7 @@ message(paste("Processing samples" , sampleID))
         seqAlleles <- c(seqAlleles, seqAlleles)
       } else {
         if(length(seqAlleles)>2) {
-          
+          if(!is.na(fastq.dir.in)&length(countLoci>0)) {
           targets <- readInfo[sampleID, targetid, mult="all"]
           seqs <- vector("list", length(targets))
           for(target in targets) {
@@ -370,6 +382,10 @@ message(paste("Processing samples" , sampleID))
             seqAlleles <- replaceSNP(genotypes[hetGen], seqAlleles, SNPpositions[hetGen])
             seqAlleles <- c(seqAlleles, seqAlleles)
           }
+          hetGen <- which(genotypes == 1)
+          seqAlleles <- replaceSNP(genotypes[hetGen], seqAlleles, SNPpositions[hetGen])
+          seqAlleles <- c(seqAlleles, seqAlleles)
+          } # close if no seqs were provided
         } # close if(length(seqAlleles)>2)
       }
       seqAlleles <- sample(seqAlleles, 2, replace = FALSE) # Shuffle the alleles so that the base allele is not always the first
