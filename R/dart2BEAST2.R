@@ -1,12 +1,9 @@
-library(amplicR)
-library(data.table)
-oldwd <- getwd()
-setwd("C:/Users/Carlo/Dropbox/BEASTly things/Data_handlingTest_Dec2020")
 
 #' @param gl The ginlight object with the processed data
-#' @param fastq.dir.in Character vector wtih the path to the directorh where the
-#'   fastq files are located
-#'   @param minLen Minimum length of reads to keep when applying the filter
+#' @param fastq.dir.in Character vector with the path to the directory where the
+#'   fastq files are located. If \code{NULL} and interactive pop up windows will
+#'   be used to select the directory. If \code{NA} no sequences are used. 
+#' @param minLen Minimum length of reads to keep when applying the filter
 #' @param min.nSNPs Integer indicating the minimum number of SNPs that a locus
 #'   has to have to be retained
 #' @param dir.out Character vector with the name of the directory where to save
@@ -16,9 +13,9 @@ setwd("C:/Users/Carlo/Dropbox/BEASTly things/Data_handlingTest_Dec2020")
 #' @param nCPUs Integer for the number of CPUs to use (for parallel computation)
 #'   or "auto" to automatically call all available CPUs. If 1, no parallel
 #'   computation.
-#'   @inheritParams data.proc
-#'  @import data.table
-#'  @import parallel 
+#' @inheritParams data.proc
+#' @import data.table
+#' @import parallel
 #'   
 dart2nexus <- function(gl, fastq.dir.in=NULL, min.nSNPs=3, 
                        minLen=77, truncQ=20, minQ=25,
