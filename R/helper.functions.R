@@ -207,7 +207,7 @@ getRow <- function(m, rn) {
 #' @param locusLength Integer vector with the length of each locus (if
 #'   \code{charset=TRUE}) in the same order as they appear in the sequences
 #' @return Writes a nexus file to disk
-#' @importFrom DECIPHER,AlignSeqs
+#' @importFrom DECIPHER AlignSeqs
 #' @export
 #' @examples seqs <- c("AAATTTT", "GAATTCT")
 #'         names(seqs) <- c("seq1", "seq2")
