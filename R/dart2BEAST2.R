@@ -152,7 +152,7 @@ dart2nexus <- function(gl, fastq.dir.in=NULL, min.nSNPs=3, minAbund=NULL,
     #          OMP=FALSE,
     #          verbose=FALSE))
     
-    clusterExport(cl, varlist=c("fastq.dir.in", "fastqs", "filtRs"), envir=.GlobalEnv) 
+    clusterExport(cl, varlist=c("fastq.dir.in", "fastqs", "filtRs"), envir=environment()) 
       clusterMap(cl=cl, dada2::fastqFilter, fn=file.path(fastq.dir.in, fastqs), fout=filtRs, 
              MoreArgs=list(
                maxN=0,
@@ -180,7 +180,7 @@ dart2nexus <- function(gl, fastq.dir.in=NULL, min.nSNPs=3, minAbund=NULL,
   if(nCPUs == 1) {
   derepReads <- dada2::derepFastq(filtRs, verbose=FALSE)
   } else {
-    clusterExport(cl, varlist=c("filtRs"), envir=.GlobalEnv) 
+    clusterExport(cl, varlist=c("filtRs"), envir=environment()) 
     #derepReads <- lapply(filtRs, dada2::derepFastq, verbose=FALSE)
     derepReads <- parLapply(cl, filtRs, fun=dada2::derepFastq, verbose=FALSE)
   }
@@ -202,7 +202,7 @@ dart2nexus <- function(gl, fastq.dir.in=NULL, min.nSNPs=3, minAbund=NULL,
         dadaReads <- dada2::dada(derepReads, err=dada2::inflateErr(dada2::tperr1,3),
                                  errorEstimationFunction=dada2::loessErrfun, multithread=nCPUs)
       } else {
-        clusterExport(cl, varlist=c("derepReads"), envir=.GlobalEnv)
+        clusterExport(cl, varlist=c("derepReads"), envir=environment())
         dadaReads <- parLapply(cl, derepReads, err=dada2::inflateErr(dada2::tperr1,3),
                                errorEstimationFunction=dada2::loessErrfun, multithread=FALSE)
       }
