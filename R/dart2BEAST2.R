@@ -84,11 +84,11 @@ dart2nexus <- function(gl, fastq.dir.in=NULL, min.nSNPs=3, minAbund=NULL,
     }
   }
   #### Filter ####
-  if(is.na(fastq.dir.in)&length(countLoci>0)) {
+  if(!is.na(fastq.dir.in)&length(countLoci>0)) {
     
   
   # Read csv files and identify samples needed 
-  csvs <- list.files(fastq.dir.in, ".csv$")
+  csvs <- list.files(fastq.dir.in, ".csv$", full.names = TRUE)
   readInfo <- lapply(csvs, fread)
   readInfo <- rbindlist(readInfo)
   keep.these <- readInfo[genotype %in% samplesIDs, targetid]
@@ -389,10 +389,13 @@ message(paste("Processing samples" , sampleID))
             seqAlleles <- replaceSNP(genotypes[hetGen], seqAlleles, SNPpositions[hetGen])
             seqAlleles <- c(seqAlleles, seqAlleles)
           }
-          hetGen <- which(genotypes == 1)
-          seqAlleles <- replaceSNP(genotypes[hetGen], seqAlleles, SNPpositions[hetGen])
-          seqAlleles <- c(seqAlleles, seqAlleles)
-          } # close if no seqs were provided
+
+          } else { # close if seqs were provided
+            # if no seqs were provided
+            hetGen <- which(genotypes == 1)
+            seqAlleles <- replaceSNP(genotypes[hetGen], seqAlleles, SNPpositions[hetGen])
+            seqAlleles <- c(seqAlleles, seqAlleles)
+          } 
         } # close if(length(seqAlleles)>2)
       }
       seqAlleles <- sample(seqAlleles, 2, replace = FALSE) # Shuffle the alleles so that the base allele is not always the first
