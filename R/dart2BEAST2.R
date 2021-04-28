@@ -1,11 +1,17 @@
 
-#' @param gl The ginlight object with the processed data
+#' Convert SNPs data from a genlight object (from Dart sequencing) to phased
+#' alleles
+#'
+#'
+#' @param gl The genlight object with the processed data
 #' @param fastq.dir.in Character vector with the path to the directory where the
 #'   fastq files are located. If \code{NULL} and interactive pop up windows will
-#'   be used to select the directory. If \code{NA} no sequences are used. 
+#'   be used to select the directory. If \code{NA} no sequences are used.
 #' @param minLen Minimum length of reads to keep when applying the filter
 #' @param min.nSNPs Integer indicating the minimum number of SNPs that a locus
 #'   has to have to be retained
+#' @param minAbund Either NULL (default) or the minimum number of identical
+#'   reads to retain an alleles from the raw sequences
 #' @param dir.out Character vector with the name of the directory where to save
 #'   the results
 #' @param singleAllele Whether only one random allele should be selected for
@@ -16,8 +22,9 @@
 #' @inheritParams data.proc
 #' @import data.table
 #' @import parallel
-#'   
-dart2nexus <- function(gl, fastq.dir.in=NULL, min.nSNPs=3, 
+#' @export
+#' 
+dart2nexus <- function(gl, fastq.dir.in=NULL, min.nSNPs=3, minAbund=NULL, 
                        minLen=77, truncQ=20, minQ=25,
                        dir.out="Processed_data", singleAllele=TRUE, dada=TRUE, 
                        nCPUs="auto") {
