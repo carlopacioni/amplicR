@@ -419,6 +419,7 @@ message(paste("Processing samples" , sampleID))
               locusIDs=sub.proc.data[, unique(as.character(CloneID))], 
               locusLength=sub.proc.data[J(as.numeric(unique(as.character(CloneID)))), 
                                          lenTrimSeq, mult="first"])
+  return(list(Allele1=alnAllele1, Allele2= alnAllele2))
 }
 
 
