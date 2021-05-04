@@ -404,8 +404,8 @@ message(paste("Processing samples" , sampleID))
     } # close for(locus)
     )
     loci_time
-    concatAllele1[[sampleID]] <- do.call(xscat, allele1) # concatenate alleles
-    concatAllele2[[sampleID]] <- do.call(xscat, allele2)
+    concatAllele1[[sampleID]] <- do.call(xscat, as.list(allele1)) # concatenate alleles
+    concatAllele2[[sampleID]] <- do.call(xscat, as.list(allele2))
     
   } # close samples
   alnAllele1 <- DNAStringSet(concatAllele1)
