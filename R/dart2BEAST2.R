@@ -106,7 +106,7 @@ dart2nexus <- function(gl, dir.in=NULL, min.nSNPs=3, minAbund=NULL,
   r <- regexec("\\.fastq|\\.FASTQ.{,3}$", fastqs)
   m <- regmatches(fastqs, r, invert = TRUE)
   targetidsExist <- sapply(m, function(x) x[1])
-  sampleExist <- readInfo[targetid %in% targetidsExist, genotype, mult="all"]
+  sampleExist <- readInfo[targetid %in% targetidsExist, unique(genotype), mult="all"]
   
     # set up a cluster 
   if(nCPUs != 1) {
