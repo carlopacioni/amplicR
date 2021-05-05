@@ -1,17 +1,35 @@
+library(amplicR, quietly=TRUE)
+library(adegenet, quietly = TRUE)
+context("Test dart2nexus")
+
+test_that("dart2nexus", {
+  
 temp <- tempdir(check = TRUE)
-library(amplicR)
-library(data.table)
+suppressMessages(
 amplicR::setup()
-library(adegenet)
+)
 
 # Create some seqs
+# Seqs created for one samples, two locus over two different files
+# First locus
 barcode1 <- "TCGA"
 barcode2 <- "AGCT"
 baseRead <- paste(rep("A", 5), collapse = "")
 altRead <- "AACAT"
 tail <- "CCC"
-toFile1 <- paste0(barcode1, c(baseRead, altRead), tail)
-toFile2 <- paste0(barcode2, c(baseRead, altRead), tail)
+# Second locus
+baseReadbis <- paste(rep("G", 5), collapse = "")
+altReadbis <- "GGCGT"
+tailbis <- "AAA"
+
+toFile1 <- c(
+  paste0(barcode1, c(baseRead, altRead), tail), # First locus
+  paste0(barcode1, c(baseReadbis, altReadbis), tailbis)
+  )# Second locus
+toFile2 <- c(
+  paste0(barcode2, c(baseRead, altRead), tail),
+  paste0(barcode2, c(baseReadbis, altReadbis), tailbis)
+)
 
 seq1 <- DNAStringSet(toFile1)
 seq2 <- DNAStringSet(toFile2)
@@ -36,18 +54,23 @@ writeFastq(object=sr1, file=file.path(temp, paste0(fns[1],".fastq.gz")))
 writeFastq(object=sr2, file=file.path(temp, paste0(fns[2],".fastq.gz")))
 
 # Generate a gl
-dat <- 
-gl <- new("genlight", list(S1=c(0,1,1), S2=c(0,0,1)))
-gl
-SNPname <- 100614668
-locNames(gl) <- paste(SNPname, c(0,2,4), c("A/G", "A/C", "A/T"), sep="-")
-as.matrix(gl)
+gl <- new("genlight", list(S1=c(0,1,1, 0,1,1), S2=c(0,0,1, 0,0,1)))
+
+SNPname <- c(100614668, 100614670)
+locNames(gl) <- c(
+  paste(SNPname[1], c(0,2,4), c("A/G", "A/C", "A/T"), sep="-"),
+  paste(SNPname[2], c(0,2,4), c("A/G", "A/C", "A/T"), sep="-")
+)
+#as.matrix(gl)
 
 # loc.metrics
-loc.metrics <- data.frame(CloneID=rep(SNPname, 3),
-                          AlleleSequence=rep(paste0(baseRead, tail), 3),
-                          TrimmedSequence=rep(baseRead, 3),
-                          SnpPosition=c(0,2,4))
+loc.metrics <- data.frame(CloneID=rep(SNPname, each=3),
+                          AlleleSequence=c(
+                            rep(paste0(baseRead, tail), 3),
+                            rep(paste0(baseReadbis, tailbis), 3)),
+                          TrimmedSequence=c(
+                            rep(baseRead, 3), rep(baseReadbis, 3)),
+                          SnpPosition=rep(c(0,2,4), length(SNPname)))
 other(gl) <- list(loc.metrics=loc.metrics)
 
 # csv
@@ -55,6 +78,30 @@ targetid <- as.numeric(fns)
 genotype	<- rep("S1", 2)
 barcode <- c(barcode1, barcode2)
 write.csv(data.frame(targetid, genotype, barcode), file = file.path(temp, "targets_test.csv"))
+
+# run dart2nexus
+expect_warning(
+res <- dart2nexus(gl, dir.in=temp, min.nSNPs=3, 
+                       minLen=4, truncQ=0, minQ=25,
+                       dir.out="Processed_data", singleAllele=TRUE, dada=FALSE, 
+                       nCPUs="auto")
+)
+#debug(dart2nexus)
+together <- c(res[[1]], res[[2]])
+locus1 <- DNAStringSet(together, start = 1, end = 5)
+locus2 <- DNAStringSet(together, start = 6, end = 10)
+suppressWarnings(
+distLocus1 <- ShortRead::srdistance(locus1, DNAStringSet(c("AACAT", "AAAAA", "AAAAT")))
+)
+suppressWarnings(
+  distLocus2 <- ShortRead::srdistance(locus2, DNAStringSet(c("AGMGW", "AGAGA", "AGAGT")))
+)
+sumDistLocus1 <- sapply(distLocus1, sum)
+sumDistLocus2 <- sapply(distLocus2, sum)
+
+expect_equal(unname(sumDistLocus1), c(5,3,3))
+expect_equal(unname(sumDistLocus2), c(4,3,3))
+
 
 # Test make.alleles
 SNPpositions <- list(
@@ -74,46 +121,16 @@ names(genotypes) <- paste0("something-p-", c("A/G", "A/C", "A/T"))
 seqAlleles <- lapply(SNPpositions, make.alleles, baseAllele=baseAllele, 
                            genotypes=genotypes,lenAllele=8)
 nalleles <- sapply(seqAlleles, length)
-all(nalleles == 4)
-all.equal(seqAlleles[[1]], c("GAAAAAAA", "GAAAAAAT", "GACAAAAA", "GACAAAAT"))
-all.equal(seqAlleles[[2]], c("GAAAAAAA", "GATAAAAA", "GCAAAAAA", "GCTAAAAA"))
-all.equal(seqAlleles[[3]], c("GAAAAAAA", "GAATAAAA", "GCAAAAAA", "GCATAAAA"))
-all.equal(seqAlleles[[4]], c("AGAAAAAA", "AGAAAAAT", "AGCAAAAA", "AGCAAAAT"))
-all.equal(seqAlleles[[5]], c("AGAAAAAA", "AGATAAAA", "AGCAAAAA", "AGCTAAAA"))
-all.equal(seqAlleles[[6]], c("AAGAAAAA", "AAGAAATA", "AAGACAAA", "AAGACATA"))
-all.equal(seqAlleles[[7]], c("AAAAAGAA", "AAAAAGAT", "AAAAAGCA", "AAAAAGCT"))
 
-# run dart2nexus
-oldwd <- getwd()
-setwd(temp)
+expect_equal(nalleles, rep(4, 7))
+expect_equal(seqAlleles[[1]], c("GAAAAAAA", "GAAAAAAT", "GACAAAAA", "GACAAAAT"))
+expect_equal(seqAlleles[[2]], c("GAAAAAAA", "GATAAAAA", "GCAAAAAA", "GCTAAAAA"))
+expect_equal(seqAlleles[[3]], c("GAAAAAAA", "GAATAAAA", "GCAAAAAA", "GCATAAAA"))
+expect_equal(seqAlleles[[4]], c("AGAAAAAA", "AGAAAAAT", "AGCAAAAA", "AGCAAAAT"))
+expect_equal(seqAlleles[[5]], c("AGAAAAAA", "AGATAAAA", "AGCAAAAA", "AGCTAAAA"))
+expect_equal(seqAlleles[[6]], c("AAGAAAAA", "AAGAAATA", "AAGACAAA", "AAGACATA"))
+expect_equal(seqAlleles[[7]], c("AAAAAGAA", "AAAAAGAT", "AAAAAGCA", "AAAAAGCT"))
 
-fastq.dir.in <- temp
-proc.data.out <- "../data_processing/"
-minQ=25
-truncQ=0
-minAbund=NULL
-min.nSNPs=3
-dir.out="Processed_data"
-singleAllele=TRUE
-nCPUs="auto"
-i<- 1
-locus <- target.loci[1]
-dada=FALSE
-minLen=4
-sampleID<-samplesIDs[1]
-target <- targets[1]
 
-#------------#
-dada2::fastqFilter(fn = file.path(temp, paste0(fns[1],".fastq.gz")),
-                   fout = file.path(temp, paste0("Test",".fastq.gz")),
-                   maxN=0,
-                   minQ=15,
-                   maxEE=Inf,
-                   truncQ=10,
-                   minLen=3,
-                   compress=TRUE,
-                   OMP = FALSE,
-                   verbose=FALSE)
-rf <- readFastq(dirPath = temp, pattern = "^Test")
-rf
-rf@quality
+})
+
