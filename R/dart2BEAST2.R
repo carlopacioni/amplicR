@@ -4,8 +4,8 @@
 #'
 #'
 #' @param gl The genlight object with the processed data
-#' @param fastq.dir.in Character vector with the path to the directory where the
-#'   fastq files are located. If \code{NULL} and interactive pop up windows will
+#' @param dir.in Character vector with the path to the directory where the
+#'   fastq and targets.csv files are located. If \code{NULL} and interactive pop up windows will
 #'   be used to select the directory. If \code{NA} no sequences are used.
 #' @param minLen Minimum length of reads to keep when applying the filter
 #' @param min.nSNPs Integer indicating the minimum number of SNPs that a locus
@@ -24,7 +24,7 @@
 #' @import parallel
 #' @export
 #' 
-dart2nexus <- function(gl, fastq.dir.in=NULL, min.nSNPs=3, minAbund=NULL, 
+dart2nexus <- function(gl, dir.in=NULL, min.nSNPs=3, minAbund=NULL, 
                        minLen=77, truncQ=20, minQ=25,
                        dir.out="Processed_data", singleAllele=TRUE, dada=TRUE, 
                        nCPUs="auto") {
@@ -74,36 +74,42 @@ dart2nexus <- function(gl, fastq.dir.in=NULL, min.nSNPs=3, minAbund=NULL,
     print(countLoci)
   }
   
-  if(is.null(fastq.dir.in)) {
-    fastq.dir.in <- choose.dir(caption="Please, select the directory where the fastq
+  if(is.null(dir.in)) {
+    dir.in <- choose.dir(caption="Please, select the directory where the fastq
                        files are located")
   } else {
-    if(is.na(fastq.dir.in)&length(countLoci>0)) {
+    if(is.na(dir.in)&length(countLoci>0)) {
       message("No raw sequences were provided but they were needed for at least some samples\n
               For samples with multiple possible alleles, the SNPs will be replace with IUPAC ambiguities")
     }
   }
   #### Filter ####
-  if(!is.na(fastq.dir.in)&length(countLoci>0)) {
+  if(!is.na(dir.in)&length(countLoci>0)) {
     
   
   # Read csv files and identify samples needed 
-  csvs <- list.files(fastq.dir.in, ".csv$", full.names = TRUE)
+  csvs <- list.files(dir.in, ".csv$", full.names = TRUE)
   readInfo <- lapply(csvs, fread)
   readInfo <- rbindlist(readInfo)
   keep.these <- readInfo[genotype %in% samplesIDs, targetid]
   
-  dir.create(file.path(fastq.dir.in, dir.out), showWarnings=FALSE, recursive=TRUE)
-    fastqs <- list.files(path=fastq.dir.in, pattern = ".fastq|FASTQ.{,3}$")
+  dir.create(file.path(dir.in, dir.out), showWarnings=FALSE, recursive=TRUE)
+    fastqs <- list.files(path=dir.in, pattern = ".fastq|FASTQ.{,3}$")
   #fastqs <- fns[grepl(".fastq|FASTQ.{,3}$", fns)]
-  if(length(fastqs) == 0) stop(paste("There are no files in", fastq.dir.in,
+  if(length(fastqs) == 0) stop(paste("There are no files in", dir.in,
                                      "with either fastq or fastq.gz extension"))
   fastqs <- fastqs[grep(paste0(paste0("^", keep.these), collapse = "|"), fastqs)]
   if(length(fastqs) == length(keep.these)) 
     message("fastq files were identified for all needed samples") else
       warning(paste(length(keep.these), "fastq files were needed, but", 
                     length(fastqs), "were found"))
-  # set up a cluster 
+  r <- regexec("\\\\.fastq|FASTQ.{,3}$", fastqs)
+  m <- regmatches(fastqs, r, invert = TRUE)
+  d <- sapply(m, function(x) x[1])
+  targetidsExist <- sub(pattern = "\\.", x = d, replacement = "")
+  sampleExist <- readInfo[targetid %in% targetidsExist, genotype, mult="all"]
+  
+    # set up a cluster 
   if(nCPUs != 1) {
     if(nCPUs == "auto") nCPUs <- parallel::detectCores()
     if(length(fastqs)<nCPUs) nCPUs <- length(fastqs)
@@ -113,8 +119,8 @@ dart2nexus <- function(gl, fastq.dir.in=NULL, min.nSNPs=3, minAbund=NULL,
   }
   
   filt_fold <- "Filtered_seqs"
-  dir.create(file.path(fastq.dir.in, dir.out, filt_fold), showWarnings=FALSE, recursive=TRUE)
-  filtRs <- paste(fastq.dir.in, dir.out, filt_fold,
+  dir.create(file.path(dir.in, dir.out, filt_fold), showWarnings=FALSE, recursive=TRUE)
+  filtRs <- paste(dir.in, dir.out, filt_fold,
                   sapply(fastqs,
                          sub,
                          pattern="\\.fastq.{,3}$|\\.FASTQ.{,3}$",
@@ -128,7 +134,7 @@ dart2nexus <- function(gl, fastq.dir.in=NULL, min.nSNPs=3, minAbund=NULL,
     for(i in seq_along(fastqs)) {
       
         # suppressWarnings(
-        dada2::fastqFilter(fn=file.path(fastq.dir.in, fastqs[i]),
+        dada2::fastqFilter(fn=file.path(dir.in, fastqs[i]),
                            fout=filtRs[i],
                            maxN=0,
                            minQ=minQ,
@@ -142,7 +148,7 @@ dart2nexus <- function(gl, fastq.dir.in=NULL, min.nSNPs=3, minAbund=NULL,
     }
     
   } else {
-    # mapply(dada2::fastqFilter, fn=file.path(fastq.dir.in, fastqs), fout=filtRs, 
+    # mapply(dada2::fastqFilter, fn=file.path(dir.in, fastqs), fout=filtRs, 
     #        MoreArgs=list(
     #          maxN=0,
     #          maxEE=Inf,
@@ -152,8 +158,8 @@ dart2nexus <- function(gl, fastq.dir.in=NULL, min.nSNPs=3, minAbund=NULL,
     #          OMP=FALSE,
     #          verbose=FALSE))
     
-    clusterExport(cl, varlist=c("fastq.dir.in", "fastqs", "filtRs"), envir=environment()) 
-      clusterMap(cl=cl, dada2::fastqFilter, fn=file.path(fastq.dir.in, fastqs), fout=filtRs, 
+    clusterExport(cl, varlist=c("dir.in", "fastqs", "filtRs"), envir=environment()) 
+      clusterMap(cl=cl, dada2::fastqFilter, fn=file.path(dir.in, fastqs), fout=filtRs, 
              MoreArgs=list(
                maxN=0,
                minQ=minQ,
@@ -170,7 +176,7 @@ dart2nexus <- function(gl, fastq.dir.in=NULL, min.nSNPs=3, minAbund=NULL,
   message("Done!")
   message(paste("Time needed (in seconds)", round(sys_time[3]), sep = "\n"))
   
-  filtRs <- list.files(path=file.path(fastq.dir.in, dir.out, filt_fold), full.names=TRUE)
+  filtRs <- list.files(path=file.path(dir.in, dir.out, filt_fold), full.names=TRUE)
   sample_names_fil <- as.integer(sub("_filt.fastq.gz", "", 
                           sapply(filtRs, basename, USE.NAMES=FALSE)))
   
@@ -192,7 +198,7 @@ dart2nexus <- function(gl, fastq.dir.in=NULL, min.nSNPs=3, minAbund=NULL,
   #lsummary <- list()
   fnSeqs <- unlist(lapply(derepReads, getnFiltered))
   if(length(fnSeqs) == 0) stop(paste("There are no sequences that passed the filter in", 
-                                     fastq.dir.in))
+                                     dir.in))
   if(!is.null(minAbund)) derepReads <- lapply(derepReads, subsetDerep, minAbund)
   #### dada ####
   if(dada == TRUE) {
@@ -214,7 +220,7 @@ dart2nexus <- function(gl, fastq.dir.in=NULL, min.nSNPs=3, minAbund=NULL,
   } else {
     finReads <- lapply(derepReads, getSeqFromDerep)
   }
-  } # close  if(is.na(fastq.dir.in)&length(countLoci>0))
+  } # close  if(is.na(dir.in)&length(countLoci>0))
   
   #### new approach based on genotypes ####
   setkey(readInfo, genotype)
@@ -251,69 +257,74 @@ message(paste("Processing samples" , sampleID))
         seqAlleles <- c(seqAlleles, seqAlleles)
       } else {
         if(length(seqAlleles)>2) {
-          if(!is.na(fastq.dir.in)&length(countLoci>0)) {
+          if(!is.na(dir.in)&length(countLoci>0)&sampleID %in% sampleExist) {
           targets <- readInfo[sampleID, targetid, mult="all"]
           seqs <- vector("list", length(targets))
           for(target in targets) {
-          barcode <- readInfo[targetid == target, barcode]
+            if(target %in% targetidsExist) {
+              barcode <- readInfo[targetid == target, barcode]
+              
+              seqs[[which(targets == target)]] <- finReads[[as.character(target)]]$sequence
+              nms <- paste(target, seq_along(seqs[[which(targets == target)]]), sep = "_")
+              names(seqs[[which(targets == target)]]) <- nms
+              
+              bar_time <- system.time(
+                # Search the sample barcode in the reads
+                barcode_hits <- Biostrings::vmatchPattern(
+                  pattern=Biostrings::DNAString(barcode), 
+                  subject=seqs[[which(targets == target)]],
+                  max.mismatch=0, 
+                  min.mismatch=0,
+                  with.indels=FALSE, fixed=TRUE,
+                  algorithm="auto")
+              )
+              
+              #if(verbose) {
+              # info(patt_hits=ind_hits, fn=fn, table=sub_info_table, row=row, 
+              #     gene=gene, name_patt=Find, mismatch=index.mismatch)
+              #}
+              
+              starts <- where2trim(mismatch=0, 
+                                   subjectSet=seqs[[which(targets == target)]], 
+                                   patt_hits=barcode_hits, 
+                                   patt=barcode, 
+                                   type="F")
+              # remomve barcode
+              seqs[[which(targets == target)]] <- Biostrings::DNAStringSet(
+                seqs[[which(targets == target)]], start=unlist(starts) + 1)
+              retain <- as.logical(S4Vectors::elementNROWS(barcode_hits))
+              seqs[[which(targets == target)]] <- seqs[[which(targets == target)]][retain] # keep seqs where the barcode was found
+              lenSeqTable <- length(table(width(seqs[[which(targets == target)]]))) # This computes the length in bp of the seqs
+              lenSeq <- as.integer(names(table(width(seqs[[which(targets == target)]]))[
+                which.max(table(width(seqs[[which(targets == target)]])))]))
+              if(lenSeqTable > 1 ) { # if the seqs have variable length
+                dir.create(file.path(dir.out, sampleID))
+                fn_warning <- file.path(dir.out, sampleID, "inconsistent_length.csv")
+                warning(paste("After removing the barcode", barcode, "for sample", 
+                              sampleID, "and target", target,
+                              "not all the reads have the same length/n", "See", 
+                              fn_warning,  "for details"))
+                write.csv(data.frame(Seq=names(seqs[[which(targets == target)]])[width(seqs[[which(targets == target)]]) != lenSeq], 
+                                     Length=width(seqs[[which(targets == target)]])[width(seqs[[which(targets == target)]]) != lenSeq]),
+                          file=fn_warning, row.names=FALSE)
+                seqs[[which(targets == target)]] <- seqs[[which(targets == target)]][width(seqs[[which(targets == target)]]) == lenSeq]
+                retain <- retain[seq_along(seqs[[which(targets == target)]])]
+                warning(paste("All reads of length different from the mode -", lenSeq, 
+                              "- were removed."))
+              }
+              if(lenSeq < sub.proc.data[J(locus), lenTrimSeq, mult="first"]) {
+                warning(paste("Warning code: 1. Sample:", sampleID, "Locus:", locus,
+                              "target:", target,
+                              "Number of possible alleles:", length(seqAlleles), 
+                              "No reads of sufficient length. All sequences from this file removed"))
+                seqs[[which(targets == target)]] <- DNAStringSet(character(0))
+              }
+            } else {
+              next
+            }
+            } # end for target in targets
           
-          seqs[[which(targets == target)]] <- finReads[[as.character(target)]]$sequence
-          nms <- paste(target, seq_along(seqs[[which(targets == target)]]), sep = "_")
-          names(seqs[[which(targets == target)]]) <- nms
-          
-          bar_time <- system.time(
-            # Search the sample barcode in the reads
-            barcode_hits <- Biostrings::vmatchPattern(
-              pattern=Biostrings::DNAString(barcode), 
-              subject=seqs[[which(targets == target)]],
-              max.mismatch=0, 
-              min.mismatch=0,
-              with.indels=FALSE, fixed=TRUE,
-              algorithm="auto")
-          )
-          
-          #if(verbose) {
-          # info(patt_hits=ind_hits, fn=fn, table=sub_info_table, row=row, 
-          #     gene=gene, name_patt=Find, mismatch=index.mismatch)
-          #}
-          
-          starts <- where2trim(mismatch=0, 
-                               subjectSet=seqs[[which(targets == target)]], 
-                               patt_hits=barcode_hits, 
-                               patt=barcode, 
-                               type="F")
-          # remomve barcode
-          seqs[[which(targets == target)]] <- Biostrings::DNAStringSet(
-            seqs[[which(targets == target)]], start=unlist(starts) + 1)
-          retain <- as.logical(S4Vectors::elementNROWS(barcode_hits))
-          seqs[[which(targets == target)]] <- seqs[[which(targets == target)]][retain] # keep seqs where the barcode was found
-          lenSeqTable <- length(table(width(seqs[[which(targets == target)]]))) # This computes the length in bp of the seqs
-          lenSeq <- as.integer(names(table(width(seqs[[which(targets == target)]]))[
-            which.max(table(width(seqs[[which(targets == target)]])))]))
-          if(lenSeqTable > 1 ) { # if the seqs have variable length
-            dir.create(file.path(dir.out, sampleID))
-            fn_warning <- file.path(dir.out, sampleID, "inconsistent_length.csv")
-            warning(paste("After removing the barcode", barcode, "for sample", 
-                          sampleID, "and target", target,
-                          "not all the reads have the same length/n", "See", 
-                          fn_warning,  "for details"))
-            write.csv(data.frame(Seq=names(seqs[[which(targets == target)]])[width(seqs[[which(targets == target)]]) != lenSeq], 
-                                 Length=width(seqs[[which(targets == target)]])[width(seqs[[which(targets == target)]]) != lenSeq]),
-                      file=fn_warning, row.names=FALSE)
-            seqs[[which(targets == target)]] <- seqs[[which(targets == target)]][width(seqs[[which(targets == target)]]) == lenSeq]
-            retain <- retain[seq_along(seqs[[which(targets == target)]])]
-            warning(paste("All reads of length different from the mode -", lenSeq, 
-                          "- were removed."))
-          }
-          if(lenSeq < sub.proc.data[J(locus), lenTrimSeq, mult="first"]) {
-            warning(paste("Warning code: 1. Sample:", sampleID, "Locus:", locus,
-                          "target:", target,
-                          "Number of possible alleles:", length(seqAlleles), 
-                          "No reads of sufficient length. All sequences from this file removed"))
-            seqs[[which(targets == target)]] <- DNAStringSet(character(0))
-          }
-          } # end for target in targets
-          # Check if files were dumped
+              # Check if files were dumped
           w <-sapply(seqs, function(x) as.integer(names(table(width(x)))))
           if(class(w) == "list") w <- sapply(w, length)
           
@@ -414,7 +425,7 @@ message(paste("Processing samples" , sampleID))
   names(alnAllele2) <- samplesIDs
   
   write.nexus(if(singleAllele == FALSE) c(alnAllele1, alnAllele2) else alnAllele1, 
-              dir.out=file.path(fastq.dir.in, dir.out), fn="phasedAln.nex", 
+              dir.out=file.path(dir.in, dir.out), fn="phasedAln.nex", 
               charset=TRUE, aln = TRUE,
               locusIDs=sub.proc.data[, unique(as.character(CloneID))], 
               locusLength=sub.proc.data[J(as.numeric(unique(as.character(CloneID)))), 
