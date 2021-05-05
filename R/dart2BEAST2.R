@@ -103,10 +103,9 @@ dart2nexus <- function(gl, dir.in=NULL, min.nSNPs=3, minAbund=NULL,
     message("fastq files were identified for all needed samples") else
       warning(paste(length(keep.these), "fastq files were needed, but", 
                     length(fastqs), "were found"))
-  r <- regexec("\\\\.fastq|FASTQ.{,3}$", fastqs)
+  r <- regexec("\\.fastq|\\.FASTQ.{,3}$", fastqs)
   m <- regmatches(fastqs, r, invert = TRUE)
-  d <- sapply(m, function(x) x[1])
-  targetidsExist <- sub(pattern = "\\.", x = d, replacement = "")
+  targetidsExist <- sapply(m, function(x) x[1])
   sampleExist <- readInfo[targetid %in% targetidsExist, genotype, mult="all"]
   
     # set up a cluster 
