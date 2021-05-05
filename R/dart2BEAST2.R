@@ -348,7 +348,9 @@ message(paste("Processing samples" , sampleID))
           
           # compute distance
           system.time(
+            suppressWarnings(
             sr <- ShortRead::srdistance(temp.seqs, DNAStringSet(seqAlleles))
+            )
           )
           sel.matches <- lapply(sr, function(x) which(x == 0)) # sr is a list of 
           # length=length(subject)
