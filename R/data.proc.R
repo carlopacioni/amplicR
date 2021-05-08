@@ -38,7 +38,7 @@
 #' @param bp An integer indicating the expected length (base-pairs) of the
 #'   reads. If zero (default) no truncation is applied
 #' @param truncQ Truncate reads at the first instance of a quality score less 
-#'   than or equal to truncQ when conduction quality filtering. See
+#'   than or equal to truncQ when conducting quality filtering. See
 #'   \code{\link[dada2]{fastqFilter}} for details
 #' @param qrep Logical. Should the quality report be generated? (default 
 #'   \code{FALSE})

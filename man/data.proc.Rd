@@ -29,7 +29,7 @@ then \code{dir.out <- dir.in}}
 reads. If zero (default) no truncation is applied}
 
 \item{truncQ}{Truncate reads at the first instance of a quality score less 
-than or equal to truncQ when conduction quality filtering. See
+than or equal to truncQ when conducting quality filtering. See
 \code{\link[dada2]{fastqFilter}} for details}
 
 \item{qrep}{Logical. Should the quality report be generated? (default 
