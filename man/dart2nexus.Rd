@@ -13,7 +13,7 @@ dart2nexus(
   minLen = 77,
   truncQ = 20,
   minQ = 25,
-  dir.out = "Processed_data",
+  dir.out = NULL,
   singleAllele = TRUE,
   dada = TRUE,
   nCPUs = "auto"

@@ -89,7 +89,7 @@
 #'  
 dart2nexus <- function(gl, dir.in=NULL, min.nSNPs=3, minAbund=NULL, 
                        minLen=77, truncQ=20, minQ=25,
-                       dir.out="Processed_data", singleAllele=TRUE, dada=TRUE, 
+                       dir.out=NULL, singleAllele=TRUE, dada=TRUE, 
                        nCPUs="auto") {
   amplicR::setup()
   
@@ -146,6 +146,8 @@ dart2nexus <- function(gl, dir.in=NULL, min.nSNPs=3, minAbund=NULL,
               For samples with multiple possible alleles, the SNPs will be replace with IUPAC ambiguities")
     }
   }
+  if(is.null(dir.out)) dir.out <- dir.in
+  dir.create(dir.out, showWarnings=FALSE, recursive=TRUE)
   #### Filter ####
   if(!is.na(dir.in)&length(countLoci>0)) {
     
@@ -155,8 +157,8 @@ dart2nexus <- function(gl, dir.in=NULL, min.nSNPs=3, minAbund=NULL,
   readInfo <- lapply(csvs, fread)
   readInfo <- rbindlist(readInfo)
   keep.these <- readInfo[genotype %in% samplesIDs, targetid]
-  
-  dir.create(file.path(dir.in, dir.out), showWarnings=FALSE, recursive=TRUE)
+  dir.out <- file.path(dir.out, "Processed_data")
+  dir.create(dir.out, showWarnings=FALSE, recursive=TRUE)
     fastqs <- list.files(path=dir.in, pattern = ".fastq|FASTQ.{,3}$")
   #fastqs <- fns[grepl(".fastq|FASTQ.{,3}$", fns)]
   if(length(fastqs) == 0) stop(paste("There are no files in", dir.in,
@@ -181,8 +183,8 @@ dart2nexus <- function(gl, dir.in=NULL, min.nSNPs=3, minAbund=NULL,
   }
   
   filt_fold <- "Filtered_seqs"
-  dir.create(file.path(dir.in, dir.out, filt_fold), showWarnings=FALSE, recursive=TRUE)
-  filtRs <- paste(dir.in, dir.out, filt_fold,
+  dir.create(file.path(dir.out, filt_fold), showWarnings=FALSE, recursive=TRUE)
+  filtRs <- paste(dir.out, filt_fold,
                   sapply(fastqs,
                          sub,
                          pattern="\\.fastq.{,3}$|\\.FASTQ.{,3}$",
@@ -238,7 +240,7 @@ dart2nexus <- function(gl, dir.in=NULL, min.nSNPs=3, minAbund=NULL,
   message("Done!")
   message(paste("Time needed (in seconds)", round(sys_time[3]), sep = "\n"))
   
-  filtRs <- list.files(path=file.path(dir.in, dir.out, filt_fold), full.names=TRUE)
+  filtRs <- list.files(path=file.path(dir.out, filt_fold), full.names=TRUE)
   sample_names_fil <- as.integer(sub("_filt.fastq.gz", "", 
                           sapply(filtRs, basename, USE.NAMES=FALSE)))
   
@@ -489,7 +491,7 @@ message(paste("Processing samples" , sampleID))
   names(alnAllele2) <- samplesIDs
   
   write.nexus(if(singleAllele == FALSE) c(alnAllele1, alnAllele2) else alnAllele1, 
-              dir.out=file.path(dir.in, dir.out), fn="phasedAln.nex", 
+              dir.out=dir.out, fn="phasedAln.nex", 
               charset=TRUE, aln = TRUE,
               locusIDs=sub.proc.data[, unique(as.character(CloneID))], 
               locusLength=sub.proc.data[J(as.numeric(unique(as.character(CloneID)))), 
