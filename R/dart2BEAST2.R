@@ -147,7 +147,7 @@ dart2nexus <- function(gl, dir.in=NULL, min.nSNPs=3, minAbund=NULL,
     }
   }
   if(is.null(dir.out)) dir.out <- dir.in
-  dir.create(dir.out, showWarnings=FALSE, recursive=TRUE)
+
   #### Filter ####
   if(!is.na(dir.in)&length(countLoci>0)) {
     
