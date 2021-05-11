@@ -131,6 +131,6 @@ expect_equal(seqAlleles[[5]], c("AGAAAAAA", "AGATAAAA", "AGCAAAAA", "AGCTAAAA"))
 expect_equal(seqAlleles[[6]], c("AAGAAAAA", "AAGAAATA", "AAGACAAA", "AAGACATA"))
 expect_equal(seqAlleles[[7]], c("AAAAAGAA", "AAAAAGAT", "AAAAAGCA", "AAAAAGCT"))
 
-
+unlink(temp, recursive=TRUE)
 })
 
