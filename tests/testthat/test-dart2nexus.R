@@ -83,7 +83,7 @@ write.csv(data.frame(targetid, genotype, barcode), file = file.path(temp, "targe
 expect_warning(
 res <- dart2nexus(gl, dir.in=temp, min.nSNPs=3, 
                        minLen=4, truncQ=0, minQ=25,
-                       dir.out="Processed_data", singleAllele=TRUE, dada=FALSE, 
+                       singleAllele=TRUE, dada=FALSE, 
                        nCPUs="auto")
 )
 #debug(dart2nexus)
