@@ -156,7 +156,7 @@ dart2nexus <- function(gl, dir.in=NULL, min.nSNPs=3, minAbund=NULL,
   csvs <- list.files(dir.in, ".csv$", full.names = TRUE)
   readInfo <- lapply(csvs, fread)
   readInfo <- rbindlist(readInfo)
-  keep.these <- readInfo[genotype %in% samplesIDs, targetid]
+  keep.these <- readInfo[genotype %in% names(countLoci), targetid]
   dir.out <- file.path(dir.out, "Processed_data")
   dir.create(dir.out, showWarnings=FALSE, recursive=TRUE)
     fastqs <- list.files(path=dir.in, pattern = ".fastq|FASTQ.{,3}$")
