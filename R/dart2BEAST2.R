@@ -432,18 +432,18 @@ message(paste("Processing samples" , sampleID))
                 seqAlleles <- c(seqAlleles, seqAlleles)
               } else {
                 newsel.matches <- sel.matches[anything>0] # more than 2 matches
-                sourceSeqs <- strsplit(names(temp.seqs[newsel.matches]), "_")
-                targets <- sapply(sourceSeqs, '[[', 1)
+                sourceSeqs <- strsplit(names(temp.seqs[unlist(newsel.matches)]), "_")
+                tempTargets <- sapply(sourceSeqs, '[[', 1)
                 
                 seqsIndex <- as.integer(
                   sapply(sourceSeqs, '[[', 2)
                   )
-                abund <- vector("integer", length=length(targets))
-                for(i in seq_along(targets)) {
+                abund <- vector("integer", length=length(tempTargets))
+                for(i in seq_along(tempTargets)) {
                   abund <- if(dada == TRUE) {
-                    dadaReads[[targets[i]]]$denoised[seqsIndex]
+                    dadaReads[[tempTargets[i]]]$denoised[seqsIndex]
                   } else {
-                    derepReads[[targets[i]]]$uniques[seqsIndex]
+                    derepReads[[tempTargets[i]]]$uniques[seqsIndex]
                   }
                 }
                 
@@ -452,7 +452,7 @@ message(paste("Processing samples" , sampleID))
                               "but n suitable sequences:", sum(anything>0),
                               "with respective abundance:", abund))
                 seqAlleles <- seqAlleles[anything>0]
-                ordAbund <- order(abund)
+                ordAbund <- order(abund, decreasing = TRUE)
                 seqAlleles <- seqAlleles[ordAbund[1:2]]
               } 
             }
