@@ -362,8 +362,10 @@ message(paste("Processing samples" , sampleID))
               lenSeq <- as.integer(names(table(width(seqs[[which(targets == target)]]))[
                 which.max(table(width(seqs[[which(targets == target)]])))]))
               if(lenSeqTable > 1 ) { # if the seqs have variable length
+                suppressWarnings(
                 dir.create(file.path(dir.out, sampleID))
-                fn_warning <- file.path(dir.out, sampleID, "inconsistent_length.csv")
+                )
+                fn_warning <- file.path(dir.out, sampleID, paste(target, "inconsistent_length.csv", sep="_"))
                 warning(paste("After removing the barcode", barcode, "for sample", 
                               sampleID, "and target", target,
                               "not all the reads have the same length/n", "See", 
@@ -450,7 +452,7 @@ message(paste("Processing samples" , sampleID))
                 warning(paste("Warning code: 4. Sample:", sampleID, "Locus:", locus,
                               "Number of possible alleles:", length(seqAlleles), 
                               "but n suitable sequences:", sum(anything>0),
-                              "with respective abundance:", abund))
+                              "with respective abundance:", paste(abund, collapse=", ")))
                 seqAlleles <- seqAlleles[anything>0]
                 ordAbund <- order(abund, decreasing = TRUE)
                 seqAlleles <- seqAlleles[ordAbund[1:2]]
