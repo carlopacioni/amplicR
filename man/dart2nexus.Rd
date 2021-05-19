@@ -65,15 +65,17 @@ headings: \itemize{ \item CloneID \item AlleleSequence \item TrimmedSequence
 \item SnpPosition }
 }
 \details{
-The output of this function is a nexus alignment with the concatenated
-sequences of the alleles. Once generated, these data can be used for
-phylogenetic analyses in software such as BEAST (ref).
-
 Here, I define 'loci' as one segment (read) from the sequencing data. These
 are generally identified as CloneID in Dart data. One locus can contain
 multiple SNPs and often, for phylogenetic analyses, only loci with multiple
 SNPs are of interest because they contain more information (see Trucchi et al.
 2014).
+
+The output of this function is a nexus alignment with the concatenated
+sequences of the alleles. Once generated, these data can be used for
+phylogenetic analyses in software such as BEAST (ref). At the bottom of the
+nexus file there are a series of charset so that it is possible to partition
+the alignment by locus.
 
 \code{dart2nexus} initially uses information from the genotypes to create all
 possible allele sequences. If within any given read, there is no more than one
@@ -84,14 +86,15 @@ ambiguities will be used.
 
 Where raw sequence data are available, these are read and processed using a
 combination of R packages. Most importantly, filtering of the sequences is
-done using \code{dada::fastqFilter}. Even when the sequecens are provided,
+done using \code{dada::fastqFilter}. Even when the sequences are provided,
 there might be situations where multiple reads are possible candidates for the
-alleles. in such cases also IUPAC ambiguities codes are used. This may happen
-when spurious reads are retained after filtering. There is not clear way to
-replicate Dart sequence processing, and playing around with the settings may
-help in removing these spurious reads. In the limited testing I have
-conducted, the default settings seems to work adequately in most cases, but
-there is no guarantee.
+alleles. This may happen when spurious reads are retained after filtering.
+There is not clear way to replicate Dart sequence processing, and playing
+around with the settings may help in removing these spurious reads. In the
+limited testing I have conducted, the default settings seems to work
+adequately in most cases, but there is no guarantee. When there are multiple
+candidate sequences, an assumption is made that the two most abundant
+sequences are the correct ones.
 
 After filtering the sequences with \code{dada::fastqFilter} it is possible to
 remove all the (unique) reads that do not have a minimum abundance threshold
