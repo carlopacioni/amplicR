@@ -287,10 +287,12 @@ dart2nexus <- function(gl, dir.in=NULL, min.nSNPs=3, minAbund=NULL,
   } else {
     finReads <- lapply(derepReads, getSeqFromDerep)
   }
-  } # close  if(is.na(dir.in)&length(countLoci>0))
-  
-  #### new approach based on genotypes ####
   setkey(readInfo, genotype)
+  } else {# close  if(!is.na(dir.in)&length(countLoci>0))
+    sampleExist <- NA
+  }
+  #### new approach based on genotypes ####
+  
   
   #dir.out <- file.path(dir.out, filt_fold)
   
