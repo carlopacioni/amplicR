@@ -102,6 +102,23 @@ sumDistLocus2 <- sapply(distLocus2, sum)
 expect_equal(unname(sumDistLocus1), c(5,3,3))
 expect_equal(unname(sumDistLocus2), c(4,3,3))
 
+resNoSeqs <- dart2nexus(gl, dir.in=NA, dir.out=temp, min.nSNPs=3, 
+                  minLen=4, truncQ=0, minQ=25,
+                  singleAllele=TRUE, dada=FALSE, 
+                  nCPUs="auto")
+S1 <- "AAMAWAGMGW"
+names(S1) <- "S1"
+expect_equal(as.character(resNoSeqs[[1]][1]), S1)
+
+S2 <- "AAAATAGAGA"
+names(S2) <- "S2"
+S2bis <- "AAAATAGAGT"
+names(S2bis) <- "S2"
+
+expect_true(
+  as.character(resNoSeqs[[1]][2]) == S2 | 
+  as.character(resNoSeqs[[1]][2]) == S2bis
+  )
 
 # Test make.alleles
 SNPpositions <- list(
