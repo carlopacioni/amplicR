@@ -82,6 +82,13 @@
 #'  computation.
 #'@param nex.out The name of the nexus file. Default: "phasedAln.nex"
 #'@inheritParams data.proc
+#'@return Write a nexus file in \code{dir.out} with name |code{nex.out} and return a list with the following elements:
+#'\itemize{
+  #'   \item freqSNPs A table with the frequencies of the number of SNPs in each locus 
+  #'   \item SampleMultAlleles The name of the samples with multiple (i.e. >2) possible alleles and their number
+  #'   \item Allele1 The concatenated sequence of the first allele 
+  #'   \item Allele2 The concatenated sequence of the second allele 
+  #' }
 #'@import data.table
 #'@import parallel
 #'@export
@@ -504,7 +511,8 @@ message(paste("Processing samples" , sampleID))
               locusIDs=sub.proc.data[, unique(as.character(CloneID))], 
               locusLength=sub.proc.data[J(as.numeric(unique(as.character(CloneID)))), 
                                          lenTrimSeq, mult="first"])
-  return(list(Allele1=alnAllele1, Allele2= alnAllele2))
+  return(list(freqSNPs=table(loci[, N]), SampleMultAlleles=countLoci, 
+              Allele1=alnAllele1, Allele2= alnAllele2))
 }
 
 

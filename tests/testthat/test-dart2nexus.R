@@ -87,7 +87,7 @@ res <- dart2nexus(gl, dir.in=temp, min.nSNPs=3,
                        nCPUs="auto")
 )
 #debug(dart2nexus)
-together <- c(res[[1]], res[[2]])
+together <- c(res[["Allele1"]], res[["Allele2"]])
 locus1 <- DNAStringSet(together, start = 1, end = 5)
 locus2 <- DNAStringSet(together, start = 6, end = 10)
 suppressWarnings(
@@ -108,7 +108,7 @@ resNoSeqs <- dart2nexus(gl, dir.in=NA, dir.out=temp, min.nSNPs=3,
                   nCPUs="auto")
 S1 <- "AAMAWAGMGW"
 names(S1) <- "S1"
-expect_equal(as.character(resNoSeqs[[1]][1]), S1)
+expect_equal(as.character(resNoSeqs[["Allele1"]][1]), S1)
 
 S2 <- "AAAATAGAGA"
 names(S2) <- "S2"
@@ -116,8 +116,8 @@ S2bis <- "AAAATAGAGT"
 names(S2bis) <- "S2"
 
 expect_true(
-  as.character(resNoSeqs[[1]][2]) == S2 | 
-  as.character(resNoSeqs[[1]][2]) == S2bis
+  as.character(resNoSeqs[["Allele1"]][2]) == S2 | 
+  as.character(resNoSeqs[["Allele1"]][2]) == S2bis
   )
 
 # Test make.alleles
