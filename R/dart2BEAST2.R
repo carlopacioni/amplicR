@@ -80,6 +80,7 @@
 #'@param nCPUs Integer for the number of CPUs to use (for parallel computation)
 #'  or "auto" to automatically call all available CPUs. If 1, no parallel
 #'  computation.
+#'@param nex.out The name of the nexus file. Default: "phasedAln.nex"
 #'@inheritParams data.proc
 #'@import data.table
 #'@import parallel
@@ -93,7 +94,7 @@
 dart2nexus <- function(gl, dir.in=NULL, min.nSNPs=3, minAbund=NULL, 
                        minLen=77, truncQ=20, minQ=25,
                        dir.out=NULL, singleAllele=TRUE, dada=TRUE, 
-                       nCPUs="auto") {
+                       nCPUs="auto", nex.out="phasedAln.nex") {
   amplicR::setup()
   
   #### Getting basic info from LocMetrics ####
@@ -498,7 +499,7 @@ message(paste("Processing samples" , sampleID))
   names(alnAllele2) <- samplesIDs
   
   write.nexus(if(singleAllele == FALSE) c(alnAllele1, alnAllele2) else alnAllele1, 
-              dir.out=dir.out, fn="phasedAln.nex", 
+              dir.out=dir.out, fn=nex.out, 
               charset=TRUE, aln = TRUE,
               locusIDs=sub.proc.data[, unique(as.character(CloneID))], 
               locusLength=sub.proc.data[J(as.numeric(unique(as.character(CloneID)))), 
