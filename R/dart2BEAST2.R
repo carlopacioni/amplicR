@@ -276,7 +276,7 @@ dart2nexus <- function(gl, dir.in=NULL, min.nSNPs=3, minAbund=NULL,
         dadaReads <- dada2::dada(derepReads, err=dada2::inflateErr(dada2::tperr1,3),
                                  errorEstimationFunction=dada2::loessErrfun, multithread=nCPUs)
       } else {
-        clusterExport(cl, varlist=c("derepReads"), envir=environment())
+        clusterExport(cl, dada2::dada, varlist=c("derepReads"), envir=environment())
         dadaReads <- parLapply(cl, derepReads, err=dada2::inflateErr(dada2::tperr1,3),
                                errorEstimationFunction=dada2::loessErrfun, multithread=FALSE)
       }
