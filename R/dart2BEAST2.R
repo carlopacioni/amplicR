@@ -448,10 +448,10 @@ message(paste("Processing samples" , sampleID))
                   )
                 abund <- vector("integer", length=length(tempTargets))
                 for(i in seq_along(tempTargets)) {
-                  abund <- if(dada == TRUE) {
-                    dadaReads[[tempTargets[i]]]$denoised[seqsIndex]
+                  abund[i] <- if(dada == TRUE) {
+                    dadaReads[[tempTargets[i]]]$denoised[seqsIndex[i]]
                   } else {
-                    derepReads[[tempTargets[i]]]$uniques[seqsIndex]
+                    derepReads[[tempTargets[i]]]$uniques[seqsIndex[i]]
                   }
                 }
                 
@@ -459,7 +459,7 @@ message(paste("Processing samples" , sampleID))
                               "Number of possible alleles:", length(seqAlleles), 
                               "but n suitable sequences:", sum(anything>0),
                               "with respective abundance:", paste(abund, collapse=", ")))
-                seqAlleles <- seqAlleles[anything>0]
+                
                 ordAbund <- order(abund, decreasing = TRUE)
                 seqAlleles <- seqAlleles[ordAbund[1:2]]
               } 
