@@ -446,20 +446,31 @@ message(paste("Processing samples" , sampleID))
                 seqAlleles <- seqAlleles[anything>0]
                 seqAlleles <- c(seqAlleles, seqAlleles)
               } else {
-                newsel.matches <- sel.matches[anything>0] # more than 2 matches
-                sourceSeqs <- strsplit(names(temp.seqs[unlist(newsel.matches)]), "_")
+                sourceSeqs <- strsplit(names(temp.seqs[unlist(sel.matches)]), "_")
                 tempTargets <- sapply(sourceSeqs, '[[', 1)
-                
                 seqsIndex <- as.integer(
                   sapply(sourceSeqs, '[[', 2)
-                  )
-                abund <- vector("integer", length=length(tempTargets))
-                for(i in seq_along(tempTargets)) {
-                  abund[i] <- if(dada == TRUE) {
-                    dadaReads[[tempTargets[i]]]$denoised[seqsIndex[i]]
+                )
+                abund <- vector("integer", length=length(seqAlleles))
+                s <- 1
+                for(a in seq_along(seqAlleles)) {
+                  if(anything[a]  == 0) {
+                    abund[a] <- 0
                   } else {
-                    derepReads[[tempTargets[i]]]$uniques[seqsIndex[i]]
+                    tcounter <- 1
+                    tempAbund <- vector("integer", length=anything[a])
+                    for(i in s:(s + anything[a] - 1)) {
+                      tempAbund[tcounter] <- if(dada == TRUE) {
+                        dadaReads[[tempTargets[i]]]$denoised[seqsIndex[i]]
+                      } else {
+                        derepReads[[tempTargets[i]]]$uniques[seqsIndex[i]]
+                      }
+                      tcounter <- tcounter + 1
+                    }
+                    abund[a] <- sum(tempAbund)
+                    s <- s + anything[a]
                   }
+                  
                 }
                 
                 warning(paste("Warning code: 4. Sample:", sampleID, "Locus:", locus,
