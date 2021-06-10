@@ -283,7 +283,7 @@ dart2nexus <- function(gl, dir.in=NULL, min.nSNPs=3, minAbund=NULL,
         dadaReads <- dada2::dada(derepReads, err=dada2::inflateErr(dada2::tperr1,3),
                                  errorEstimationFunction=dada2::loessErrfun, multithread=nCPUs)
       } else {
-        clusterExport(cl, varlist=c("derepReads"), envir=environment())
+        clusterExport(cl, dada2::dada, varlist=c("derepReads"), envir=environment())
         dadaReads <- parLapply(cl, derepReads, err=dada2::inflateErr(dada2::tperr1,3),
                                errorEstimationFunction=dada2::loessErrfun, multithread=FALSE)
       }
@@ -455,10 +455,10 @@ message(paste("Processing samples" , sampleID))
                   )
                 abund <- vector("integer", length=length(tempTargets))
                 for(i in seq_along(tempTargets)) {
-                  abund <- if(dada == TRUE) {
-                    dadaReads[[tempTargets[i]]]$denoised[seqsIndex]
+                  abund[i] <- if(dada == TRUE) {
+                    dadaReads[[tempTargets[i]]]$denoised[seqsIndex[i]]
                   } else {
-                    derepReads[[tempTargets[i]]]$uniques[seqsIndex]
+                    derepReads[[tempTargets[i]]]$uniques[seqsIndex[i]]
                   }
                 }
                 
@@ -466,7 +466,7 @@ message(paste("Processing samples" , sampleID))
                               "Number of possible alleles:", length(seqAlleles), 
                               "but n suitable sequences:", sum(anything>0),
                               "with respective abundance:", paste(abund, collapse=", ")))
-                seqAlleles <- seqAlleles[anything>0]
+                
                 ordAbund <- order(abund, decreasing = TRUE)
                 seqAlleles <- seqAlleles[ordAbund[1:2]]
               } 
