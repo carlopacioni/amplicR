@@ -168,7 +168,7 @@ AIC <- function(dir.in, k=NULL) {
 #' more than one .est within each directory as it will read these to evaluate 
 #' the number of parameters in the model. If there is more than one file, there 
 #' is no way to know which one is correct. Also, that will also create an 
-#' inconsistency between the numer of models and the number of files, which may 
+#' inconsistency between the number of models and the number of files, which may 
 #' cause problems in reporting the results even if the function completes. 
 #' 
 #' @param dir.in The parent directory within which the models have been run
@@ -282,7 +282,7 @@ est.sim <- do.call(rbind, args=lbLhoods)
 est.dt <- data.table(est.sim)
 bootstr.ci <- est.dt[, lapply(.SD, extractCI, nBoot, conf, boot.type)]
 nms <- names(bootstr.ci)
-bootstr.ci[, Param:=c("Mediam", "Lower", "Upper")]
+bootstr.ci[, Param:=c("Median", "Lower", "Upper")]
 setcolorder(bootstr.ci, "Param")
 return(bootstr.ci)
 }
