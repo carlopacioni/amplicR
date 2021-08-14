@@ -91,8 +91,8 @@ fsc.estimate <- function(dir.in, n=500000, L=100, maf=TRUE, ncpu=0, nBatches=NUL
   if(ncpu > 0 & is.null(nBatches)) nBatches <- 2 * ncpu
   tpl <- list.files(dir.in, pattern="*.tpl$", full.names=FALSE)
   est <- list.files(dir.in, pattern="*.est$", full.names=FALSE) 
-  cmd <- paste("-t", tpl, "-n", n, if(maf == TRUE) "-m" else "-d", "-e", est, 
-               "-M", "-L", L, "-q", "-c", ncpu, "-B", nBatches, collapse=" ")
+  cmd <- paste("-t", tpl, "-n", as.integer(n), if(maf == TRUE) "-m" else "-d", "-e", est, 
+               "-M", "-L", as.integer(L), "-q", "-c", ncpu, "-B", nBatches, collapse=" ")
   writeLines(c(dir.in, cmd), con=file.path(dir.in, "fsc_run.txt"))
   old.wd <- getwd()
   on.exit(setwd(old.wd))
@@ -250,8 +250,8 @@ par.data.pos <- grep("data type", rlns)
 rlns[par.data.pos + 1] <- par.data
 writeLines(rlns, new.par.full)
 # generate cmd and run fsc
-cmd <- paste("-i", basename(new.par.full), "-n", nSim, if(maf == TRUE) "-m" else "-d", 
-             "-j", "-q", "-s", nLoci, "-x", "-c", ncpu, "-B", nBatches, collapse=" ")
+cmd <- paste("-i", basename(new.par.full), "-n", as.integer(nSim), if(maf == TRUE) "-m" else "-d", 
+             "-j", "-q", "-s", as.integer(nLoci), "-x", "-c", ncpu, "-B", nBatches, collapse=" ")
 writeLines(c(dirname(new.par.full), cmd), con=file.path(dirname(new.par.full), "fsc_run.txt"))
 old.wd <- getwd()
 on.exit(setwd(old.wd))
@@ -267,8 +267,8 @@ pv <- list.files(dirname(par.file), pattern="*.pv$", full.names=TRUE, recursive=
 for(dsim in ld) {
   file.copy(from=tpl, to=file.path(dsim, new.tpl.nm), overwrite=TRUE)
   file.copy(from=est, to=file.path(dsim, new.est.nm), overwrite=TRUE)
-  cmd <- paste("-t", new.tpl.nm, "-n", n, if(maf == TRUE) "-m" else "-d", "-e", 
-               new.est.nm, "-M", "-L", L, "--initialValues", pv, "-q", "-c", ncpu, 
+  cmd <- paste("-t", new.tpl.nm, "-n", as.integer(n), if(maf == TRUE) "-m" else "-d", "-e", 
+               new.est.nm, "-M", "-L", as.integer(L), "--initialValues", pv, "-q", "-c", ncpu, 
                "-B", nBatches, collapse=" ")
   writeLines(c(dsim, cmd), con=file.path(dsim, "fsc_run.txt"))
   
