@@ -30,7 +30,7 @@ count.freq.ref <- function (x) {
 
 if(!all(gl$ploidy == 2)) 
   stop("This function currently caters only for diploid organisms")
-if(length(unique(gl$pop))) 
+if(length(unique(gl$pop))>1) 
   stop("This function currently caters only for samples from one population only")
 if(sum(is.na(glm))>0) 
   stop("This function  currently caters only for genotypes without missing data")
@@ -42,7 +42,7 @@ inv <- sum(nchar(as.character(gl$other$loc.metrics$TrimmedSequence))) - gl@n.loc
 daf[1] <- daf[1] + inv
 writeLines(c(paste(paste("d0", seq(0, length(daf) - 1), sep="_"), collapse=" "),
            paste(as.character(daf), collapse=" ")), 
-           con=file.path(outpath, outfile_root, "_DAFpop0.obs"))
+           con=file.path(outpath, pasteo(outfile_root, "_DAFpop0.obs")))
 
 
 freq.ref <- colSums(apply(glm, FUN=count.freq.ref, MARGIN=c(1,2)))
