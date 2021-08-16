@@ -1,0 +1,2 @@
+C:/Users/Carlo/Dropbox/Bat/SouthEasternLongEaredBat/Data/SELEB_SNPs/Fastsimcoal
+-t  -n 5e+05 -m -e  -M -L 100 -q -c 4 -B 8
