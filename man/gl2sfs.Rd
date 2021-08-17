@@ -17,17 +17,23 @@ gl2sfs(gl, outfile_root = "gl2sfs", outpath = tempdir())
 The output of this function is suitable for analysis in fastsimcoal2 or dada.
 }
 \details{
-It saves a derived sfs, assuming that the reference allele is the ancestral, 
+It saves a derived sfs, assuming that the reference allele is the ancestral,
 and a MAF sfs.
 
-At this stage this function caters only for diploid organisms, 
-for samples from one population only, and for genotypes without missing data.
+At this stage this function caters only for diploid organisms, for samples
+from one population only, and for genotypes without missing data.
 
-It expects a dartR formatted genlight object, but will work with other gl as 
-long as the have a \code{data.frame} in \cod{other} called loc.metrics with 
-a column named \code{TrimmedSequence} that contains a character string whose 
-length corrensponds to the number of sites of the allele. This information is 
+It expects a dartR formatted genlight object, but will work with other gl as
+long as the have a \code{data.frame} in \code{other} called loc.metrics with
+a column named \code{TrimmedSequence} that contains a character string whose
+length corrensponds to the number of sites of the allele. This information is
 used to obtained the number of non-polymorphic sites.
 
-TO-DO: deal with missing data. See http://evomics.org/learning/population-and-speciation-genomics/2018-population-and-speciation-genomics/fastsimcoal2-activity/
+TO-DO: deal with missing data. See
+http://evomics.org/learning/population-and-speciation-genomics/2018-population-and-speciation-genomics/fastsimcoal2-activity/
+}
+\references{
+Excoffier L., Dupanloup I., Huerta-Sánchez E., Sousa V. C. and
+  Foll M. (2013) Robust demographic inference from genomic and SNP data. PLoS
+  genetics 9(10)
 }

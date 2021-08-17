@@ -38,8 +38,8 @@ handle if \code{ncpu=0} (default)}
 
 \item{nBatches}{The number of batches (-B option)}
 
-\item{fsc.cmd}{The command to use to call fsc (that may be different depending on
-the version installed)}
+\item{fsc.cmd}{The command to use to call fsc (that may be different
+depending on the version installed)}
 
 \item{fsc.path}{The path where fsc is installed or \code{"path"} if it is in
 the PATH (that means that it can be called regardless of the working
@@ -48,13 +48,13 @@ directory)}
 \item{par.indLoci}{The two integers value that need to be used for the number
 of independent loci in the .par that it is used to run the simulations.}
 
-\item{par.nBlocks}{The number of linkage blocks in the .par that it is used 
-to run the simulations.}
+\item{par.nBlocks}{The number of linkage blocks in the .par that it is used to
+run the simulations.}
 
-\item{par.data}{The string to be used in the 'per Block: data type, num loci, 
-rec. rate and mut rate + optional parameters' line of the .par that it is used 
-to run the simulations. The default value is 
-\code{par.data="DNA 100 0 2.5e-8 0.33"}}
+\item{par.data}{The string to be used in the 'per Block: data type, num loci,
+rec. rate and mut rate + optional parameters' line of the .par that it is
+used to run the simulations. The default value is \code{par.data="DNA 100 0
+2.5e-8 0.33"}}
 
 \item{n}{The number of coalescent simulations to approximate the expected SFS
 (-n option). This should be larger than 100,000.}
@@ -65,29 +65,50 @@ to run the simulations. The default value is
 
 \item{conf}{The confidence level to compute the confidence intervals}
 
-\item{boot.type}{The method to be used to compute the confidence intervals. 
-See \code{?boot.ci} for details. By default, percentile intervals are computed.}
+\item{boot.type}{The method to be used to compute the confidence intervals.
+See \code{?boot.ci} for details. By default, percentile intervals are
+computed.}
 }
 \value{
-A list with the following elements \itemized{
- \item Bootstr.stats: Descriptive statistics from bootstraps (Median, lower and upper limit)
- \item Sim: The estimates from the simulated data 
- \item P.Rand.less.Obs: The probability that a random value from the null Composite Likelihood Ratio distribution 
- is less than the observed CLR 
- \item P.Rand.gt.Obs: The probability that a random value from the null Composite Likelihood Ratio distribution 
- is greater than the observed CLR
- }
+A list with the following elements \itemize{ \item Bootstr.stats:
+ Descriptive statistics from bootstraps (Median, lower and upper limit), an
+ the intial estimated parameters  \item P.Rand.less.Obs: The probability that
+ a random value from the null Composite Likelihood Ratio distribution is less
+ than the observed CLR \item P.Rand.gt.Obs: The probability that a random
+ value from the null Composite Likelihood Ratio distribution is greater than
+ the observed CLR \item Sim: The estimates from the simulated data }
 }
 \description{
 Once fsc estimated parameter values, this function uses the *_maxL.par to
-simulate data with the model parameters. From there, it estimates the
-parameter values and confidence intervals are finally returned using the R
-package \code{boot},
+simulate \code{nSim} datasets with the model parameters. It then uses these
+data to estimate the parameter values and confidence intervals are finally
+returned using the R package \code{boot}.
 }
 \details{
+It also uses the analyses fromt he simulated data to build an empirical
+cumulative density function of the Composite Likelihood Ratio (CLR), to build
+a statistical test for the fit of the model (See Excoffier et al 2013 for
+details). That is, from the simulated data, it is possible to estimate the
+probability that a randpm value from the null distribution is smaller or
+greater than the observed CLR. It is important to note that the probability
+values (\code{P.Rand.less.Obs} and \code{P.Rand.gt.Obs}) are constructed from
+the simulated datasets, so a large enough number of simulations needs to be
+run for these to be reliable. Bootstrapped percentiles are also reported (see
+first item of the list returned as results), if this approach is preferred.
+
 It is important that enough sites are simulated to ensure that sufficient
 polymorphic loci are present in the simulated data. It is better to simulate
 an excess of sites and retained those needed using \code{nLoci}.
 
-Initial values are passed using the .pv so that a reduced numner of replicates can be passed
+Initial values when estimating parameters from simulated datasets are passed
+using the .pv so that a reduced number of replicates need to be run.
+
+For some reason, which is a mystery to me, sometimes there is a need to
+'print' to screen twice to get the first element of the list to actually be
+visible on the screen.
+}
+\references{
+Excoffier L., Dupanloup I., Huerta-Sánchez E., Sousa V. C. and
+ Foll M. (2013) Robust demographic inference from genomic and SNP data. PLoS
+ genetics 9(10)
 }

@@ -1,26 +1,30 @@
 #' Convert a genlight object into a sfs input file
-#' 
+#'
 #' The output of this function is suitable for analysis in fastsimcoal2 or dada.
-#' 
-#' It saves a derived sfs, assuming that the reference allele is the ancestral, 
+#'
+#' It saves a derived sfs, assuming that the reference allele is the ancestral,
 #' and a MAF sfs.
-#' 
-#' At this stage this function caters only for diploid organisms, 
-#' for samples from one population only, and for genotypes without missing data.
-#' 
-#' It expects a dartR formatted genlight object, but will work with other gl as 
-#' long as the have a \code{data.frame} in \code{other} called loc.metrics with 
-#' a column named \code{TrimmedSequence} that contains a character string whose 
-#' length corrensponds to the number of sites of the allele. This information is 
+#'
+#' At this stage this function caters only for diploid organisms, for samples
+#' from one population only, and for genotypes without missing data.
+#'
+#' It expects a dartR formatted genlight object, but will work with other gl as
+#' long as the have a \code{data.frame} in \code{other} called loc.metrics with
+#' a column named \code{TrimmedSequence} that contains a character string whose
+#' length corrensponds to the number of sites of the allele. This information is
 #' used to obtained the number of non-polymorphic sites.
-#' 
-#' TO-DO: deal with missing data. See http://evomics.org/learning/population-and-speciation-genomics/2018-population-and-speciation-genomics/fastsimcoal2-activity/
-#' 
+#'
+#' TO-DO: deal with missing data. See
+#' http://evomics.org/learning/population-and-speciation-genomics/2018-population-and-speciation-genomics/fastsimcoal2-activity/
+#'
 #' @param gl the genlight object
 #' @param outfile_root The root of the name of the output file
 #' @param outpath The output path where to save the file
 #' @import dartR
-#' @export 
+#' @export
+#' @references Excoffier L., Dupanloup I., Huerta-Sánchez E., Sousa V. C. and
+#'   Foll M. (2013) Robust demographic inference from genomic and SNP data. PLoS
+#'   genetics 9(10)
 gl2sfs <- function(gl, outfile_root="gl2sfs", outpath=tempdir()) {
 #---------- Helper ---------------#
 count.freq.ref <- function (x) {
@@ -79,12 +83,15 @@ return(list(DAF=daf, MAF=maf))
 #' @param ncpu The number of CPU (threads) to use in the analysis. Automatically
 #'   handle if \code{ncpu=0} (default)
 #' @param nBatches The number of batches (-B option)
-#' @param fsc.cmd The command to use to call fsc (that may be different depending on
-#' the version installed)
+#' @param fsc.cmd The command to use to call fsc (that may be different
+#'   depending on the version installed)
 #' @param fsc.path The path where fsc is installed or \code{"path"} if it is in
 #'   the PATH (that means that it can be called regardless of the working
 #'   directory)
 #' @export
+#' @references Excoffier L., Dupanloup I., Huerta-Sánchez E., Sousa V. C. and
+#'   Foll M. (2013) Robust demographic inference from genomic and SNP data. PLoS
+#'   genetics 9(10)
 fsc.estimate <- function(dir.in, n=500000, L=100, maf=TRUE, ncpu=0, nBatches=NULL, 
                          fsc.cmd="fsc2702", fsc.path="path") {
   if(!is.integer(as.integer(ncpu))) stop("The number of CPUs has to be an integer")
@@ -120,20 +127,23 @@ fsc.multiple.estimate <- function(dir.in, n=500000, L=100, maf=TRUE, ncpu=0,
 
 
 #' AIC
-#' 
-#' compute the AIC given the likelihood in log10 scale (default fsc output) 
-#' and number of parameters, which is automatically read by the function if 
+#'
+#' compute the AIC given the likelihood in log10 scale (default fsc output) and
+#' number of parameters, which is automatically read by the function if
 #' \code{k=NULL).
-#' 
-#' It is important to note that this function will probably fail if there are 
-#' more than one .est within each directory as it will read these to evaluate 
-#' the number of parameters in the model. If there is more than one file, there 
+#'
+#' It is important to note that this function will probably fail if there are
+#' more than one .est within each directory as it will read these to evaluate
+#' the number of parameters in the model. If there is more than one file, there
 #' is no way to know which one is correct.
-#' 
+#'
 #' @param dir.in The directory where the analysis was conducted
-#' @param k The number of parameters in the model. If \code{NULL} is read 
-#' automatically by the function
+#' @param k The number of parameters in the model. If \code{NULL} is read
+#'   automatically by the function
 #' @export
+#' @references Excoffier L., Dupanloup I., Huerta-Sánchez E., Sousa V. C. and
+#'   Foll M. (2013) Robust demographic inference from genomic and SNP data. PLoS
+#'   genetics 9(10)
 AIC <- function(dir.in, k=NULL) {
   log10toln<-function(l10) {
     rlns=l10/log10(exp(1))
@@ -158,22 +168,25 @@ AIC <- function(dir.in, k=NULL) {
   return(2*k-2*ln)
 }
 
-#' Compute and compare AIC for different models
-#' 
-#' This functions expects that different models were run in different directories 
-#' within the same parent directory (as for \code{fsc.multiple.estimate}). Assuming
-#' that \code{dir.in} is the parent directory, it will extract and compute AIC 
-#' from all of them.
-#' 
-#' It is important to note that this function will probably fail if there are 
-#' more than one .est within each directory as it will read these to evaluate 
-#' the number of parameters in the model. If there is more than one file, there 
-#' is no way to know which one is correct. Also, that will also create an 
-#' inconsistency between the number of models and the number of files, which may 
-#' cause problems in reporting the results even if the function completes. 
-#' 
+#' Compute and compare AIC for different fasimcoal models
+#'
+#' This functions expects that different fastsimcoal models were run in
+#' different directories within the same parent directory (as for
+#' \code{fsc.multiple.estimate}). Assuming that \code{dir.in} is the parent
+#' directory, it will extract and compute AIC from all of them.
+#'
+#' It is important to note that this function will probably fail if there are
+#' more than one .est within each directory as it will read these to evaluate
+#' the number of parameters in the model. If there is more than one file, there
+#' is no way to know which one is correct. Also, that will also create an
+#' inconsistency between the number of models and the number of files, which may
+#' cause problems in reporting the results even if the function completes.
+#'
 #' @param dir.in The parent directory within which the models have been run
 #' @export
+#' @references Excoffier L., Dupanloup I., Huerta-Sánchez E., Sousa V. C. and
+#'   Foll M. (2013) Robust demographic inference from genomic and SNP data. PLoS
+#'   genetics 9(10)
 AIC.comp <- function(dir.in) {
   mod.nms <- list.dirs(dir.in, full.names=FALSE, recursive=FALSE)
   ld <- list.dirs(dir.in,full.names=TRUE, recursive=FALSE)
@@ -235,6 +248,9 @@ AIC.comp <- function(dir.in) {
 #'  than the observed CLR \item P.Rand.gt.Obs: The probability that a random
 #'  value from the null Composite Likelihood Ratio distribution is greater than
 #'  the observed CLR \item Sim: The estimates from the simulated data }
+#'@references Excoffier L., Dupanloup I., Huerta-Sánchez E., Sousa V. C. and
+#'  Foll M. (2013) Robust demographic inference from genomic and SNP data. PLoS
+#'  genetics 9(10)
 #'@import boot
 #'@import data.table
 #'@export

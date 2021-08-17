@@ -31,8 +31,8 @@ handle if \code{ncpu=0} (default)}
 
 \item{nBatches}{The number of batches (-B option)}
 
-\item{fsc.cmd}{The command to use to call fsc (that may be different depending on
-the version installed)}
+\item{fsc.cmd}{The command to use to call fsc (that may be different
+depending on the version installed)}
 
 \item{fsc.path}{The path where fsc is installed or \code{"path"} if it is in
 the PATH (that means that it can be called regardless of the working
@@ -47,4 +47,9 @@ fsc in \code{dir.in}
 If \code{ncpu=0} and \code{nBatches=NULL}, \code{nBatches} is set to 12 (fsc
 default value). If \code{ncpu}>0 and \code{nBatches=NULL}, \code{nBatches} is
 set to twice ]code{nspu}.
+}
+\references{
+Excoffier L., Dupanloup I., Huerta-Sánchez E., Sousa V. C. and
+  Foll M. (2013) Robust demographic inference from genomic and SNP data. PLoS
+  genetics 9(10)
 }

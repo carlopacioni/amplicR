@@ -9,15 +9,20 @@ AIC(dir.in, k = NULL)
 \arguments{
 \item{dir.in}{The directory where the analysis was conducted}
 
-\item{k}{The number of parameters in the model. If \code{NULL} is read 
+\item{k}{The number of parameters in the model. If \code{NULL} is read
 automatically by the function}
 }
 \description{
 
 }
 \details{
-It is important to note that this function will probably fail if there are 
-more than one .est within each directory as it will read these to evaluate 
-the number of parameters in the model. If there is more than one file, there 
+It is important to note that this function will probably fail if there are
+more than one .est within each directory as it will read these to evaluate
+the number of parameters in the model. If there is more than one file, there
 is no way to know which one is correct.
+}
+\references{
+Excoffier L., Dupanloup I., Huerta-Sánchez E., Sousa V. C. and
+  Foll M. (2013) Robust demographic inference from genomic and SNP data. PLoS
+  genetics 9(10)
 }

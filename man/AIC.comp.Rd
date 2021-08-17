@@ -2,7 +2,7 @@
 % Please edit documentation in R/fastsimcoal.R
 \name{AIC.comp}
 \alias{AIC.comp}
-\title{Compute and compare AIC for different models}
+\title{Compute and compare AIC for different fasimcoal models}
 \usage{
 AIC.comp(dir.in)
 }
@@ -10,16 +10,21 @@ AIC.comp(dir.in)
 \item{dir.in}{The parent directory within which the models have been run}
 }
 \description{
-This functions expects that different models were run in different directories 
-within the same parent directory (as for \code{fsc.multiple.estimate}). Assuming
-that \code{dir.in} is the parent directory, it will extract and compute AIC 
-from all of them.
+This functions expects that different fastsimcoal models were run in
+different directories within the same parent directory (as for
+\code{fsc.multiple.estimate}). Assuming that \code{dir.in} is the parent
+directory, it will extract and compute AIC from all of them.
 }
 \details{
-It is important to note that this function will probably fail if there are 
-more than one .est within each directory as it will read these to evaluate 
-the number of parameters in the model. If there is more than one file, there 
-is no way to know which one is correct. Also, that will also create an 
-inconsistency between the number of models and the number of files, which may 
+It is important to note that this function will probably fail if there are
+more than one .est within each directory as it will read these to evaluate
+the number of parameters in the model. If there is more than one file, there
+is no way to know which one is correct. Also, that will also create an
+inconsistency between the number of models and the number of files, which may
 cause problems in reporting the results even if the function completes.
+}
+\references{
+Excoffier L., Dupanloup I., Huerta-Sánchez E., Sousa V. C. and
+  Foll M. (2013) Robust demographic inference from genomic and SNP data. PLoS
+  genetics 9(10)
 }
