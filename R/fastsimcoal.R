@@ -32,17 +32,18 @@ if(!all(gl$ploidy == 2))
   stop("This function currently caters only for diploid organisms")
 if(length(unique(gl$pop))>1) 
   stop("This function currently caters only for samples from one population only")
+glm <- as.matrix(gl)
 if(sum(is.na(glm))>0) 
   stop("This function  currently caters only for genotypes without missing data")
-glm <- as.matrix(gl)
+
 daf <- table(colSums(glm))
 
 names(daf) <- paste("d0", seq(0, length(daf) - 1), sep="_")
 inv <- sum(nchar(as.character(gl$other$loc.metrics$TrimmedSequence))) - gl@n.loc
 daf[1] <- daf[1] + inv
-writeLines(c(paste(paste("d0", seq(0, length(daf) - 1), sep="_"), collapse=" "),
+writeLines(c(" 1 observations", paste(paste("d0", seq(0, length(daf) - 1), sep="_"), collapse=" "),
            paste(as.character(daf), collapse=" ")), 
-           con=file.path(outpath, pasteo(outfile_root, "_DAFpop0.obs")))
+           con=file.path(outpath, paste0(outfile_root, "_DAFpop0.obs")))
 
 
 freq.ref <- colSums(apply(glm, FUN=count.freq.ref, MARGIN=c(1,2)))
@@ -51,9 +52,9 @@ maf <- table(c(freq.ref, freq.alt))
 maf <- maf[which(as.numeric(names(maf)) <= nrow(glm))]
 maf[1] <- maf[1] + inv
 if(length(maf) == nrow(glm)) maf[length(maf)] <- maf[length(maf)]/2
-writeLines(c(paste(paste("d0", seq(0, length(maf) - 1), sep="_"), collapse=" "),
+writeLines(c(" 1 observations", paste(paste("d0", seq(0, length(maf) - 1), sep="_"), collapse=" "),
              paste(as.character(maf), collapse=" ")), 
-           con=file.path(outpath, outfile_root, "_MAFpop0.obs"))
+           con=file.path(outpath, paste0(outfile_root, "_MAFpop0.obs")))
 
 return(list(DAF=daf, MAF=maf))
 }
