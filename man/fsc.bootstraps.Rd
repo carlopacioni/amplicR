@@ -38,6 +38,9 @@ handle if \code{ncpu=0} (default)}
 
 \item{nBatches}{The number of batches (-B option)}
 
+\item{fsc.cmd}{The command to use to call fsc (that may be different depending on
+the version installed)}
+
 \item{fsc.path}{The path where fsc is installed or \code{"path"} if it is in
 the PATH (that means that it can be called regardless of the working
 directory)}
@@ -64,6 +67,16 @@ to run the simulations. The default value is
 
 \item{boot.type}{The method to be used to compute the confidence intervals. 
 See \code{?boot.ci} for details. By default, percentile intervals are computed.}
+}
+\value{
+A list with the following elements \itemized{
+ \item Bootstr.stats: Descriptive statistics from bootstraps (Median, lower and upper limit)
+ \item Sim: The estimates from the simulated data 
+ \item P.Rand.less.Obs: The probability that a random value from the null Composite Likelihood Ratio distribution 
+ is less than the observed CLR 
+ \item P.Rand.gt.Obs: The probability that a random value from the null Composite Likelihood Ratio distribution 
+ is greater than the observed CLR
+ }
 }
 \description{
 Once fsc estimated parameter values, this function uses the *_maxL.par to

@@ -31,6 +31,9 @@ handle if \code{ncpu=0} (default)}
 
 \item{nBatches}{The number of batches (-B option)}
 
+\item{fsc.cmd}{The command to use to call fsc (that may be different depending on
+the version installed)}
+
 \item{fsc.path}{The path where fsc is installed or \code{"path"} if it is in
 the PATH (that means that it can be called regardless of the working
 directory)}

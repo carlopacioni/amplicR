@@ -9,7 +9,7 @@
 #' for samples from one population only, and for genotypes without missing data.
 #' 
 #' It expects a dartR formatted genlight object, but will work with other gl as 
-#' long as the have a \code{data.frame} in \cod{other} called loc.metrics with 
+#' long as the have a \code{data.frame} in \code{other} called loc.metrics with 
 #' a column named \code{TrimmedSequence} that contains a character string whose 
 #' length corrensponds to the number of sites of the allele. This information is 
 #' used to obtained the number of non-polymorphic sites.
@@ -79,7 +79,7 @@ return(list(DAF=daf, MAF=maf))
 #' @param ncpu The number of CPU (threads) to use in the analysis. Automatically
 #'   handle if \code{ncpu=0} (default)
 #' @param nBatches The number of batches (-B option)
-#' @fsc.cmd The command to use to call fsc (that may be different depending on
+#' @param fsc.cmd The command to use to call fsc (that may be different depending on
 #' the version installed)
 #' @param fsc.path The path where fsc is installed or \code{"path"} if it is in
 #'   the PATH (that means that it can be called regardless of the working
@@ -185,34 +185,59 @@ AIC.comp <- function(dir.in) {
 #'Compute bootstrap confidence intervals for estimated parameters with fsc
 #'
 #'Once fsc estimated parameter values, this function uses the *_maxL.par to
-#'simulate data with the model parameters. From there, it estimates the
-#'parameter values and confidence intervals are finally returned using the R
-#'package \code{boot},
+#'simulate \code{nSim} datasets with the model parameters. It then uses these
+#'data to estimate the parameter values and confidence intervals are finally
+#'returned using the R package \code{boot}.
+#'
+#'It also uses the analyses fromt he simulated data to build an empirical
+#'cumulative density function of the Composite Likelihood Ratio (CLR), to build
+#'a statistical test for the fit of the model (See Excoffier et al 2013 for
+#'details). That is, from the simulated data, it is possible to estimate the
+#'probability that a randpm value from the null distribution is smaller or
+#'greater than the observed CLR. It is important to note that the probability
+#'values (\code{P.Rand.less.Obs} and \code{P.Rand.gt.Obs}) are constructed from
+#'the simulated datasets, so a large enough number of simulations needs to be
+#'run for these to be reliable. Bootstrapped percentiles are also reported (see
+#'first item of the list returned as results), if this approach is preferred.
 #'
 #'It is important that enough sites are simulated to ensure that sufficient
 #'polymorphic loci are present in the simulated data. It is better to simulate
 #'an excess of sites and retained those needed using \code{nLoci}.
 #'
-#'Initial values are passed using the .pv so that a reduced numner of replicates can be passed
-#' @param dir.in The directory where the analysis was conducted
+#'Initial values when estimating parameters from simulated datasets are passed
+#'using the .pv so that a reduced number of replicates need to be run.
+#'
+#'For some reason, which is a mystery to me, sometimes there is a need to
+#''print' to screen twice to get the first element of the list to actually be
+#'visible on the screen.
+#'
+#'@param dir.in The directory where the analysis was conducted
 #'@param nLoci The number of polymorphic loci to retain
 #'@param nSim The number of datasets that need to be simulated
 #'@param par.indLoci The two integers value that need to be used for the number
 #'  of independent loci in the .par that it is used to run the simulations.
-#' @param par.nBlocks The number of linkage blocks in the .par that it is used 
-#' to run the simulations.
-#' @param par.data The string to be used in the 'per Block: data type, num loci, 
-#' rec. rate and mut rate + optional parameters' line of the .par that it is used 
-#' to run the simulations. The default value is 
-#' \code{par.data="DNA 100 0 2.5e-8 0.33"}
-#' @param nBoot The number of bootstrap replicates
-#' @param conf The confidence level to compute the confidence intervals
-#' @param boot.type The method to be used to compute the confidence intervals. 
-#'   See \code{?boot.ci} for details. By default, percentile intervals are computed.
-#' @inheritParams fsc.estimate
-#' @import boot
-#' @import data.table
-#' @export
+#'@param par.nBlocks The number of linkage blocks in the .par that it is used to
+#'  run the simulations.
+#'@param par.data The string to be used in the 'per Block: data type, num loci,
+#'  rec. rate and mut rate + optional parameters' line of the .par that it is
+#'  used to run the simulations. The default value is \code{par.data="DNA 100 0
+#'  2.5e-8 0.33"}
+#'@param nBoot The number of bootstrap replicates
+#'@param conf The confidence level to compute the confidence intervals
+#'@param boot.type The method to be used to compute the confidence intervals.
+#'  See \code{?boot.ci} for details. By default, percentile intervals are
+#'  computed.
+#'@inheritParams fsc.estimate
+#'@return A list with the following elements \itemize{ \item Bootstr.stats:
+#'  Descriptive statistics from bootstraps (Median, lower and upper limit), an
+#'  the intial estimated parameters  \item P.Rand.less.Obs: The probability that
+#'  a random value from the null Composite Likelihood Ratio distribution is less
+#'  than the observed CLR \item P.Rand.gt.Obs: The probability that a random
+#'  value from the null Composite Likelihood Ratio distribution is greater than
+#'  the observed CLR \item Sim: The estimates from the simulated data }
+#'@import boot
+#'@import data.table
+#'@export
 fsc.bootstraps <- function(dir.in, nLoci=10000, nSim=100, maf=TRUE, ncpu=0, 
                            nBatches=NULL, fsc.cmd="fsc2702", fsc.path="path",
                            par.indLoci="200000 0", par.nBlocks=1, 
