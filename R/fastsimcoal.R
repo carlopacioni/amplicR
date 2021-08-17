@@ -235,6 +235,11 @@ fsc.bootstraps <- function(dir.in, nLoci=10000, nSim=100, maf=TRUE, ncpu=0,
   if(ncpu > 0 & is.null(nBatches)) nBatches <- 2 * ncpu
 tpl <- list.files(dir.in, pattern="*.tpl$", full.names=TRUE)
 est <- list.files(dir.in, pattern="*.est$", full.names=TRUE)
+est.bLhood.path <- list.files(dir.in, pattern="*.bestlhoods$", recursive=TRUE, full.names=TRUE)
+path.length <- sapply(est.bLhood.path, nchar)
+est.bLhood.path <- est.bLhood.path[which.min(path.length)]
+est.bLhood <- read.table(est.bLhood.path, h=TRUE)
+
 res.dir <- gsub(".tpl$", replacement = "", x = basename(tpl))
 par.file <- list.files(file.path(dir.in, res.dir), pattern="*_maxL.par$", recursive=FALSE, full.names=TRUE)
 dir.create(file.path(dirname(par.file), "Bootstraps"), showWarnings=FALSE)
@@ -281,10 +286,20 @@ lbLhoods <- lapply(bLhood, read.table, header=TRUE)
 est.sim <- do.call(rbind, args=lbLhoods)
 
 est.dt <- data.table(est.sim)
+est.dt[, CLR := MaxEstLhood / MaxObsLhood] # Compute the Composite Likelihood Ration
+Pclr <- ecdf(est.dt[, CLR]) # Compute the empirical cumulative density function
+est.bLhood$CLR <- est.bLhood$MaxEstLhood / est.bLhood$MaxObsLhood # Observed ratio
+
+P.Rand.less.Obs <- Pclr(est.bLhood$CLR) # The probability that a random value from the null distribution is less than the observed
+P.Rand.gt.Obs <- 1 - P.Rand.less.Obs
+
 bootstr.ci <- est.dt[, lapply(.SD, extractCI, nBoot, conf, boot.type)]
 nms <- names(bootstr.ci)
-bootstr.ci[, Param:=c("Median", "Lower", "Upper")]
+bootstr.ci <- rbind(bootstr.ci, est.bLhood)
+bootstr.ci[, Param:=c("Median", "Lower", "Upper", "Estimated")]
 setcolorder(bootstr.ci, "Param")
-return(bootstr.ci)
+
+return(list(Bootstr.stats=bootstr.ci,P.Rand.less.Obs=P.Rand.less.Obs, 
+            P.Rand.gt.Obs=P.Rand.gt.Obs, Sim=est.dt))
 }
 
