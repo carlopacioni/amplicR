@@ -281,63 +281,77 @@ deconv <- function(fn, nRead=1e8, info.file, sample.IDs="Sample_IDs",
       for(row in 1:dim(sub_info_table)[1]) {
         
         # Searching and removing F index
-        if(!sub_info_table[row, Find] == "") {
-          ind_hits <- Biostrings::vmatchPattern(
-                        pattern=Biostrings::DNAString(sub_info_table[row, Find]), 
-                        subject=seqs_gene,
-                        max.mismatch=index.mismatch, 
-                        min.mismatch=0,
-                        with.indels=FALSE, fixed=TRUE,
-                        algorithm="auto")
-          
-          if(verbose) {
-          info(patt_hits=ind_hits, fn=fn, table=sub_info_table, row=row, 
-               gene=gene, name_patt=Find, mismatch=index.mismatch)
+        if(is.null(sub_info_table[row, Find])) {
+          seqs_rm <- seqs_gene 
+          qual_rm <- qual_gene
+          ids_rm <- ids_gene
+          } else
+          if(sub_info_table[row, Find] == "") {
+            seqs_rm <- seqs_gene
+            qual_rm <- qual_gene
+            ids_rm <- ids_gene
+          } else {
+           if(!sub_info_table[row, Find] == "") {
+            ind_hits <- Biostrings::vmatchPattern(
+              pattern=Biostrings::DNAString(sub_info_table[row, Find]), 
+              subject=seqs_gene,
+              max.mismatch=index.mismatch, 
+              min.mismatch=0,
+              with.indels=FALSE, fixed=TRUE,
+              algorithm="auto")
+            
+            if(verbose) {
+              info(patt_hits=ind_hits, fn=fn, table=sub_info_table, row=row, 
+                   gene=gene, name_patt=Find, mismatch=index.mismatch)
+            }
+            
+            starts <- where2trim(mismatch=index.mismatch, 
+                                 subjectSet=seqs_gene, 
+                                 patt_hits=ind_hits, 
+                                 patt=sub_info_table[row, Find], 
+                                 type="F")
+            
+            seqs_rm <- Biostrings::DNAStringSet(seqs_gene, start=unlist(starts) + 1)
+            qual_rm <- Biostrings::BStringSet(qual_gene, start=unlist(starts) + 1)
+            retain <- as.logical(S4Vectors::elementNROWS(ind_hits))
+            seqs_rm <- seqs_rm[retain]
+            qual_rm <- qual_rm[retain]
+            ids_rm <- ids_gene[retain]
+           }
           }
-          
-          starts <- where2trim(mismatch=index.mismatch, 
-                               subjectSet=seqs_gene, 
-                               patt_hits=ind_hits, 
-                               patt=sub_info_table[row, Find], 
-                               type="F")
-          
-          seqs_rm <- Biostrings::DNAStringSet(seqs_gene, start=unlist(starts) + 1)
-          qual_rm <- Biostrings::BStringSet(qual_gene, start=unlist(starts) + 1)
-          retain <- as.logical(S4Vectors::elementNROWS(ind_hits))
-          seqs_rm <- seqs_rm[retain]
-          qual_rm <- qual_rm[retain]
-          ids_rm <- ids_gene[retain]
-        }
+        
         
         # Searching and removing R index
-        if(!sub_info_table[row, Rind] == "") {
-          ind_hits <- Biostrings::vmatchPattern(
-            pattern=Biostrings::reverseComplement(
-              Biostrings::DNAString(sub_info_table[row, Rind])), 
-            subject=seqs_rm,
-            max.mismatch=index.mismatch, 
-            min.mismatch=0,
-            with.indels=FALSE, fixed=TRUE,
-            algorithm="auto")
-          
-          if(verbose) {
-          info(patt_hits=ind_hits, fn=fn, table=sub_info_table, row=row, 
-               gene=gene, name_patt=Rind, mismatch=index.mismatch)
+        if(is.null(sub_info_table[row, Rind])) skip <- "do nothing" else
+          if(!sub_info_table[row, Rind] == "") {
+            ind_hits <- Biostrings::vmatchPattern(
+              pattern=Biostrings::reverseComplement(
+                Biostrings::DNAString(sub_info_table[row, Rind])), 
+              subject=seqs_rm,
+              max.mismatch=index.mismatch, 
+              min.mismatch=0,
+              with.indels=FALSE, fixed=TRUE,
+              algorithm="auto")
+            
+            if(verbose) {
+              info(patt_hits=ind_hits, fn=fn, table=sub_info_table, row=row, 
+                   gene=gene, name_patt=Rind, mismatch=index.mismatch)
+            }
+            
+            starts <- where2trim(mismatch=index.mismatch, 
+                                 subjectSet=seqs_rm, 
+                                 patt_hits=ind_hits, 
+                                 patt=sub_info_table[row, Rind], 
+                                 type="R")
+            
+            seqs_rm <- Biostrings::DNAStringSet(seqs_rm, end=unlist(starts) - 1)
+            qual_rm <- Biostrings::BStringSet(qual_rm, end=unlist(starts) - 1)
+            retain <- as.logical(S4Vectors::elementNROWS(ind_hits))
+            seqs_rm <- seqs_rm[retain]
+            qual_rm <- qual_rm[retain]
+            ids_rm <- ids_rm[retain]
           }
-          
-          starts <- where2trim(mismatch=index.mismatch, 
-                               subjectSet=seqs_rm, 
-                               patt_hits=ind_hits, 
-                               patt=sub_info_table[row, Rind], 
-                               type="R")
-          
-          seqs_rm <- Biostrings::DNAStringSet(seqs_rm, end=unlist(starts) - 1)
-          qual_rm <- Biostrings::BStringSet(qual_rm, end=unlist(starts) - 1)
-          retain <- as.logical(S4Vectors::elementNROWS(ind_hits))
-          seqs_rm <- seqs_rm[retain]
-          qual_rm <- qual_rm[retain]
-          ids_rm <- ids_rm[retain]
-        }
+        
         nIndRet <- nIndRet + length(seqs_rm)
         
         # Searching and removing F primer
