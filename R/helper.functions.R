@@ -207,7 +207,6 @@ getRow <- function(m, rn) {
 #' @param locusLength Integer vector with the length of each locus (if
 #'   \code{charset=TRUE}) in the same order as they appear in the sequences
 #' @return Writes a nexus file to disk
-#' @importFrom DECIPHER AlignSeqs
 #' @export
 #' @examples seqs <- c("AAATTTT", "GAATTCT")
 #'         names(seqs) <- c("seq1", "seq2")
@@ -221,6 +220,14 @@ getRow <- function(m, rn) {
 
 write.nexus <- function(x, aln=FALSE, gapOpening=c(-18, -16), gapExtension=c(-2, -1), 
                         dir.out, fn, charset=FALSE, locusIDs, locusLength, verbose=FALSE) {
+  #----------------------------------------------------------------------------#
+  if (!requireNamespace("DECIPHER", quietly = TRUE)) {
+    stop("Package 'DECIPHER' needed for this function to work. Please install it 
+         either manually or using the function amplicR::setup().",
+         call. = FALSE)
+  }  
+  #----------------------------------------------------------------------------#
+  
   whatsx <- class(x)
   if(whatsx == "character") {
     x <- Biostrings::DNAStringSet(x)
