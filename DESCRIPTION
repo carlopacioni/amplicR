@@ -9,10 +9,12 @@ Maintainer: Carlo Pacioni <c.pacioni@murdoch.edu.au>
 BugReports: https://github.com/carlopacioni/amplicR/issues
 Description: An R package to process amplicon data
 License: GPL-3
-Depends: R (>= 3.2.0)
+Depends: R (>= 3.5.0)
 LazyData: TRUE
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2
 Imports:
+  boot,
+  dartR,
   data.table,
   ggplot2,
   plyr
@@ -28,4 +30,5 @@ Suggests:
     BiocGenerics,
     S4Vectors,
     IRanges,
+    DECIPHER,
     Biostrings
