@@ -4,8 +4,8 @@ context("Test fastsimcoal")
 
 test_that("gl2sfs", {
   
-  #temp <- tempdir(check = TRUE)
-  temp<-"E:/amplicR/TestFsc"
+  temp <- tempdir(check = TRUE)
+  #temp<-"E:/amplicR/TestFsc"
   suppressMessages(
     amplicR::setup()
   )
