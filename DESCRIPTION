@@ -1,7 +1,7 @@
 Package: amplicR
 Type: Package
 Title: An R package to process amplicon data
-Version: 0.2.4.999
+Version: 0.2.5.999
 Date: 11-June-21
 Author: as.person(
     "Carlo Pacioni <c.pacioni@murdoch.edu.au> [aut, cre]")
@@ -11,7 +11,7 @@ Description: An R package to process amplicon data
 License: GPL-3
 Depends: R (>= 3.5.0)
 LazyData: TRUE
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.2
 Imports:
   boot,
   dartR,
