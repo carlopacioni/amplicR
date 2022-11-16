@@ -130,7 +130,7 @@ fsc.multiple.estimate <- function(dir.in, n=500000, L=100, maf=TRUE, ncpu=0,
 #'
 #' compute the AIC given the likelihood in log10 scale (default fsc output) and
 #' number of parameters, which is automatically read by the function if
-#' \code{k=NULL).
+#' \code{k=NULL}.
 #'
 #' It is important to note that this function will probably fail if there are
 #' more than one .est within each directory as it will read these to evaluate
