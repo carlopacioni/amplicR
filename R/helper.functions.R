@@ -215,7 +215,7 @@ getRow <- function(m, rn) {
 #'         locusLen <- c(3, 4)
 #'         tmpDir <- tempdir()
 #'         tmpFile <- tempfile(tmpdir = tmpDir)
-#'         write.nexus(x, aln=TRUE, dir.out=tmpDir, fn=tmpFile, charset=TRUE, 
+#'         write.nexus(x, aln=TRUE, dir.out=tmpDir, fn=basename(tmpFile), charset=TRUE, 
 #'                 locusIDs=locusNames, locusLength=locusLen)
 
 write.nexus <- function(x, aln=FALSE, gapOpening=c(-18, -16), gapExtension=c(-2, -1), 
