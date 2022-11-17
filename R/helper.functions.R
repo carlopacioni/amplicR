@@ -194,7 +194,7 @@ getRow <- function(m, rn) {
 #'
 #' @param x Either a \code{character} vector or a \code{DNAStringSet}
 #' @param aln Logical. Whether x is an alignment
-#' @param gapOening Integer (negative). Penalty for opening a gap in the
+#' @param gapOpening Integer (negative). Penalty for opening a gap in the
 #'   alignment
 #' @param gapExtension Integer (negative). Penalty for extending a gap in the
 #'   alignment
@@ -206,6 +206,7 @@ getRow <- function(m, rn) {
 #'   \code{charset=TRUE}) in the same order as they appear in the sequences
 #' @param locusLength Integer vector with the length of each locus (if
 #'   \code{charset=TRUE}) in the same order as they appear in the sequences
+#'   @param verbose Whether print info on progress
 #' @return Writes a nexus file to disk
 #' @export
 #' @examples seqs <- c("AAATTTT", "GAATTCT")
@@ -214,8 +215,7 @@ getRow <- function(m, rn) {
 #'         locusNames <- c("locus1", "locus2")
 #'         locusLen <- c(3, 4)
 #'         tmpDir <- tempdir()
-#'         tmpFile <- tempfile(tmpdir = tmpDir)
-#'         write.nexus(x, aln=TRUE, dir.out=tmpDir, fn=basename(tmpFile), charset=TRUE, 
+#'         write.nexus(x, aln=TRUE, dir.out=tmpDir, fn="aln.nex", charset=TRUE, 
 #'                 locusIDs=locusNames, locusLength=locusLen)
 
 write.nexus <- function(x, aln=FALSE, gapOpening=c(-18, -16), gapExtension=c(-2, -1), 
