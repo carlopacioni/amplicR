@@ -214,7 +214,7 @@ getRow <- function(m, rn) {
 #'         x <- Biostrings::DNAStringSet(seqs)
 #'         locusNames <- c("locus1", "locus2")
 #'         locusLen <- c(3, 4)
-#'         tmpDir <- tempdir()
+#'         tmpDir <- tempdir(check = TRUE)
 #'         write.nexus(x, aln=TRUE, dir.out=tmpDir, fn="aln.nex", charset=TRUE, 
 #'                 locusIDs=locusNames, locusLength=locusLen)
 
