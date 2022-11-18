@@ -22,6 +22,9 @@ write.nexus(
 
 \item{aln}{Logical. Whether x is an alignment}
 
+\item{gapOpening}{Integer (negative). Penalty for opening a gap in the
+alignment}
+
 \item{gapExtension}{Integer (negative). Penalty for extending a gap in the
 alignment}
 
@@ -36,10 +39,8 @@ nexus file}
 \code{charset=TRUE}) in the same order as they appear in the sequences}
 
 \item{locusLength}{Integer vector with the length of each locus (if
-\code{charset=TRUE}) in the same order as they appear in the sequences}
-
-\item{gapOening}{Integer (negative). Penalty for opening a gap in the
-alignment}
+\code{charset=TRUE}) in the same order as they appear in the sequences
+@param verbose Whether print info on progress}
 }
 \value{
 Writes a nexus file to disk
@@ -64,8 +65,7 @@ seqs <- c("AAATTTT", "GAATTCT")
         x <- Biostrings::DNAStringSet(seqs)
         locusNames <- c("locus1", "locus2")
         locusLen <- c(3, 4)
-        tmpDir <- tempdir()
-        tmpFile <- tempfile(tmpdir = tmpDir)
-        write.nexus(x, aln=TRUE, dir.out=tmpDir, fn=basename(tmpFile), charset=TRUE, 
+        tmpDir <- tempdir(check = TRUE)
+        write.nexus(x, aln=TRUE, dir.out=tmpDir, fn="aln.nex", charset=TRUE, 
                 locusIDs=locusNames, locusLength=locusLen)
 }

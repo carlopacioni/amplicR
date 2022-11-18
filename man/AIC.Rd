@@ -13,7 +13,9 @@ AIC(dir.in, k = NULL)
 automatically by the function}
 }
 \description{
-
+compute the AIC given the likelihood in log10 scale (default fsc output) and
+number of parameters, which is automatically read by the function if
+\code{k=NULL}.
 }
 \details{
 It is important to note that this function will probably fail if there are
