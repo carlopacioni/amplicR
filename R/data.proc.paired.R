@@ -157,6 +157,9 @@ if(is.null(dir.out)) {
 dir.create(dir.out, showWarnings=FALSE, recursive=TRUE)
 filt_fold <- "Filtered_seqs"
 dir.create(paste(dir.out, filt_fold, sep="/"), showWarnings=FALSE, recursive=TRUE)
+fns <- vector("list", length = length(dir.in))
+fastqs <- vector("list", length = length(dir.in))
+filtRs <- vector("list", length = length(dir.in))
 
 for(d in seq_along(dir.in)) {
   fns[[d]] <- list.files(path=dir.in[d])
@@ -187,7 +190,7 @@ fastqsPairs <- mapply(c, file.path(dir.in[1], fastqs[[1]]),
 filtRsPairs <- mapply(c, filtRs[[1]], filtRs[[2]])
 
 for(i in seq_len(n)) {
-  suppressWarnings(dada2::fastqPairedFilter(fastqsPairs[, i], 
+  suppressWarnings(dada2::fastqPairedFilter(fastqsPairs[, i], matchIDs = TRUE,
                                        filtRsPairs[, i], 
                                        maxN=0, 
                                        maxEE=3,
