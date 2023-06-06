@@ -370,6 +370,11 @@ if(chim == TRUE) {
   }
 }
 
+zeros <- which(  nSeq == 0)
+if(length(zeros > 0)) {
+  warning(paste("No sequences passed the analysis for sample(s):", names(luniseqsFinal)[zeros], "in", dir.out, sep = "\n"))
+  luniseqsFinal <- luniseqsFinal[-zeros]
+}
 stable <- dada2::makeSequenceTable(luniseqsFinal, orderBy=orderBy)
 seqs <- colnames(stable)
 seq_names <- paste0("seq", 1:dim(stable)[2])
