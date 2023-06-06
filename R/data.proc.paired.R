@@ -206,8 +206,8 @@ for(i in seq_len(n)) {
 }
 
 filtRs <- list.files(path=file.path(dir.out, filt_fold), full.names=TRUE)
-sample_names_fil <- sub("_Ind_primerRmR[1-2]_filt.fastq.gz", "", 
-                        sapply( filtRsPairs[1,], basename, USE.NAMES=FALSE))
+sample_names_fil <- unique(sub("_Ind_primerRmR[1-2]_filt.fastq.gz", "", 
+                        sapply( filtRs, basename, USE.NAMES=FALSE)))
 
 if(qrep == TRUE) browseURL(report(qa(filtRs)))
 
