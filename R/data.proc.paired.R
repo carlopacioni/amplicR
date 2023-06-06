@@ -183,7 +183,7 @@ for(d in seq_along(dir.in)) {
 if(length(fastqs[[1]]) == length(fastqs[[2]])) {
   n <- length(fastqs[[1]]) 
   message(paste("\nFound", n, "fasta files in each input dir.in folders:"))
-  message(paste(dir.in, collapse="\n"))
+  message(paste("\n", dir.in, collapse="\n"))
 } else {
   stop("Different number of fasta files in the two dir.in folders")
 }
