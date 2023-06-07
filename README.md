@@ -2,8 +2,7 @@
 An R package to process amplicon data
 
 This package has a number of functions to filter, dereplicate and error and 
-chimera check NGS reads stored in fastq files. This funcitonality is currently
-limted to single-read analysis. The retained reads after the data processing 
+chimera check NGS reads stored in fastq files. From v2.6.0 `amplicR` implements a function to process paired end reads (`data.proc.paired`). This functionality has not being implemented in the `raw2data.proc` wrapper and manual calling of the single functions is needed to carry out the preceding steps in the analytical pipeline. Compatibility of down stream analyses should be preserved, but it has not being. The retained reads after the data processing 
 described above (or your own reads if you have done this already in another way) 
 can then be compared against reference
 sequences and the number of mismatch is reported. This may be useful when, for
@@ -40,26 +39,6 @@ library(amplicR)
 setup()
 ```
 
-**NOTE (August 2016)**
-At the time of writing, the current official release of devtools (1.12.0) has an issue with R 3.3.1 on windows, which results in the dependencies of the package not being installed. This problem is resolved in the dev version. If you have problems installing `amplicR` try the following (from devtools manual for the function `build_github_devtools`):
-
-```
-# Install devtools from CRAN if you haven't already
-install.packages("devtools")
-
-library(devtools)
-build_github_devtools()
-
-#### Restart R before continuing ####
-install.packages("./devtools.zip", repos = NULL)
-
-# Remove the package after installation
-unlink("./devtools.zip")
-
-library(devtools)
-install_github("carlopacioni/amplicR")
-
-```
 
 ## Disclamer 
 All reasonable care has been taken to ensure that `amplicR` functions report the 
