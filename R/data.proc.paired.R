@@ -168,21 +168,29 @@ for(d in seq_along(dir.in)) {
   fastqs[[d]] <- fns[[d]][grepl(".fastq.{,3}$", fns[[d]])]
   if(length(fastqs[[d]]) == 0) stop(paste("There are no files in", dir.in[d],
                                      "with either fastq or fastq.gz extension"))
-  filtRs[[d]] <- paste(dir.out,
-                filt_fold,
-                 sapply(fastqs[[d]],
-                        sub,
-                        pattern="\\.fastq.{,3}$",
-                        replacement=paste0("R", d, "_filt.fastq.gz")),
-                sep="/"
-                 )
 }
 
 if(length(fastqs[[1]]) == length(fastqs[[2]])) {
   n <- length(fastqs[[1]]) 
-  message(paste("Found", n, "fasta files in each input dir.in folders"))
+  message(paste("Found", n, "fasta files in each input", dir.in, "folders"))
 } else {
-  stop("Different number of fasta files in the two dir.in folders")
+  warnings(paste("Different number of fasta files in the two", dir.in, "folders"))
+  warnings("Retaining only the common files")
+  its <- intersect(fastqs[[1]], fastqs[[2]])
+  fastqs[[1]] <- its
+  fastqs[[2]] <- its
+  n <- length(fastqs[[1]]) 
+}
+
+for(d in seq_along(dir.in)) {
+  filtRs[[d]] <- paste(dir.out,
+                       filt_fold,
+                       sapply(fastqs[[d]],
+                              sub,
+                              pattern="\\.fastq.{,3}$",
+                              replacement=paste0("R", d, "_filt.fastq.gz")),
+                       sep="/"
+  ) 
 }
 
 #### Filter ####
