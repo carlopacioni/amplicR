@@ -23,7 +23,8 @@ data.proc.paired(
 )
 }
 \arguments{
-\item{dir.in}{The directory where the fastq files are located. If NULL 
+\item{dir.in}{The directory where the fastq files are located. It needs a 
+vector of length=2 If NULL 
 (default) an interactive window is used to select a folder}
 
 \item{dir.out}{The directory where to save the results. If NULL (default) 
@@ -87,18 +88,19 @@ Return a list with several elements:
   the list returned by data.proc (see above) }
 }
 \description{
-\code{data.proc} is a function to process (quality checking, error and 
+\code{data.proc.paired} is a function to process (quality checking, error and 
 chimeras filtering) data from a NGS run after these have been deconvoluted.
 }
 \details{
-\code{data.proc} locates the .fastq files (can be compressed) in the 
+\code{data.proc.paired} locates the .fastq files (can be compressed) in the 
 directory indicated in \code{dir.in}. If the directory path is not provided, 
 this will be selected using an interactive window.
 
-It is currently limited to single-reads and assumes that adapters, primers 
+This is the first implementation to deal with paired-end reads and assumes 
+that adapters, primers 
 and indexes have been already removed and that each file represents a sample.
 
-The \code{data.proc} pipeline is as follows: fastq files are read in. A 
+The \code{data.proc.paired} pipeline is as follows: fastq files are read in. A 
 filter is applied to truncate reads at the first instance of a quality score 
 less than \code{truncQ}, remove reads  that are of low quality (currently the
 threshold is hard-coded and reads are discarded if the expected errors is
@@ -110,7 +112,7 @@ R package \code{ShortReads} to verify the quality of the reads retained
 after this step. Reads are then dereplicated. Optionally, the dada (Callahan
 et al 2015) algoritm is applied and bimeras are searched and removed with
 default settings of the relative functions in the package \code{dada2}. The
-sequences that were retained at completion of \code{data.proc} are saved in
+sequences that were retained at completion of \code{data.proc.paired} are saved in
 fasta files in the subfolder "Final_seqs" and a .csv with a summary of the
 number of reads that have been retained in each step is also written. These
 two outputs are also returned at the end of the function.

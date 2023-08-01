@@ -32,7 +32,8 @@
 #' \code{dada2} and \code{ShortRead}, so make sure to cite them (in addition to 
 #' \code{amplicR} of course!) if you report your results in a paper or report.
 #' 
-#' @param dir.in The directory where the fastq files are located. If NULL 
+#' @param dir.in The directory where the fastq files are located. It needs a 
+#'   vector of length=2 If NULL 
 #'   (default) an interactive window is used to select a folder
 #' @param dir.out The directory where to save the results. If NULL (default) 
 #'   then \code{dir.out <- dir.in}
@@ -159,6 +160,9 @@ dir.create(dir.out, showWarnings=FALSE, recursive=TRUE)
 filt_fold <- "Filtered_seqs"
 dir.create(paste(dir.out, filt_fold, sep="/"), showWarnings=FALSE, recursive=TRUE)
 
+fns <- vector("list", length = length(dir.in))
+fastqs <- vector("list", length = length(dir.in))
+filtRs <- vector("list", length = length(dir.in))
 for(d in seq_along(dir.in)) {
   fns[[d]] <- list.files(path=dir.in[d])
   fastqs[[d]] <- fns[[d]][grepl(".fastq.{,3}$", fns[[d]])]
