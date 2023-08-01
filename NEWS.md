@@ -1,4 +1,4 @@
-#  amplicR 0.2.4.0
+#  amplicR 0.2.6.0
 * data.proc now deals with paired end reads with the new function data.proc.paired
 
 # amplicR 0.2.4.0 Jun 2021
