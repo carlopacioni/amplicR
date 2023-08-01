@@ -1,18 +1,21 @@
-#' Data processing
+#' Data processing - paired ends
 #' 
-#' \code{data.proc.paired} is a function to process (quality checking, error and 
-#' chimeras filtering) data from a NGS run after these have been deconvoluted.
+#' \code{data.proc.paired} is a first attempt to develop a function to process 
+#' (quality checking, error and chimeras filtering) paired end reads from a NGS 
+#' run after these have been deconvoluted.
 #' 
 #' \code{data.proc.paired} locates the .fastq files (can be compressed) in the 
-#' directory indicated in \code{dir.in}. If the directory path is not provided, 
-#' this will be selected using an interactive window.
+#' directory indicated in \code{dir.in}. Because the location of the fwd and rev
+#' reads need to be provided it will fail if this argument is missing
 #' 
 #' This is the first implementation to deal with paired-end reads and assumes 
 #' that adapters, primers 
 #' and indexes have been already removed and that each file represents a sample.
+#' Because of this, this function cannot be run in the wrapper \code{raw2data.proc}.
 #' 
 #' The \code{data.proc.paired} pipeline is as follows: fastq files are read in. A 
-#' filter is applied to truncate reads at the first instance of a quality score 
+#' filter is applied to each pair that truncates reads at the first instance of 
+#' a quality score 
 #' less than \code{truncQ}, remove reads  that are of low quality (currently the
 #' threshold is hard-coded and reads are discarded if the expected errors is
 #' higher than 3 - from documentation in the R package \code{dada2}, the
@@ -157,8 +160,6 @@ if(is.null(dir.out)) {
     
 dir.create(dir.out, showWarnings=FALSE, recursive=TRUE)
 filt_fold <- "Filtered_seqs"
-dir.create(paste(dir.out, filt_fold, sep="/"), showWarnings=FALSE, recursive=TRUE)
-
 fns <- vector("list", length = length(dir.in))
 fastqs <- vector("list", length = length(dir.in))
 filtRs <- vector("list", length = length(dir.in))
@@ -171,7 +172,8 @@ for(d in seq_along(dir.in)) {
 
 if(length(fastqs[[1]]) == length(fastqs[[2]])) {
   n <- length(fastqs[[1]]) 
-  message(paste("Found", n, "fasta files in each input", dir.in, "folders"))
+  message(paste("\nFound", n, "fasta files in each input dir.in folders:"))
+  message(paste("\n", dir.in, collapse="\n"))
 } else {
   warnings(paste("Different number of fasta files in the two", dir.in, "folders"))
   warnings("Retaining only the common files")
@@ -193,13 +195,13 @@ for(d in seq_along(dir.in)) {
 }
 
 #### Filter ####
-sample_names <- sub(".fastq.{,3}$", "", fastqs[[1]])
+sample_names <- sub("_Ind_primerRm\\.fastq.{,3}$", "", fns[[1]])
 fastqsPairs <- mapply(c, file.path(dir.in[1], fastqs[[1]]), 
                       file.path(dir.in[2], fastqs[[2]]))
 filtRsPairs <- mapply(c, filtRs[[1]], filtRs[[2]])
 
 for(i in seq_len(n)) {
-  suppressWarnings(dada2::fastqPairedFilter(fastqsPairs[, i], 
+  suppressWarnings(dada2::fastqPairedFilter(fastqsPairs[, i], matchIDs = TRUE,
                                        filtRsPairs[, i], 
                                        maxN=0, 
                                        maxEE=3,
@@ -210,8 +212,8 @@ for(i in seq_len(n)) {
 }
 
 filtRs <- list.files(path=file.path(dir.out, filt_fold), full.names=TRUE)
-sample_names_fil <- sub("R[1-2]_filt.fastq.gz", "", 
-                        sapply(filtRs, basename, USE.NAMES=FALSE))
+sample_names_fil <- unique(sub("_Ind_primerRmR[1-2]_filt.fastq.gz", "", 
+                        sapply( filtRs, basename, USE.NAMES=FALSE)))
 
 if(qrep == TRUE) browseURL(report(qa(filtRs)))
 
@@ -243,14 +245,16 @@ lsummary[[1]] <- merge(data.table(Sample=sample_names),
 
 derepReads <- list(derepReadsF, derepReadsR)
 
-
 lsummary[[2]] <- data.frame(Sample=sample_names_fil, nDerepF=unSeqsF, nDerepR=unSeqsR)
 el <- 2
 
 #### dada ####
 if(dada == TRUE) {
+  dadaReads <- vector("list", length = 2)
+  nDenoised <- vector("list", length = 2)
+  lda <- vector("list", length = 2)
   for(d in 1:2) {
-  dadaReads[[1]] <- dada2::dada(derepReads[[d]], err=dada2::inflateErr(dada2::tperr1,3),
+  dadaReads[[d]] <- dada2::dada(derepReads[[d]], err=dada2::inflateErr(dada2::tperr1,3),
                     errorEstimationFunction=dada2::loessErrfun,
                     selfConsist=TRUE, pool=pool)
   if(plot.err == TRUE) {
@@ -295,7 +299,8 @@ el <- el + 1
              verbose = verbose)
   
   el <- el + 1
-  lsummary[[el]] <- mergePairedEnds
+  lsummary[[el]] <- data.frame(Sample=names(mergePairedEnds), 
+                               nMerged=sapply(mergePairedEnds, nrow))
   }
 
   if(verbose) {
@@ -304,20 +309,18 @@ el <- el + 1
     message(cat(nDenoised, "\n"))
   }
   
-  
-  
 #### Bimera ####
 if(chim == TRUE)  {
   if(dada == TRUE) {
-    uniqSeqs <- mergePairedEnds$abundance
-    names(uniqSeqs) <- mergePairedEnds$sequence
-    if(length(uniqSeqs) > 1) {
+    #uniqSeqs <- mergePairedEnds$abundance
+    #names(uniqSeqs) <- mergePairedEnds$sequence
+    if(length(mergePairedEnds) > 1) {
       single <- FALSE
-      bimReads <- lapply(uniqSeqs, dada2::isBimeraDenovo, verbose=FALSE)
-      names(bimReads) <- names(uniqSeqs)
+      bimReads <- lapply(mergePairedEnds, dada2::isBimeraDenovo, verbose=FALSE)
+      #names(bimReads) <- names(mergePairedEnds)
     } else {
       single <- TRUE
-      bimReads <- dada2::isBimeraDenovo(uniqSeqs, verbose=FALSE)
+      bimReads <- dada2::isBimeraDenovo(mergePairedEnds, verbose=FALSE)
     }
   } else {
     if(length(derepReadsF) > 1) {
@@ -347,14 +350,14 @@ if(chim == TRUE)  {
   lsummary[[el]] <- data.frame(Sample=names(nChimeras), nChimeras)
   if(dada == TRUE) {
     if(single) {
-      no_chim <- list(dada2::getUniques(dadaReads)[!bimReads])
-      names(no_chim) <- names(derepReads)
+      no_chim <- list(dada2::getUniques(mergePairedEnds)[!bimReads])
+      names(no_chim) <- names(mergePairedEnds)
     } else {
-      no_chim <- lapply(seq_along(dadaReads), rm.chim, dadaReads, bimReads)
+      no_chim <- lapply(seq_along(mergePairedEnds), rm.chim, mergePairedEnds, bimReads)
       names(no_chim) <- names(bimReads)
     }
   } else {
-    no_chim <- lapply(seq_along(derepReads), rm.chim, derepReads, bimReads)
+    no_chim <- lapply(seq_along(mergePairedEnds), rm.chim, mergePairedEnds, bimReads)
     names(no_chim) <- names(bimReads)
   }
 }
@@ -373,6 +376,11 @@ if(chim == TRUE) {
   }
 }
 
+zeros <- which(  nSeq == 0)
+if(length(zeros > 0)) {
+  warning(paste("No sequences passed the analysis for sample(s):", names(luniseqsFinal)[zeros], "in", dir.out, sep = "\n"))
+  luniseqsFinal <- luniseqsFinal[-zeros]
+}
 stable <- dada2::makeSequenceTable(luniseqsFinal, orderBy=orderBy)
 seqs <- colnames(stable)
 seq_names <- paste0("seq", 1:dim(stable)[2])
@@ -388,7 +396,7 @@ write.csv(summary, file=paste(dir.out, "data.proc.summary.csv", sep="/"),
           row.names=FALSE)
 
 fasta_fold <- "Final_seqs"
-fasta_dir <- paste(dir.out, fasta_fold, sep="/")
+fasta_dir <- file.path(dir.out, fasta_fold)
 table2fasta(stable, seq.list=seq_list, dir.out=fasta_dir, verbose)
 dproc <- list(luniseqsFinal=luniseqsFinal, 
               lsummary=lsummary, 

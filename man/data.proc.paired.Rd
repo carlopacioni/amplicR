@@ -2,7 +2,7 @@
 % Please edit documentation in R/data.proc.paired.R
 \name{data.proc.paired}
 \alias{data.proc.paired}
-\title{Data processing}
+\title{Data processing - paired ends}
 \usage{
 data.proc.paired(
   dir.in = NULL,
@@ -24,8 +24,7 @@ data.proc.paired(
 }
 \arguments{
 \item{dir.in}{The directory where the fastq files are located. It needs a 
-vector of length=2 If NULL 
-(default) an interactive window is used to select a folder}
+vector of length=2}
 
 \item{dir.out}{The directory where to save the results. If NULL (default) 
 then \code{dir.out <- dir.in}}
@@ -88,20 +87,23 @@ Return a list with several elements:
   the list returned by data.proc (see above) }
 }
 \description{
-\code{data.proc.paired} is a function to process (quality checking, error and 
-chimeras filtering) data from a NGS run after these have been deconvoluted.
+\code{data.proc.paired} is a first attempt to develop a function to process 
+(quality checking, error and chimeras filtering) paired end reads from a NGS 
+run after these have been deconvoluted.
 }
 \details{
 \code{data.proc.paired} locates the .fastq files (can be compressed) in the 
-directory indicated in \code{dir.in}. If the directory path is not provided, 
-this will be selected using an interactive window.
+directory indicated in \code{dir.in}. Because the location of the fwd and rev
+reads need to be provided it will fail if this argument is missing
 
 This is the first implementation to deal with paired-end reads and assumes 
 that adapters, primers 
 and indexes have been already removed and that each file represents a sample.
+Because of this, this function cannot be run in the wrapper \code{raw2data.proc}.
 
 The \code{data.proc.paired} pipeline is as follows: fastq files are read in. A 
-filter is applied to truncate reads at the first instance of a quality score 
+filter is applied to each pair that truncates reads at the first instance of 
+a quality score 
 less than \code{truncQ}, remove reads  that are of low quality (currently the
 threshold is hard-coded and reads are discarded if the expected errors is
 higher than 3 - from documentation in the R package \code{dada2}, the
