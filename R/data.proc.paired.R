@@ -33,8 +33,7 @@
 #' \code{amplicR} of course!) if you report your results in a paper or report.
 #' 
 #' @param dir.in The directory where the fastq files are located. It needs a 
-#'   vector of length=2 If NULL 
-#'   (default) an interactive window is used to select a folder
+#'   vector of length=2 
 #' @param dir.out The directory where to save the results. If NULL (default) 
 #'   then \code{dir.out <- dir.in}
 #' @param bp An integer indicating the expected length (base-pairs) of the
