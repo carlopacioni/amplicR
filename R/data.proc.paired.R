@@ -158,8 +158,9 @@ if(is.null(dir.out)) {
   #  dir.out <- dir.in
   }
     
-dir.create(dir.out, showWarnings=FALSE, recursive=TRUE)
+
 filt_fold <- "Filtered_seqs"
+dir.create(file.path(dir.out, filt_fold), showWarnings=FALSE, recursive=TRUE)
 fns <- vector("list", length = length(dir.in))
 fastqs <- vector("list", length = length(dir.in))
 filtRs <- vector("list", length = length(dir.in))
@@ -193,6 +194,7 @@ for(d in seq_along(dir.in)) {
                        sep="/"
   ) 
 }
+
 
 #### Filter ####
 sample_names <- sub("_Ind_primerRm\\.fastq.{,3}$", "", fns[[1]])
