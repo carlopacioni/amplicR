@@ -101,6 +101,9 @@ that adapters, primers
 and indexes have been already removed and that each file represents a sample.
 Because of this, this function cannot be run in the wrapper \code{raw2data.proc}.
 
+Also, it is assumed that the file names follow the convention where "R1" and 
+"R2" identify forward and reverse reads (with the root of the file being identical).
+
 The \code{data.proc.paired} pipeline is as follows: fastq files are read in. A 
 filter is applied to each pair that truncates reads at the first instance of 
 a quality score 
@@ -112,7 +115,7 @@ score: EE = sum(10^(-Q/10)) - and remove reads that (after truncation) do not
 match the target length. A quality report can be (optionally) generated with the
 R package \code{ShortReads} to verify the quality of the reads retained
 after this step. Reads are then dereplicated. Optionally, the dada (Callahan
-et al 2015) algoritm is applied and bimeras are searched and removed with
+et al 2015) algorithm is applied and bimeras are searched and removed with
 default settings of the relative functions in the package \code{dada2}. The
 sequences that were retained at completion of \code{data.proc.paired} are saved in
 fasta files in the subfolder "Final_seqs" and a .csv with a summary of the
