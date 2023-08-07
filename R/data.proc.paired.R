@@ -139,6 +139,22 @@ dp_extract <- function(nm, derep) {
   return(seqs)
 }
 
+# Check if there are reads in there
+checkNreads <- function(fastqFiles, reg="R1") {
+  f <- vector("list", length = length(fastqFiles[grep(reg, x = fastqFiles)]))
+  y <- vector("list", length = length(fastqFiles[grep(reg, x = fastqFiles)]))
+  for(i in seq_along(fastqFiles)) {
+      f[[i]] <- FastqStreamer(fastqFiles[i] , n=50
+                              )
+      y[[i]] <- yield(f[[i]])
+      #qt <- dada2:::qtables2(y[[i]])
+      #length(y[[i]])
+      close(f[[i]])
+  }
+  lgt2 <- sapply(y, length)
+  return(lgt2)
+}
+
 #----------------------------------------------------------------------------#
 call <- sys.call(1)
 
@@ -177,7 +193,7 @@ if(length(fastqs[[1]]) == length(fastqs[[2]])) {
   message(paste("\n", dir.in, collapse="\n"))
 } else {
   warnings(paste("Different number of fasta files in the two", dir.in, "folders"))
-  warnings("Retaining only the common files")
+  warnings("Retaining only the files with the same names in the two folders")
   its <- intersect(fastqs[[1]], fastqs[[2]])
   fastqs[[1]] <- its
   fastqs[[2]] <- its
@@ -214,14 +230,38 @@ for(i in seq_len(n)) {
 }
 
 filtRs <- list.files(path=file.path(dir.out, filt_fold), full.names=TRUE)
-sample_names_fil <- unique(sub("_Ind_primerRmR[1-2]_filt.fastq.gz", "", 
-                        sapply( filtRs, basename, USE.NAMES=FALSE)))
+# sample_names_fil <- unique(sub("_Ind_primerRmR[1-2]_filt.fastq.gz", "", 
+#                         sapply( filtRs, basename, USE.NAMES=FALSE)))
 
 if(qrep == TRUE) browseURL(report(qa(filtRs)))
 
+filteredReadsF <- filtRs[grep("R1", x = filtRs)]
+filteredReadsR <- filtRs[grep("R2", x = filtRs)]
+
+# check that all reads have length>0
+lgtF <- checkNreads(filteredReadsF) 
+filteredReadsF <- filteredReadsF[lgtF > 0]
+
+lgtR <- checkNreads(filteredReadsR, reg="R2") 
+filteredReadsR <- filteredReadsR[lgtR > 0]
+
+sample_names_filR1 <- unique(sub("_Ind_primerRmR1_filt.fastq.gz", "", 
+                                 sapply( filteredReadsF, basename, USE.NAMES=FALSE)))
+sample_names_filR2 <- unique(sub("_Ind_primerRmR2_filt.fastq.gz", "", 
+                                 sapply( filteredReadsR, basename, USE.NAMES=FALSE)))
+
+if(!identical(sample_names_filR1, sample_names_filR2)) {
+  sample_names_fil <- intersect(sample_names_filR1, sample_names_filR2)
+  filteredReadsF <- filteredReadsF[match(sample_names_fil, sample_names_filR1)]
+  filteredReadsR <- filteredReadsR[match(sample_names_fil, sample_names_filR2)]
+} else {
+  sample_names_fil <- sample_names_filR1
+}
+
+
 #### Dereplicate ####
 # Fwd
-derepReadsF <- lapply(filtRs[grep("R1", x = filtRs)], dada2::derepFastq, verbose=FALSE)
+derepReadsF <- lapply(filteredReadsF, dada2::derepFastq, verbose=FALSE)
 names(derepReadsF) <- sample_names_fil
 fnSeqsF <- unlist(lapply(derepReadsF, getnFiltered))
 if(length(fnSeqsF) == 0) stop(paste("There are no sequences that passed the filter in", 
@@ -229,7 +269,7 @@ if(length(fnSeqsF) == 0) stop(paste("There are no sequences that passed the filt
 unSeqsF <- unlist(lapply(derepReadsF, getnUniques))
 
 # Rev
-derepReadsR <- lapply(filtRs[grep("R2", x = filtRs)], dada2::derepFastq, verbose=FALSE)
+derepReadsR <- lapply(filteredReadsR, dada2::derepFastq, verbose=FALSE)
 names(derepReadsR) <- sample_names_fil
 fnSeqsR <- unlist(lapply(derepReadsR, getnFiltered))
 if(length(fnSeqsR) == 0) stop(paste("There are no sequences that passed the filter in", 
@@ -380,7 +420,8 @@ if(chim == TRUE) {
 
 zeros <- which(  nSeq == 0)
 if(length(zeros > 0)) {
-  warning(paste("No sequences passed the analysis for sample(s):", names(luniseqsFinal)[zeros], "in", dir.out, sep = "\n"))
+  warning(paste("No sequences passed the analysis for sample(s):", 
+                names(luniseqsFinal)[zeros], "in", dir.out, "\n", sep = "\n"))
   luniseqsFinal <- luniseqsFinal[-zeros]
 }
 stable <- dada2::makeSequenceTable(luniseqsFinal, orderBy=orderBy)
